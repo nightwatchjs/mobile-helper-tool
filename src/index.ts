@@ -1,0 +1,33 @@
+import minimist from 'minimist';
+import colors from 'ansi-colors';
+
+import {AVAILABLE_COMMANDS} from './constants';
+
+export const run = () => {
+  try {
+    const argv = process.argv.slice(2);
+    const {_: args, ...options} = minimist(argv, {
+      boolean: 'install'
+    });
+
+    if (!args[0] || !AVAILABLE_COMMANDS.includes(args[0])) {
+      help(args[0]);
+    } else if (args[0] === 'android') {
+      console.log('android setup here');
+    } else {
+      console.log('ios setup here');
+    }
+  } catch (err) {
+    console.error(err as string);
+    process.exit(1);
+  }
+};
+
+const help = (arg: string) => {
+  if (arg) {
+    console.log(colors.red(`unknown command: ${arg}`), '\n');
+  }
+  console.log(`Available commands: ${AVAILABLE_COMMANDS}`);
+  console.log(`To know more about each command, run:
+  ${colors.cyan('npx @nightwatch/mobile-helper _command_name_ --help')}`);
+}

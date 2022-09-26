@@ -1,0 +1,27 @@
+{
+  "name": "@nightwatch/mobile-helper",
+  "version": "0.0.1",
+  "description": "Mobile helper tool to easily setup mobile requirements",
+  "main": "dist/index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && node dev.js",
+    "prepublishOnly": "tsc --outDir dist"
+  },
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nightwatchjs/mobile-helper"
+  },
+  "devDependencies": {
+    "@types/minimist": "^1.2.2",
+    "@types/node": "^18.7.21",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "ansi-colors": "^4.1.3",
+    "minimist": "^1.2.6"
+  }
+}
