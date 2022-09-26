@@ -4,6 +4,8 @@
     "module": "commonjs",
     "outDir": "lib",
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
     "skipLibCheck": true

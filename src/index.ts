@@ -2,6 +2,7 @@ import minimist from 'minimist';
 import colors from 'ansi-colors';
 
 import {AVAILABLE_COMMANDS} from './constants';
+import {AndroidSetup} from './commands/android';
 
 export const run = () => {
   try {
@@ -13,7 +14,8 @@ export const run = () => {
     if (!args[0] || !AVAILABLE_COMMANDS.includes(args[0])) {
       showHelp(args[0], options.help);
     } else if (args[0] === 'android') {
-      console.log('android setup here');
+      const androidSetup = new AndroidSetup(options);
+      androidSetup.run();
     } else {
       console.log('ios setup here');
     }
