@@ -7,7 +7,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node dev.js",
-    "prepublishOnly": "tsc --outDir dist"
+    "prepublishOnly": "tsc --outDir dist",
+    "eslint": "eslint src"
   },
   "author": "",
   "license": "MIT",
@@ -18,6 +19,9 @@
   "devDependencies": {
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.7.21",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "eslint": "^8.24.0",
     "typescript": "^4.8.3"
   },
   "dependencies": {

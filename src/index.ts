@@ -34,4 +34,4 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
   console.log(`Available commands: ${AVAILABLE_COMMANDS}`);
   console.log(`To know more about each command, run:
   ${colors.cyan('npx @nightwatch/mobile-helper _command_name_ --help')}`);
-}
+};
