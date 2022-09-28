@@ -8,7 +8,11 @@ export const run = () => {
   try {
     const argv = process.argv.slice(2);
     const {_: args, ...options} = minimist(argv, {
-      boolean: ['install', 'setup', 'help']
+      boolean: ['install', 'setup', 'help'],
+      alias: {
+        mode: 'm',
+        browsers: ['b', 'browser']
+      }
     });
 
     if (!args[0] || !AVAILABLE_COMMANDS.includes(args[0])) {

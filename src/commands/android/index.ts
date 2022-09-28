@@ -1,15 +1,22 @@
-import {ParsedArgs} from 'minimist';
+import colors from 'ansi-colors';
+import {prompt} from 'inquirer';
 
-import {SetupConfigs} from './interfaces';
+import {getPlatformName, symbols} from '../../utils';
+import {SETUP_CONFIG_QUES} from './constants';
+import {Options, SetupConfigs} from './interfaces';
 
 
 export class AndroidSetup {
   androidHome: string;
-  options: Omit<ParsedArgs, '_'>;
+  options: Options;
+  cwd: string;
+  platform: 'windows' | 'mac' | 'linux';
 
-  constructor(options: Omit<ParsedArgs, '_'>) {
+  constructor(options: Options, cwd = process.cwd()) {
     this.androidHome = '';
     this.options = options;
+    this.cwd = cwd;
+    this.platform = getPlatformName();
   }
 
   async run() {
@@ -34,19 +41,67 @@ export class AndroidSetup {
   }
 
   getAndroidHome(): string {
+    console.log('Checking the value of ANDROID_HOME environment variable...');
+
+    const androidHome = process.env.ANDROID_HOME;
+    if (androidHome) {
+      console.log(
+        `${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHome}'\n`
+      );
+
+      return androidHome;
+    }
+
     return '';
   }
 
-  async getSetupConfigs(options: Omit<ParsedArgs, '_'>) {
-    return options;
+  getConfigFromOptions(options: {[key: string]: string | string[] | boolean}) {
+    const configs: SetupConfigs = {};
+
+    if (options.mode && typeof options.mode !== 'boolean') {
+      const realMode = options.mode.includes('real');
+      const emulatorMode = options.mode.includes('emulator');
+
+      if (realMode && emulatorMode) {
+        configs.mode = 'both';
+      } else if (realMode) {
+        configs.mode = 'real';
+      } else if (emulatorMode) {
+        configs.mode = 'emulator';
+      }
+    }
+
+    if (options.browsers && typeof options.browsers !== 'boolean') {
+      const chrome = options.browsers.includes('chrome');
+      const firefox = options.browsers.includes('firefox');
+
+      if (options.browsers.includes('none')) {
+        configs.browsers = 'none';
+      } else if (chrome && firefox) {
+        configs.browsers = 'both';
+      } else if (chrome) {
+        configs.browsers = 'chrome';
+      } else if (firefox) {
+        configs.browsers = 'firefox';
+      }
+    }
+
+    return configs;
+  }
+
+  async getSetupConfigs(options: Options) {
+    const configs = this.getConfigFromOptions(options);
+
+    return await prompt(SETUP_CONFIG_QUES, configs);
   }
 
   verifySetup(setupConfigs: SetupConfigs): string[] {
     if (setupConfigs.mode === 'real') {
-      // check for adb only
+      console.log('Checking the setup requirements for real devices...');
+
     }
 
-    return [];
+    return ['sdkmanager'];
   }
 
   async setupAndroid(missingRequirements: string[]) {
