@@ -3,6 +3,7 @@ import colors from 'ansi-colors';
 
 import {AVAILABLE_COMMANDS} from './constants';
 import {AndroidSetup} from './commands/android';
+import {IosSetup} from './commands/ios';
 
 export const run = () => {
   try {
@@ -22,7 +23,8 @@ export const run = () => {
       const androidSetup = new AndroidSetup(options);
       androidSetup.run();
     } else {
-      console.log('ios setup here');
+      const iOSSetup = new IosSetup(options);
+      iOSSetup.run();
     }
   } catch (err) {
     console.error(err as string);
