@@ -6,3 +6,8 @@ export interface SetupConfigs {
   mode?: 'real' | 'emulator' | 'both';
   browsers?: 'chrome' | 'firefox' | 'both' | 'none';
 }
+
+export interface BinaryLocationInterface {
+  sdkmanager: string;
+  adb: string;
+}

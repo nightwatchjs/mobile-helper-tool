@@ -11,7 +11,8 @@ export const run = () => {
       boolean: ['install', 'setup', 'help'],
       alias: {
         mode: 'm',
-        browsers: ['b', 'browser']
+        browsers: ['b', 'browser'],
+        setup: 'install'
       }
     });
 
@@ -35,7 +36,7 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
   } else if (!helpFlag) {
     console.log(colors.red('No command passed.'), '\n');
   }
-  console.log(`Available commands: ${AVAILABLE_COMMANDS}`);
+  console.log(`Available commands: ${AVAILABLE_COMMANDS.join(', ')}`);
   console.log(`To know more about each command, run:
   ${colors.cyan('npx @nightwatch/mobile-helper _command_name_ --help')}`);
 };

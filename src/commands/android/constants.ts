@@ -1,4 +1,7 @@
 import inquirer from 'inquirer';
+import path from 'path';
+
+import {BinaryLocationInterface} from './interfaces';
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
@@ -24,3 +27,8 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
     when: (answers) => ['emulator', 'both'].includes(answers.mode)
   }
 ];
+
+export const SDK_BINARY_LOCATIONS: BinaryLocationInterface = {
+  sdkmanager: path.join('cmdline-tools', 'latest', 'bin'),
+  adb: 'platform-tools'
+};
