@@ -1,0 +1,7 @@
+{
+  "sdk": {
+    "mac": "https://dl.google.com/android/repository/commandlinetools-mac-8512546_latest.zip",
+    "linux": "https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip",
+    "windows": "https://dl.google.com/android/repository/commandlinetools-win-8512546_latest.zip"
+  }
+}

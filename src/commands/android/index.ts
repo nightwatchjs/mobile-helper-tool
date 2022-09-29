@@ -7,15 +7,15 @@ import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
 import {SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
-import {BinaryLocationInterface, Options, SetupConfigs} from './interfaces';
-import {getBinaryNameForOS} from './utils';
+import {BinaryLocationInterface, Options, Platform, SetupConfigs} from './interfaces';
+import {downloadAndSetupAndroidSdk, getBinaryNameForOS, installPackagesUsingSdkManager} from './utils';
 
 
 export class AndroidSetup {
   sdkRoot: string;
   options: Options;
   cwd: string;
-  platform: 'windows' | 'mac' | 'linux';
+  platform: Platform;
   binaryLocation: {[key: string]: string};
 
   constructor(options: Options, cwd = process.cwd()) {
@@ -47,7 +47,7 @@ export class AndroidSetup {
       console.log('Great! All the requirements are being met.');
       console.log('You can go ahead and run your tests now on an Android device/emulator.');
     } else if (this.options.setup) {
-      await this.setupAndroid(missingRequirements);
+      return await this.setupAndroid(setupConfigs, missingRequirements);
     } else {
       console.log(`Some requirements are missing: ${missingRequirements.join(', ')}`);
       console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.`);
@@ -267,6 +267,7 @@ export class AndroidSetup {
         nonWorkingBinaries.push(binaryName);
       }
     }
+    console.log();
 
     return nonWorkingBinaries;
   }
@@ -300,20 +301,64 @@ export class AndroidSetup {
 
       const serverStarted = this.execBinary(this.binaryLocation['adb'], 'adb', 'start-server');
       if (serverStarted) {
-        console.log(`${colors.green('Success!')} adb server is running.`);
+        console.log(`${colors.green('Success!')} adb server is running.\n`);
       } else {
-        console.log('Please try running the above command by yourself.');
+        console.log('Please try running the above command by yourself.\n');
       }
-      // add a blank line
-      console.log();
     }
 
     return missingRequirements;
   }
 
-  async setupAndroid(missingRequirements: string[]) {
-    if (missingRequirements.includes('adb')) {
-      // install adb
+  async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]) {
+    if (setupConfigs.mode === 'real') {
+      console.log('Setting up missing requirements for real devices...\n');
+    } else if (setupConfigs.mode === 'emulator') {
+      console.log('Setting up missing requirements for Android emulators...\n');
+    } else {
+      console.log('Setting up missing requirements for real devices/emulators...\n');
     }
+
+    // check if sdkmanager is present and working (below line will check both)
+    console.log('Verifying that sdkmanager is present and working...');
+    const sdkManagerWorking = this.checkBinariesWorking(['sdkmanager']).length === 0;
+    if (!sdkManagerWorking) {
+      console.log('Downloading cmdline-tools...');
+      await downloadAndSetupAndroidSdk(this.sdkRoot, this.platform);
+    }
+
+    const packagesToInstall: string[] = [];
+
+    if (missingRequirements.includes('adb')) {
+      packagesToInstall.push('platform-tools');
+    }
+
+    const result = installPackagesUsingSdkManager(
+      this.getBinaryLocation('sdkmanager', true),
+      this.platform,
+      packagesToInstall
+    );
+
+    console.log('Making sure adb is running...');
+    const serverStarted = this.execBinary(
+      this.getBinaryLocation('adb', true),
+      'adb',
+      'start-server'
+    );
+    if (serverStarted) {
+      console.log(`${colors.green('Success!')} adb server is running.\n`);
+    } else {
+      console.log('Please try running the above command by yourself.\n');
+    }
+
+    if (result) {
+      console.log('Success! All requirements are set.');
+      console.log('You can go ahead and run your tests now on an Android device/emulator.');
+    } else {
+      console.log('Some requirements failed to set up.');
+      console.log('Please try running the failed commands by yourself.');
+    }
+
+    return result;
   }
 }
