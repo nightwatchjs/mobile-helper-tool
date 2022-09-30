@@ -43,15 +43,9 @@ export class AndroidSetup {
 
     const missingRequirements = this.verifySetup(setupConfigs);
 
-    if (missingRequirements.length === 0) {
-      console.log('Great! All the requirements are being met.');
-      console.log('You can go ahead and run your tests now on an Android device/emulator.');
-    } else if (this.options.setup) {
+    if (this.options.setup) {
       return await this.setupAndroid(setupConfigs, missingRequirements);
-    } else {
-      console.log(`Some requirements are missing: ${missingRequirements.join(', ')}`);
-      console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.`);
-
+    } else if (missingRequirements.length) {
       return false;
     }
 
@@ -200,6 +194,7 @@ export class AndroidSetup {
         missingBinaries.push(binaryName);
       }
     }
+    console.log();
 
     return missingBinaries;
   }
@@ -272,6 +267,29 @@ export class AndroidSetup {
     return nonWorkingBinaries;
   }
 
+  verifyAdbRunning() {
+    console.log('Making sure adb is running...');
+
+    const adbLocation = this.getBinaryLocation('adb', true);
+    if (!adbLocation) {
+      console.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
+
+      return;
+    }
+
+    const serverStarted = this.execBinary(
+      adbLocation,
+      'adb',
+      'start-server'
+    );
+
+    if (serverStarted) {
+      console.log(`${colors.green('Success!')} adb server is running.\n`);
+    } else {
+      console.log('Please try running the above command by yourself.\n');
+    }
+  }
+
   verifySetup(setupConfigs: SetupConfigs): string[] {
     const missingRequirements: string[] = [];
     let requiredBinaries: Array<keyof BinaryLocationInterface>;
@@ -293,30 +311,36 @@ export class AndroidSetup {
 
       missingRequirements.push(...nonWorkingBinaries);
     }
-    // add a blank line
-    console.log();
 
-    if (!missingRequirements.includes('adb')) {
-      console.log('Making sure adb is running...');
+    if (missingRequirements.length === 0) {
+      this.verifyAdbRunning();
 
-      const serverStarted = this.execBinary(this.binaryLocation['adb'], 'adb', 'start-server');
-      if (serverStarted) {
-        console.log(`${colors.green('Success!')} adb server is running.\n`);
+      console.log('Great! All the requirements are being met.');
+
+      if (setupConfigs.mode === 'real') {
+        console.log('You can go ahead and run your tests now on your Android device.');
       } else {
-        console.log('Please try running the above command by yourself.\n');
+        console.log('You can go ahead and run your tests now on an Android device/emulator.');
       }
+    } else if (!this.options.setup) {
+      console.log(`Some requirements are missing: ${missingRequirements.join(', ')}`);
+      console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.`);
     }
 
     return missingRequirements;
   }
 
   async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]) {
+    if (missingRequirements.length === 0) {
+      return true;
+    }
+
     if (setupConfigs.mode === 'real') {
       console.log('Setting up missing requirements for real devices...\n');
     } else if (setupConfigs.mode === 'emulator') {
-      console.log('Setting up missing requirements for Android emulators...\n');
+      console.log('Setting up missing requirements for Android emulator...\n');
     } else {
-      console.log('Setting up missing requirements for real devices/emulators...\n');
+      console.log('Setting up missing requirements for real devices/emulator...\n');
     }
 
     // check if sdkmanager is present and working (below line will check both)
@@ -339,24 +363,21 @@ export class AndroidSetup {
       packagesToInstall
     );
 
-    console.log('Making sure adb is running...');
-    const serverStarted = this.execBinary(
-      this.getBinaryLocation('adb', true),
-      'adb',
-      'start-server'
-    );
-    if (serverStarted) {
-      console.log(`${colors.green('Success!')} adb server is running.\n`);
-    } else {
-      console.log('Please try running the above command by yourself.\n');
-    }
+    this.verifyAdbRunning();
 
     if (result) {
       console.log('Success! All requirements are set.');
-      console.log('You can go ahead and run your tests now on an Android device/emulator.');
+      if (setupConfigs.mode === 'real') {
+        console.log('You can go ahead and run your tests now on your Android device.');
+      } else {
+        console.log('You can go ahead and run your tests now on an Android device/emulator.');
+      }
     } else {
       console.log('Some requirements failed to set up.');
-      console.log('Please try running the failed commands by yourself.');
+      console.log('Please try running the failed commands by yourself and then re-run this tool.\n');
+
+      console.log('If it still fails, please raise an issue with us at:');
+      console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'));
     }
 
     return result;
