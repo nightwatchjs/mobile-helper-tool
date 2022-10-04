@@ -6,8 +6,8 @@ import {execSync} from 'child_process';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
-import {SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
-import {BinaryLocationInterface, Options, Platform, SetupConfigs} from './interfaces';
+import {BINARY_TO_PACKAGE_NAME, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
+import {Options, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {downloadAndSetupAndroidSdk, getBinaryNameForOS, installPackagesUsingSdkManager} from './utils';
 
 
@@ -123,7 +123,7 @@ export class AndroidSetup {
     return await prompt(SETUP_CONFIG_QUES, configs);
   }
 
-  getBinaryLocation(binaryName: keyof BinaryLocationInterface, suppressOutput = false) {
+  getBinaryLocation(binaryName: SdkBinary, suppressOutput = false) {
     const failLocations: string[] = [];
 
     const binaryFullName = getBinaryNameForOS(this.platform, binaryName);
@@ -143,7 +143,7 @@ export class AndroidSetup {
     failLocations.push(pathToBinary);
 
     if (binaryName === 'adb') {
-      // look for adb in sdkRoot (as it can be executed directly).
+      // look for adb in sdkRoot (as it is a standalone binary).
       const adbPath = path.join(this.sdkRoot, binaryFullName);
       if (fs.existsSync(adbPath)) {
         this.binaryLocation[binaryName] = adbPath;
@@ -158,7 +158,7 @@ export class AndroidSetup {
       }
       failLocations.push(adbPath);
 
-      // Look for adb in PATH also (runnable as `adb -version`)
+      // Look for adb in PATH also (runnable as `adb --version`)
       const adbLocation = which.sync(binaryFullName, {nothrow: true});
       if (adbLocation) {
         this.binaryLocation[binaryName] = 'PATH';  // adb is available in PATH.
@@ -185,8 +185,8 @@ export class AndroidSetup {
     return '';
   }
 
-  checkBinariesPresent(binaries: Array<keyof BinaryLocationInterface>) {
-    const missingBinaries: Array<keyof BinaryLocationInterface> = [];
+  checkBinariesPresent(binaries: SdkBinary[]) {
+    const missingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
       const binaryPath = this.getBinaryLocation(binaryName);
@@ -245,16 +245,21 @@ export class AndroidSetup {
     }
   }
 
-  checkBinariesWorking(binaries: Array<keyof BinaryLocationInterface>) {
-    const nonWorkingBinaries: Array<keyof BinaryLocationInterface> = [];
+  checkBinariesWorking(binaries: SdkBinary[]) {
+    const nonWorkingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
       const binaryPath = this.binaryLocation[binaryName]
         ? this.binaryLocation[binaryName]
         : this.getBinaryLocation(binaryName);
 
+      let cmd = '--version';
+      if (binaryName === 'emulator') {
+        cmd = '-version';
+      }
+
       if (binaryPath) {
-        const binaryWorking = this.execBinary(binaryPath, binaryName, '--version');
+        const binaryWorking = this.execBinary(binaryPath, binaryName, cmd);
         if (!binaryWorking) {
           nonWorkingBinaries.push(binaryName);
         }
@@ -292,14 +297,19 @@ export class AndroidSetup {
 
   verifySetup(setupConfigs: SetupConfigs): string[] {
     const missingRequirements: string[] = [];
-    let requiredBinaries: Array<keyof BinaryLocationInterface>;
 
     if (setupConfigs.mode === 'real') {
       console.log('Verifying the setup requirements for real devices...');
-
-      requiredBinaries = ['adb'];
+    } else if (setupConfigs.mode === 'emulator') {
+      console.log('Verifying the setup requirements for Android emulator...');
     } else {
-      requiredBinaries = [];
+      console.log('Verifying the setup requirements for real devices/emulator...');
+    }
+
+    const requiredBinaries: SdkBinary[] = ['adb'];
+
+    if (setupConfigs.mode !== 'real') {
+      requiredBinaries.push('emulator');
     }
 
     const missingBinaries = this.checkBinariesPresent(requiredBinaries);
@@ -351,11 +361,9 @@ export class AndroidSetup {
       await downloadAndSetupAndroidSdk(this.sdkRoot, this.platform);
     }
 
-    const packagesToInstall: string[] = [];
-
-    if (missingRequirements.includes('adb')) {
-      packagesToInstall.push('platform-tools');
-    }
+    const packagesToInstall = missingRequirements
+      .filter((requirement) => Object.keys(BINARY_TO_PACKAGE_NAME).includes(requirement))
+      .map((binary) => BINARY_TO_PACKAGE_NAME[binary as SdkBinary]);
 
     const result = installPackagesUsingSdkManager(
       this.getBinaryLocation('sdkmanager', true),

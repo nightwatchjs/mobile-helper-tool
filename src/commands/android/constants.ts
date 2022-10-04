@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import path from 'path';
 
-import {BinaryLocationInterface} from './interfaces';
+import {SdkBinary} from './interfaces';
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
@@ -28,7 +28,14 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   }
 ];
 
-export const SDK_BINARY_LOCATIONS: BinaryLocationInterface = {
+export const SDK_BINARY_LOCATIONS: Record<SdkBinary, string> = {
   sdkmanager: path.join('cmdline-tools', 'latest', 'bin'),
-  adb: 'platform-tools'
+  adb: 'platform-tools',
+  emulator: 'emulator'
+};
+
+export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary, string> = {
+  sdkmanager: 'cmdline-tools;latest',
+  adb: 'platform-tools',
+  emulator: 'emulator'
 };

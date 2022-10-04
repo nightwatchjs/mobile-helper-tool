@@ -9,7 +9,4 @@ export interface SetupConfigs {
   browsers?: 'chrome' | 'firefox' | 'both' | 'none';
 }
 
-export interface BinaryLocationInterface {
-  sdkmanager: string;
-  adb: string;
-}
+export type SdkBinary = 'sdkmanager' | 'adb' | 'emulator';
