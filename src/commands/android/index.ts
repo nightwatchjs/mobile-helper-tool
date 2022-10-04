@@ -256,6 +256,8 @@ export class AndroidSetup {
       let cmd = '--version';
       if (binaryName === 'emulator') {
         cmd = '-version';
+      } else if (binaryName === 'avdmanager') {
+        cmd = 'list avd';
       }
 
       if (binaryPath) {
@@ -309,11 +311,26 @@ export class AndroidSetup {
     const requiredBinaries: SdkBinary[] = ['adb'];
 
     if (setupConfigs.mode !== 'real') {
-      requiredBinaries.push('emulator');
+      requiredBinaries.push('avdmanager', 'emulator');
     }
 
     const missingBinaries = this.checkBinariesPresent(requiredBinaries);
     missingRequirements.push(...missingBinaries);
+
+    // check for platforms subdirectory (required by emulator)
+    if (requiredBinaries.includes('emulator')) {
+      const platormsPath = path.join(this.sdkRoot, 'platforms');
+      if (fs.existsSync(platormsPath)) {
+        console.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan('platforms')} subdirectory is present at '${platormsPath}'\n`
+        );
+      } else {
+        console.log(
+          `  ${colors.red(symbols().fail)} ${colors.cyan('platforms')} subdirectory not present at '${platormsPath}'\n`
+        );
+        missingRequirements.push('platforms');
+      }
+    }
 
     const binariesPresent = requiredBinaries.filter((binary) => !missingBinaries.includes(binary));
     if (binariesPresent.length) {
@@ -356,7 +373,14 @@ export class AndroidSetup {
     // check if sdkmanager is present and working (below line will check both)
     console.log('Verifying that sdkmanager is present and working...');
     const sdkManagerWorking = this.checkBinariesWorking(['sdkmanager']).length === 0;
-    if (!sdkManagerWorking) {
+
+    if (!sdkManagerWorking || missingRequirements.includes('avdmanager')) {
+      // remove avdmanager from missingRequirements to avoid double downloads.
+      const avdmanagerIndex = missingRequirements.indexOf('avdmanager');
+      if (avdmanagerIndex > -1) {
+        missingRequirements.splice(avdmanagerIndex, 1);
+      }
+
       console.log('Downloading cmdline-tools...');
       await downloadAndSetupAndroidSdk(this.sdkRoot, this.platform);
     }
@@ -370,6 +394,18 @@ export class AndroidSetup {
       this.platform,
       packagesToInstall
     );
+
+    if (missingRequirements.includes('platforms')) {
+      console.log('Creating platforms subdirectory...');
+
+      const platformsPath = path.join(this.sdkRoot, 'platforms');
+      try {
+        fs.mkdirSync(platformsPath);
+        // eslint-disable-next-line
+      } catch {}
+
+      console.log(`${colors.green('Success!')} Created platforms subdirectory at ${platformsPath}\n`);
+    }
 
     this.verifyAdbRunning();
 

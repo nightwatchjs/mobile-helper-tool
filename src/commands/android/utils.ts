@@ -95,10 +95,14 @@ export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Plat
       cwd: path.join(cmdline_tools_new, 'bin')
     });
 
+    if (!fs.existsSync(cmdline_tools_latest)) {
+      throw Error();
+    }
+
     rmDirSync(cmdline_tools_new);
     console.log(`${colors.green('Success!')} Updated cmdline-tools to the latest version.\n`);
   } catch {
-    console.log('Failed! Falling back to the current downloaded version.');
+    console.log(`${colors.red('Failed!')} Falling back to the current downloaded version.\n`);
     fs.renameSync(cmdline_tools_new, cmdline_tools_latest);
   }
 };

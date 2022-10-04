@@ -30,12 +30,14 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
 
 export const SDK_BINARY_LOCATIONS: Record<SdkBinary, string> = {
   sdkmanager: path.join('cmdline-tools', 'latest', 'bin'),
+  avdmanager: path.join('cmdline-tools', 'latest', 'bin'),
   adb: 'platform-tools',
   emulator: 'emulator'
 };
 
 export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary, string> = {
   sdkmanager: 'cmdline-tools;latest',
+  avdmanager: 'cmdline-tools;latest',
   adb: 'platform-tools',
   emulator: 'emulator'
 };

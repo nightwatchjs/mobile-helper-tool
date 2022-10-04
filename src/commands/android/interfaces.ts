@@ -9,4 +9,4 @@ export interface SetupConfigs {
   browsers?: 'chrome' | 'firefox' | 'both' | 'none';
 }
 
-export type SdkBinary = 'sdkmanager' | 'adb' | 'emulator';
+export type SdkBinary = 'sdkmanager' | 'adb' | 'emulator' | 'avdmanager';
