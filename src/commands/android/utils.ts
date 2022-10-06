@@ -25,6 +25,20 @@ export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   return binaryName;
 };
 
+export const getAbiForOS = () => {
+  const arch = process.arch;
+
+  if (arch === 'arm') {
+    return 'armeabi-v7a';
+  } else if (arch === 'arm64') {
+    return 'arm64-v8a';
+  } else if (['ia32', 'mips', 'ppc', 's390'].includes(arch)) {
+    return 'x86';
+  }
+
+  return 'x86_64';
+};
+
 export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Platform) => {
   // make sure `cmdline-tools` folder is not present already
   const cmdline_tools = path.join(sdkRoot, 'cmdline-tools');

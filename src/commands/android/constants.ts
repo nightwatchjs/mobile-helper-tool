@@ -2,6 +2,9 @@ import inquirer from 'inquirer';
 import path from 'path';
 
 import {SdkBinary} from './interfaces';
+import {getAbiForOS} from './utils';
+
+export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
@@ -35,9 +38,10 @@ export const SDK_BINARY_LOCATIONS: Record<SdkBinary, string> = {
   emulator: 'emulator'
 };
 
-export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary, string> = {
+export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary | typeof NIGHTWATCH_AVD, string> = {
   sdkmanager: 'cmdline-tools;latest',
   avdmanager: 'cmdline-tools;latest',
   adb: 'platform-tools',
-  emulator: 'emulator'
+  emulator: 'emulator',
+  [NIGHTWATCH_AVD]: `system-images;android-30;google_apis;${getAbiForOS()}`
 };

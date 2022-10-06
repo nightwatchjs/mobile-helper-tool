@@ -6,9 +6,9 @@ import {execSync} from 'child_process';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
-import {BINARY_TO_PACKAGE_NAME, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
+import {BINARY_TO_PACKAGE_NAME, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
 import {Options, Platform, SdkBinary, SetupConfigs} from './interfaces';
-import {downloadAndSetupAndroidSdk, getBinaryNameForOS, installPackagesUsingSdkManager} from './utils';
+import {downloadAndSetupAndroidSdk, getAbiForOS, getBinaryNameForOS, installPackagesUsingSdkManager} from './utils';
 
 
 export class AndroidSetup {
@@ -205,17 +205,17 @@ export class AndroidSetup {
       const cmd = `${binaryFullName} ${args}`;
 
       try {
-        execSync(cmd, {
+        const stdout = execSync(cmd, {
           stdio: 'pipe'
         });
 
-        return true;
+        return stdout.toString();
       } catch {
         console.log(
           `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)}`
         );
 
-        return false;
+        return '';
       }
     }
 
@@ -230,18 +230,18 @@ export class AndroidSetup {
     }
 
     try {
-      execSync(cmd, {
+      const stdout = execSync(cmd, {
         stdio: 'pipe',
         cwd: binaryDirPath
       });
 
-      return true;
+      return stdout.toString();
     } catch {
       console.log(
         `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)} inside '${binaryDirPath}'`
       );
 
-      return false;
+      return '';
     }
   }
 
@@ -274,6 +274,22 @@ export class AndroidSetup {
     return nonWorkingBinaries;
   }
 
+  verifyAvdPresent() {
+    const stdout = this.execBinary(
+      this.getBinaryLocation('avdmanager', true),
+      'avdmanager',
+      'list avd'
+    );
+
+    const workingAvds = stdout.split('---------').filter((avd) => !avd.includes('Error: '));
+
+    if (workingAvds.filter((avd) => avd.includes(NIGHTWATCH_AVD)).length) {
+      return true;
+    }
+
+    return false;
+  }
+
   verifyAdbRunning() {
     console.log('Making sure adb is running...');
 
@@ -287,7 +303,7 @@ export class AndroidSetup {
     const serverStarted = this.execBinary(
       adbLocation,
       'adb',
-      'start-server'
+      'devices'
     );
 
     if (serverStarted) {
@@ -330,6 +346,17 @@ export class AndroidSetup {
         );
         missingRequirements.push('platforms');
       }
+    }
+
+    const avdPresent = this.verifyAvdPresent();
+    if (avdPresent) {
+      console.log(
+        `  ${colors.green(symbols().ok)} ${colors.cyan(NIGHTWATCH_AVD)} AVD is present and ready to be used.\n`
+      );
+    } else {
+      console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(NIGHTWATCH_AVD)} AVD not found.\n`);
+
+      missingRequirements.push(NIGHTWATCH_AVD);
     }
 
     const binariesPresent = requiredBinaries.filter((binary) => !missingBinaries.includes(binary));
@@ -387,9 +414,9 @@ export class AndroidSetup {
 
     const packagesToInstall = missingRequirements
       .filter((requirement) => Object.keys(BINARY_TO_PACKAGE_NAME).includes(requirement))
-      .map((binary) => BINARY_TO_PACKAGE_NAME[binary as SdkBinary]);
+      .map((binary) => BINARY_TO_PACKAGE_NAME[binary as SdkBinary | typeof NIGHTWATCH_AVD]);
 
-    const result = installPackagesUsingSdkManager(
+    let result = installPackagesUsingSdkManager(
       this.getBinaryLocation('sdkmanager', true),
       this.platform,
       packagesToInstall
@@ -405,6 +432,24 @@ export class AndroidSetup {
       } catch {}
 
       console.log(`${colors.green('Success!')} Created platforms subdirectory at ${platformsPath}\n`);
+    }
+
+    // Check if AVD is already created and only the system-image was missing.
+    const avdPresent = this.verifyAvdPresent();
+    if (!avdPresent) {
+      console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
+
+      const avdCreated = this.execBinary(
+        this.getBinaryLocation('avdmanager', true),
+        'avdmanager',
+        `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
+      );
+
+      if (avdCreated) {
+        console.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
+      } else {
+        result = false;
+      }
     }
 
     this.verifyAdbRunning();
