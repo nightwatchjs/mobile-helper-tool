@@ -14,7 +14,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nightwatchjs/mobile-helper"
+    "url": "git+https://github.com/nightwatchjs/mobile-helper-tool"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.0",
