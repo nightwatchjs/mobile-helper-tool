@@ -1,42 +1,51 @@
 import colors from 'ansi-colors';
+import * as dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
+import untildify from 'untildify';
 import which from 'which';
 import {execSync} from 'child_process';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
 import {BINARY_TO_PACKAGE_NAME, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
-import {Options, Platform, SdkBinary, SetupConfigs} from './interfaces';
-import {downloadAndSetupAndroidSdk, getAbiForOS, getBinaryNameForOS, installPackagesUsingSdkManager} from './utils';
+import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
+import {
+  downloadAndSetupAndroidSdk, getAbiForOS, getBinaryNameForOS,
+  getDefaultAndroidSdkRoot, installPackagesUsingSdkManager
+} from './utils';
 
 
 export class AndroidSetup {
   sdkRoot: string;
   options: Options;
-  cwd: string;
+  rootDir: string;
   platform: Platform;
   binaryLocation: {[key: string]: string};
+  otherInfo: OtherInfo;
 
-  constructor(options: Options, cwd = process.cwd()) {
+  constructor(options: Options, rootDir = process.cwd()) {
     this.sdkRoot = '';
     this.options = options;
-    this.cwd = cwd;
+    this.rootDir = rootDir;
     this.platform = getPlatformName();
     this.binaryLocation = {};
+    this.otherInfo = {
+      androidHomeInGlobalEnv: false
+    };
   }
 
   async run() {
+    let result = true;
+
     if (this.options.help) {
       this.showHelp();
 
-      return true;
+      return result;
     }
 
-    this.sdkRoot = this.getSdkRoot();
-    if (this.sdkRoot === '') {
-      return false;
-    }
+    const sdkRootEnv = this.getSdkRootFromEnv();
+    this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
 
     const setupConfigs: SetupConfigs = await this.getSetupConfigs(this.options);
     console.log();
@@ -44,43 +53,83 @@ export class AndroidSetup {
     const missingRequirements = this.verifySetup(setupConfigs);
 
     if (this.options.setup) {
-      return await this.setupAndroid(setupConfigs, missingRequirements);
+      result = await this.setupAndroid(setupConfigs, missingRequirements);
     } else if (missingRequirements.length) {
-      return false;
+      result = false;
     }
 
-    return true;
+    if (!sdkRootEnv) {
+      this.sdkRootEnvSetInstructions();
+    }
+
+    return result;
   }
 
   showHelp() {
     console.log('Help menu for android');
   }
 
-  getSdkRoot(): string {
+  getSdkRootFromEnv(): string {
     console.log('Checking the value of ANDROID_HOME environment variable...');
 
-    const androidHome = process.env.ANDROID_HOME;
-    if (androidHome) {
-      console.log(
-        `  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHome}'\n`
-      );
+    this.otherInfo.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
 
-      return androidHome;
+    dotenv.config({path: path.join(this.rootDir, '.env')});
+
+    const androidHome = process.env.ANDROID_HOME;
+    const fromDotEnv = this.otherInfo.androidHomeInGlobalEnv ? '' : ' (taken from .env)';
+
+    if (androidHome) {
+      const androidHomeFinal = untildify(androidHome);
+
+      const androidHomeAbsolute = path.resolve(this.rootDir, androidHomeFinal);
+      if (androidHomeFinal !== androidHomeAbsolute) {
+        console.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
+        console.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
+
+        return androidHomeAbsolute;
+      }
+
+      console.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
+
+      return androidHomeFinal;
     }
 
-    if (typeof androidHome === 'undefined') {
+    if (androidHome === undefined) {
       console.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!'\n`
+        `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!\n`
       );
     } else {
       console.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome} which is NOT a valid path!'\n`
+        `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome}'${fromDotEnv} which is NOT a valid path!\n`
       );
     }
 
-    // if real device, verifying if all the requirements are present in known locations or added to PATH beforehand (only applicable for adb).
-
     return '';
+  }
+
+  async getSdkRootFromUser() {
+    const answers: {sdkRoot: string} = await prompt([
+      {
+        type: 'input',
+        name: 'sdkRoot',
+        message: 'Where do you wish to verify/download Android SDKs?',
+        default: getDefaultAndroidSdkRoot(this.platform),
+        filter: (input: string) => path.resolve(this.rootDir, untildify(input))
+      }
+    ]);
+
+    const {sdkRoot} = answers;
+
+    if (!this.otherInfo.androidHomeInGlobalEnv) {
+      // if ANDROID_HOME is already set in global env, saving it to .env is of no use.
+      // this is important if global ANDROID_HOME env is set to '', in which case we
+      // should not save the user supplied value to .env.
+      const envPath = path.join(this.rootDir, '.env');
+      fs.appendFileSync(envPath, `\nANDROID_HOME=${sdkRoot}\n`);
+    }
+
+    return sdkRoot;
   }
 
   getConfigFromOptions(options: {[key: string]: string | string[] | boolean}) {
@@ -478,5 +527,28 @@ export class AndroidSetup {
     }
 
     return result;
+  }
+
+  sdkRootEnvSetInstructions() {
+    console.log();
+    console.log(colors.red('IMPORTANT'));
+    console.log(colors.red('---------'));
+
+    if (this.otherInfo.androidHomeInGlobalEnv && process.env.ANDROID_HOME === '') {
+      console.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
+      console.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
+      console.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
+    } else {
+      console.log(
+        `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
+          '.env'
+        )} file (set to '${this.sdkRoot}').\n`
+      );
+      console.log(`Please set ${colors.cyan(
+        'ANDROID_HOME'
+      )} env to '${this.sdkRoot}' globally and then delete it from ${colors.cyan('.env')} file.`);
+    }
+
+    console.log('Doing this now might save you from future troubles.\n');
   }
 }

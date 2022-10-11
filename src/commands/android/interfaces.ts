@@ -4,6 +4,10 @@ export interface Options {
 
 export type Platform = 'windows' | 'linux' | 'mac';
 
+export interface OtherInfo {
+  androidHomeInGlobalEnv: boolean;
+}
+
 export interface SetupConfigs {
   mode?: 'real' | 'emulator' | 'both';
   browsers?: 'chrome' | 'firefox' | 'both' | 'none';

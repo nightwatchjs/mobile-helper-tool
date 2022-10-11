@@ -3,6 +3,7 @@ import cliProgress from 'cli-progress';
 import download from 'download';
 import fs from 'fs';
 import path from 'path';
+import {homedir} from 'os';
 import {execSync} from 'child_process';
 
 import {copySync, rmDirSync, symbols} from '../../utils';
@@ -37,6 +38,23 @@ export const getAbiForOS = () => {
   }
 
   return 'x86_64';
+};
+
+export const getDefaultAndroidSdkRoot = (platform: Platform) => {
+  if (platform === 'windows') {
+    let basePath = process.env.LOCALAPPDATA;
+    if (!basePath) {
+      basePath = homedir();
+    }
+
+    return path.join(basePath, 'Android', 'sdk');
+  }
+
+  if (platform === 'linux') {
+    return path.join(homedir(), 'Android', 'Sdk');
+  }
+
+  return path.join(homedir(), 'Library', 'Android', 'sdk');
 };
 
 export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Platform) => {

@@ -31,9 +31,11 @@
   "dependencies": {
     "ansi-colors": "^4.1.3",
     "cli-progress": "^3.11.2",
+    "dotenv": "^16.0.3",
     "download": "^8.0.0",
     "inquirer": "^8.2.4",
     "minimist": "^1.2.6",
+    "untildify": "^4.0.0",
     "which": "^2.0.2"
   }
 }
