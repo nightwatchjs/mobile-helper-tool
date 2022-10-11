@@ -275,8 +275,13 @@ export class AndroidSetup {
   }
 
   verifyAvdPresent() {
+    const avdLocation = this.getBinaryLocation('avdmanager', true);
+    if (!avdLocation) {
+      return false;
+    }
+
     const stdout = this.execBinary(
-      this.getBinaryLocation('avdmanager', true),
+      avdLocation,
       'avdmanager',
       'list avd'
     );
@@ -346,17 +351,17 @@ export class AndroidSetup {
         );
         missingRequirements.push('platforms');
       }
-    }
 
-    const avdPresent = this.verifyAvdPresent();
-    if (avdPresent) {
-      console.log(
-        `  ${colors.green(symbols().ok)} ${colors.cyan(NIGHTWATCH_AVD)} AVD is present and ready to be used.\n`
-      );
-    } else {
-      console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(NIGHTWATCH_AVD)} AVD not found.\n`);
+      const avdPresent = this.verifyAvdPresent();
+      if (avdPresent) {
+        console.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan(NIGHTWATCH_AVD)} AVD is present and ready to be used.\n`
+        );
+      } else {
+        console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(NIGHTWATCH_AVD)} AVD not found.\n`);
 
-      missingRequirements.push(NIGHTWATCH_AVD);
+        missingRequirements.push(NIGHTWATCH_AVD);
+      }
     }
 
     const binariesPresent = requiredBinaries.filter((binary) => !missingBinaries.includes(binary));
@@ -434,21 +439,24 @@ export class AndroidSetup {
       console.log(`${colors.green('Success!')} Created platforms subdirectory at ${platformsPath}\n`);
     }
 
-    // Check if AVD is already created and only the system-image was missing.
-    const avdPresent = this.verifyAvdPresent();
-    if (!avdPresent) {
-      console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
+    if (missingRequirements.includes(NIGHTWATCH_AVD)) {
+      // Check if AVD is already created and only the system-image was missing.
+      const avdPresent = this.verifyAvdPresent();
+      if (!avdPresent) {
+        console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
 
-      const avdCreated = this.execBinary(
-        this.getBinaryLocation('avdmanager', true),
-        'avdmanager',
-        `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
-      );
+        const avdCreated = this.execBinary(
+          this.getBinaryLocation('avdmanager', true),
+          'avdmanager',
+          `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
+        );
 
-      if (avdCreated) {
-        console.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
-      } else {
-        result = false;
+        if (avdCreated) {
+          console.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
+        } else {
+          console.log();
+          result = false;
+        }
       }
     }
 
