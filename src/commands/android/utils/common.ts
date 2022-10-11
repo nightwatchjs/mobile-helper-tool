@@ -1,3 +1,5 @@
+import cliProgress from 'cli-progress';
+import download from 'download';
 import path from 'path';
 
 import {Platform} from '../interfaces';
@@ -30,4 +32,20 @@ export const getAbiForOS = () => {
   }
 
   return 'x86_64';
+};
+
+export const downloadWithProgressBar = async (url: string, dest: string, extract = false) => {
+  const progressBar = new cliProgress.Bar({
+    format: ' [{bar}] {percentage}% | ETA: {eta}s'
+  }, cliProgress.Presets.shades_classic);
+
+  const stream = download(url, dest, {
+    extract
+  });
+  progressBar.start(100, 0);
+
+  await stream.on('downloadProgress', function(progress) {
+    progressBar.update(progress.percent*100);
+  });
+  progressBar.stop();
 };

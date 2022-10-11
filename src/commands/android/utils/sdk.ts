@@ -1,13 +1,11 @@
 import colors from 'ansi-colors';
-import cliProgress from 'cli-progress';
-import download from 'download';
 import fs from 'fs';
 import path from 'path';
 import {homedir} from 'os';
 import {execSync} from 'child_process';
 
 import {copySync, rmDirSync, symbols} from '../../../utils';
-import {getBinaryNameForOS} from './common';
+import {downloadWithProgressBar, getBinaryNameForOS} from './common';
 import {Platform} from '../interfaces';
 import DOWNLOADS from '../downloads.json';
 
@@ -55,19 +53,7 @@ export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Plat
   }
 
   // download android sdk (cmdline-tools)
-  const progressBar = new cliProgress.Bar({
-    format: ' [{bar}] {percentage}% | ETA: {eta}s'
-  }, cliProgress.Presets.shades_classic);
-
-  const stream = download(DOWNLOADS.sdk[platform], sdkRoot, {
-    extract: true
-  });
-  progressBar.start(100, 0);
-
-  await stream.on('downloadProgress', function(progress) {
-    progressBar.update(progress.percent*100);
-  });
-  progressBar.stop();
+  await downloadWithProgressBar(DOWNLOADS.sdk[platform], sdkRoot, true);
 
   // re-arrange files
   fs.renameSync(cmdline_tools, temp_cmdline_tools2);
