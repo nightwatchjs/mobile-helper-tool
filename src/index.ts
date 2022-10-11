@@ -42,3 +42,5 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
   console.log(`To know more about each command, run:
   ${colors.cyan('npx @nightwatch/mobile-helper _command_name_ --help')}`);
 };
+
+export {AndroidSetup, IosSetup};
