@@ -70,4 +70,4 @@ export const iosRealDeviceUUID = (uuid: string) => {
   }
 
   return `${uuid.substring(0, 8)}-${uuid.substring(9, 25)}`;
-}
+};

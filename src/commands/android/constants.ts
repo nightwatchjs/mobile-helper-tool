@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import path from 'path';
 
 import {SdkBinary} from './interfaces';
-import {getAbiForOS} from './utils';
+import {getAbiForOS} from './utils/common';
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 

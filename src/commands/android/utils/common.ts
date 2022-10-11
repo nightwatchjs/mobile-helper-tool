@@ -1,6 +1,6 @@
 import path from 'path';
 
-import {Platform} from './interfaces';
+import {Platform} from '../interfaces';
 
 export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   if (platform !== 'windows') {

@@ -7,8 +7,8 @@ import {homedir} from 'os';
 import {execSync} from 'child_process';
 
 import {copySync, rmDirSync, symbols} from '../../../utils';
+import {getBinaryNameForOS} from './common';
 import {Platform} from '../interfaces';
-import {getBinaryNameForOS} from '../utils';
 import DOWNLOADS from '../downloads.json';
 
 
