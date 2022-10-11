@@ -10,10 +10,8 @@ import {prompt} from 'inquirer';
 import {getPlatformName, symbols} from '../../utils';
 import {BINARY_TO_PACKAGE_NAME, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
 import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
-import {
-  downloadAndSetupAndroidSdk, getAbiForOS, getBinaryNameForOS,
-  getDefaultAndroidSdkRoot, installPackagesUsingSdkManager
-} from './utils';
+import {getAbiForOS, getBinaryNameForOS} from './utils';
+import {downloadAndSetupAndroidSdk, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
 
 
 export class AndroidSetup {
