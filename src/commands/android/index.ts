@@ -18,7 +18,6 @@ export class AndroidSetup {
   options: Options;
   rootDir: string;
   platform: Platform;
-  binaryLocation: {[key: string]: string};
   otherInfo: OtherInfo;
 
   constructor(options: Options, rootDir = process.cwd()) {
@@ -26,7 +25,6 @@ export class AndroidSetup {
     this.options = options;
     this.rootDir = rootDir;
     this.platform = getPlatformName();
-    this.binaryLocation = {};
     this.otherInfo = {
       androidHomeInGlobalEnv: false
     };
@@ -176,8 +174,6 @@ export class AndroidSetup {
 
     const pathToBinary = path.join(this.sdkRoot, SDK_BINARY_LOCATIONS[binaryName], binaryFullName);
     if (fs.existsSync(pathToBinary)) {
-      this.binaryLocation[binaryName] = pathToBinary;
-
       if (!suppressOutput) {
         console.log(
           `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${pathToBinary}'`
@@ -192,8 +188,6 @@ export class AndroidSetup {
       // look for adb in sdkRoot (as it is a standalone binary).
       const adbPath = path.join(this.sdkRoot, binaryFullName);
       if (fs.existsSync(adbPath)) {
-        this.binaryLocation[binaryName] = adbPath;
-
         if (!suppressOutput) {
           console.log(
             `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}'`
@@ -207,8 +201,6 @@ export class AndroidSetup {
       // Look for adb in PATH also (runnable as `adb --version`)
       const adbLocation = which.sync(binaryFullName, {nothrow: true});
       if (adbLocation) {
-        this.binaryLocation[binaryName] = 'PATH';  // adb is available in PATH.
-
         if (!suppressOutput) {
           console.log(
             `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}' which is added in 'PATH'`
@@ -249,9 +241,7 @@ export class AndroidSetup {
     const nonWorkingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
-      const binaryPath = this.binaryLocation[binaryName]
-        ? this.binaryLocation[binaryName]
-        : this.getBinaryLocation(binaryName);
+      const binaryPath = this.getBinaryLocation(binaryName);
 
       let cmd = '--version';
       if (binaryName === 'emulator') {
