@@ -140,7 +140,7 @@ export const execBinarySync = (
   binaryName: string,
   platform: Platform,
   args: string
-): string => {
+): string | null => {
   if (binaryLocation === 'PATH') {
     const binaryFullName = getBinaryNameForOS(platform, binaryName);
     const cmd = `${binaryFullName} ${args}`;
@@ -156,7 +156,7 @@ export const execBinarySync = (
         `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)}`
       );
 
-      return '';
+      return null;
     }
   }
 
@@ -182,6 +182,6 @@ export const execBinarySync = (
       `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)} inside '${binaryDirPath}'`
     );
 
-    return '';
+    return null;
   }
 };

@@ -262,7 +262,7 @@ export class AndroidSetup {
 
       if (binaryPath) {
         const binaryWorking = execBinarySync(binaryPath, binaryName, this.platform, cmd);
-        if (!binaryWorking) {
+        if (binaryWorking === null) {
           nonWorkingBinaries.push(binaryName);
         }
       } else {
@@ -287,10 +287,12 @@ export class AndroidSetup {
       'list avd'
     );
 
-    const workingAvds = stdout.split('---------').filter((avd) => !avd.includes('Error: '));
+    if (stdout !== null) {
+      const workingAvds = stdout.split('---------').filter((avd) => !avd.includes('Error: '));
 
-    if (workingAvds.filter((avd) => avd.includes(NIGHTWATCH_AVD)).length) {
-      return true;
+      if (workingAvds.filter((avd) => avd.includes(NIGHTWATCH_AVD)).length) {
+        return true;
+      }
     }
 
     return false;
@@ -310,10 +312,10 @@ export class AndroidSetup {
       adbLocation,
       'adb',
       this.platform,
-      'devices'
+      'start-server'
     );
 
-    if (serverStarted) {
+    if (serverStarted !== null) {
       console.log(`${colors.green('Success!')} adb server is running.\n`);
     } else {
       console.log('Please try running the above command by yourself.\n');
@@ -459,7 +461,7 @@ export class AndroidSetup {
           `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
         );
 
-        if (avdCreated) {
+        if (avdCreated !== null) {
           console.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
         } else {
           console.log();
