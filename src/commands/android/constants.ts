@@ -5,6 +5,8 @@ import {SdkBinary} from './interfaces';
 import {getAbiForOS} from './utils/common';
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
+export const DEFAULT_FIREFOX_VERSION = '105.1.0';
+export const DEFAULT_CHROME_VERSION = '105.0.5195.136';
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {

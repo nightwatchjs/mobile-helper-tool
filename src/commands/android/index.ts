@@ -1,15 +1,19 @@
 import colors from 'ansi-colors';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import untildify from 'untildify';
 import which from 'which';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
-import {BINARY_TO_PACKAGE_NAME, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
+import {
+  BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION,
+  NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES
+} from './constants';
 import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
-import {getAbiForOS, getBinaryNameForOS} from './utils/common';
+import {downloadFirefoxAndroid, getAbiForOS, getBinaryNameForOS, getFirefoxApkName, getLatestVersion, launchAVD} from './utils/common';
 import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
 
 
@@ -51,6 +55,14 @@ export class AndroidSetup {
       result = await this.setupAndroid(setupConfigs, missingRequirements);
     } else if (missingRequirements.length) {
       result = false;
+    }
+
+    if (setupConfigs.mode !== 'real') {
+      await this.verifyAndSetupBrowsers(setupConfigs.browsers);
+    }
+
+    if (setupConfigs.mode !== 'emulator') {
+      console.log(`\n${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.`);
     }
 
     if (!sdkRootEnv) {
@@ -241,7 +253,7 @@ export class AndroidSetup {
     const nonWorkingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
-      const binaryPath = this.getBinaryLocation(binaryName);
+      const binaryPath = this.getBinaryLocation(binaryName, true);
 
       let cmd = '--version';
       if (binaryName === 'emulator') {
@@ -501,5 +513,167 @@ export class AndroidSetup {
     }
 
     console.log('Doing this now might save you from future troubles.\n');
+  }
+
+  async verifyAndSetupBrowsers(browsers: SetupConfigs['browsers']) {
+    if (!browsers || browsers === 'none') {
+      return;
+    }
+
+    const verifyFirefox = ['firefox', 'both'].includes(browsers);
+    const verifyChrome = ['chrome', 'both'].includes(browsers);
+
+    let firefoxLatestVersion = '';
+    let chromeLatestVersion = '';
+
+    let installFirefox = false;
+    let installChrome = false;
+
+    console.log(`\n${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
+
+    // console.log('Killing emulator...');
+    // execBinarySync(this.getBinaryLocation('adb', true), 'adb', this.platform, 'emu kill');
+    // need to wait after killing the emulators.
+    // or, fetch the emulators running and check if anyone of it is NIGHTWATCH_AVD, and if so, don't close.
+
+    launchAVD(this.getBinaryLocation('emulator', true), this.platform);
+
+    console.log('Waiting for emulator to boot up...');
+    execBinarySync(
+      this.getBinaryLocation('adb', true),
+      'adb',
+      this.platform,
+      'wait-for-local-device'
+    );
+    console.log('Boot up complete!\n');
+
+    console.log('Making sure adb has root permissions...');
+    const adbRootStdout = execBinarySync(
+      this.getBinaryLocation('adb', true),
+      'adb',
+      this.platform,
+      'wait-for-local-device'
+    );
+    if (adbRootStdout !== null) {
+      console.log(`  ${colors.green(symbols().ok)} adb is running with root permissions!\n`);
+    } else {
+      console.log('Please try running the above command by yourself.\n');
+    }
+
+    if (verifyFirefox) {
+      firefoxLatestVersion = await getLatestVersion('firefox');
+
+      console.log('Verifying if Firefox is installed...');
+      const stdout = execBinarySync(
+        this.getBinaryLocation('adb', true),
+        'adb',
+        this.platform,
+        'shell pm list packages org.mozilla.firefox'
+      );
+      if (stdout) {
+        console.log(`  ${colors.green(symbols().ok)} Firefox browser is installed in the AVD.\n`);
+
+        console.log('Checking the version of installed Firefox browser...');
+        const versionStdout = execBinarySync(
+          this.getBinaryLocation('adb', true),
+          'adb',
+          this.platform,
+          'shell dumpsys package org.mozilla.firefox'
+        );
+
+        if (versionStdout !== null) {
+          const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
+          if (!versionMatch) {
+            console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Firefox browser installed.\n`);
+          } else if (versionMatch[1] !== firefoxLatestVersion && firefoxLatestVersion !== DEFAULT_FIREFOX_VERSION) {
+            console.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
+            installFirefox = true;
+          } else {
+            console.log(`  ${colors.green(symbols().ok)} Your Firefox browser is up-to-date.\n`);
+          }
+        } else {
+          console.log('Could not get the version of the installed Firefox browser.\n');
+        }
+      } else {
+        console.log(`  ${colors.red(symbols().fail)} Firefox browser not found in the AVD.\n`);
+        installFirefox = true;
+      }
+    }
+
+    if (verifyChrome) {
+      chromeLatestVersion = DEFAULT_CHROME_VERSION;
+
+      console.log('Verifying if Chrome is installed...');
+      const stdout = execBinarySync(
+        this.getBinaryLocation('adb', true),
+        'adb',
+        this.platform,
+        'shell pm list packages com.android.chrome'
+      );
+      if (stdout) {
+        console.log(`  ${colors.green(symbols().ok)} Chrome browser is installed in the AVD.\n`);
+
+        console.log('Checking the version of installed Chrome browser...');
+        const versionStdout = execBinarySync(
+          this.getBinaryLocation('adb', true),
+          'adb',
+          this.platform,
+          'shell dumpsys package com.android.chrome'
+        );
+
+        if (versionStdout !== null) {
+          const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
+          if (!versionMatch) {
+            console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
+          } else if (versionMatch[1] !== chromeLatestVersion && chromeLatestVersion !== DEFAULT_FIREFOX_VERSION) {
+            console.log(`A new version of Chrome browser is available (${colors.cyan(versionMatch[1] + ' -> ' + chromeLatestVersion)})\n`);
+            installChrome = true;
+          } else {
+            console.log(`  ${colors.green(symbols().ok)} Your Chrome browser is up-to-date.\n`);
+          }
+        } else {
+          console.log('Could not get the version of the installed Chrome browser.\n');
+        }
+      } else {
+        console.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
+        installChrome = true;
+      }
+    }
+
+    if (this.options.setup) {
+      if (installFirefox) {
+        console.log('Downloading latest Firefox APK...');
+
+        const firefoxDownloaded = await downloadFirefoxAndroid(firefoxLatestVersion);
+        if (firefoxDownloaded) {
+          console.log('\n Installing the downloaded APK in the running AVD...');
+
+          const stdout = execBinarySync(
+            this.getBinaryLocation('adb', true),
+            'adb',
+            this.platform,
+            `install -r ${path.join(os.tmpdir(), getFirefoxApkName(firefoxLatestVersion))}`
+          );
+
+          if (stdout !== null) {
+            console.log(`${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
+          } else {
+            console.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
+          }
+        } else {
+          console.log(`\n${colors.red('Failed!')} Please download the latest version of Firefox from the below link.`);
+          console.log('(Drag-and-drop the downloaded APK over the emulator screen to install.)');
+          console.log(colors.cyan('  https://archive.mozilla.org/pub/fenix/releases'), '\n');
+        }
+      }
+
+      if (installChrome) {
+        // install chrome browser
+      }
+    }
+
+    console.log('Killing emulator...');
+    execBinarySync(this.getBinaryLocation('adb', true), 'adb', this.platform, 'emu kill');
+    console.log('Emulator will close shortly. If not, please close it manually.');
   }
 }
