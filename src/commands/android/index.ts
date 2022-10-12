@@ -4,14 +4,13 @@ import fs from 'fs';
 import path from 'path';
 import untildify from 'untildify';
 import which from 'which';
-import {execSync} from 'child_process';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
 import {BINARY_TO_PACKAGE_NAME, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES} from './constants';
 import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {getAbiForOS, getBinaryNameForOS} from './utils/common';
-import {downloadAndSetupAndroidSdk, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
+import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
 
 
 export class AndroidSetup {
@@ -246,52 +245,6 @@ export class AndroidSetup {
     return missingBinaries;
   }
 
-  execBinary(binaryLocation: string, binaryName: string, args: string) {
-    if (binaryLocation === 'PATH') {
-      const binaryFullName = getBinaryNameForOS(this.platform, binaryName);
-      const cmd = `${binaryFullName} ${args}`;
-
-      try {
-        const stdout = execSync(cmd, {
-          stdio: 'pipe'
-        });
-
-        return stdout.toString();
-      } catch {
-        console.log(
-          `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)}`
-        );
-
-        return '';
-      }
-    }
-
-    const binaryFullName = path.basename(binaryLocation);
-    const binaryDirPath = path.dirname(binaryLocation);
-    let cmd: string;
-
-    if (this.platform === 'windows') {
-      cmd = `${binaryFullName} ${args}`;
-    } else {
-      cmd = `./${binaryFullName} ${args}`;
-    }
-
-    try {
-      const stdout = execSync(cmd, {
-        stdio: 'pipe',
-        cwd: binaryDirPath
-      });
-
-      return stdout.toString();
-    } catch {
-      console.log(
-        `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)} inside '${binaryDirPath}'`
-      );
-
-      return '';
-    }
-  }
-
   checkBinariesWorking(binaries: SdkBinary[]) {
     const nonWorkingBinaries: SdkBinary[] = [];
 
@@ -308,7 +261,7 @@ export class AndroidSetup {
       }
 
       if (binaryPath) {
-        const binaryWorking = this.execBinary(binaryPath, binaryName, cmd);
+        const binaryWorking = execBinarySync(binaryPath, binaryName, this.platform, cmd);
         if (!binaryWorking) {
           nonWorkingBinaries.push(binaryName);
         }
@@ -327,9 +280,10 @@ export class AndroidSetup {
       return false;
     }
 
-    const stdout = this.execBinary(
+    const stdout = execBinarySync(
       avdLocation,
       'avdmanager',
+      this.platform,
       'list avd'
     );
 
@@ -352,9 +306,10 @@ export class AndroidSetup {
       return;
     }
 
-    const serverStarted = this.execBinary(
+    const serverStarted = execBinarySync(
       adbLocation,
       'adb',
+      this.platform,
       'devices'
     );
 
@@ -468,6 +423,11 @@ export class AndroidSetup {
       .filter((requirement) => Object.keys(BINARY_TO_PACKAGE_NAME).includes(requirement))
       .map((binary) => BINARY_TO_PACKAGE_NAME[binary as SdkBinary | typeof NIGHTWATCH_AVD]);
 
+    // Update emulator as well
+    if (setupConfigs.mode !== 'real' && !missingRequirements.includes('emulator')) {
+      packagesToInstall.push(BINARY_TO_PACKAGE_NAME['emulator']);
+    }
+
     let result = installPackagesUsingSdkManager(
       this.getBinaryLocation('sdkmanager', true),
       this.platform,
@@ -492,9 +452,10 @@ export class AndroidSetup {
       if (!avdPresent) {
         console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
 
-        const avdCreated = this.execBinary(
+        const avdCreated = execBinarySync(
           this.getBinaryLocation('avdmanager', true),
           'avdmanager',
+          this.platform,
           `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
         );
 

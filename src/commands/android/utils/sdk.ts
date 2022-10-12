@@ -134,3 +134,54 @@ export const installPackagesUsingSdkManager = (
 
   return result;
 };
+
+export const execBinarySync = (
+  binaryLocation: string,
+  binaryName: string,
+  platform: Platform,
+  args: string
+): string => {
+  if (binaryLocation === 'PATH') {
+    const binaryFullName = getBinaryNameForOS(platform, binaryName);
+    const cmd = `${binaryFullName} ${args}`;
+
+    try {
+      const stdout = execSync(cmd, {
+        stdio: 'pipe'
+      });
+
+      return stdout.toString();
+    } catch {
+      console.log(
+        `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)}`
+      );
+
+      return '';
+    }
+  }
+
+  const binaryFullName = path.basename(binaryLocation);
+  const binaryDirPath = path.dirname(binaryLocation);
+  let cmd: string;
+
+  if (platform === 'windows') {
+    cmd = `${binaryFullName} ${args}`;
+  } else {
+    cmd = `./${binaryFullName} ${args}`;
+  }
+
+  try {
+    const stdout = execSync(cmd, {
+      stdio: 'pipe',
+      cwd: binaryDirPath
+    });
+
+    return stdout.toString();
+  } catch {
+    console.log(
+      `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)} inside '${binaryDirPath}'`
+    );
+
+    return '';
+  }
+};
