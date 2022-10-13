@@ -601,7 +601,7 @@ export class AndroidSetup {
     }
 
     if (verifyChrome) {
-      chromeLatestVersion = DEFAULT_CHROME_VERSION;
+      chromeLatestVersion = '106.0.5249.79';
 
       console.log('Verifying if Chrome is installed...');
       const stdout = execBinarySync(
@@ -625,7 +625,7 @@ export class AndroidSetup {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
             console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
-          } else if (versionMatch[1] !== chromeLatestVersion && chromeLatestVersion !== DEFAULT_FIREFOX_VERSION) {
+          } else if (versionMatch[1] !== chromeLatestVersion && chromeLatestVersion !== DEFAULT_CHROME_VERSION) {
             console.log(`A new version of Chrome browser is available (${colors.cyan(versionMatch[1] + ' -> ' + chromeLatestVersion)})\n`);
             installChrome = true;
           } else {
