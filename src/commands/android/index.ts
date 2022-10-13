@@ -1,4 +1,5 @@
 import colors from 'ansi-colors';
+import {execSync} from 'child_process';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
 import os from 'os';
@@ -47,6 +48,11 @@ export class AndroidSetup {
       return result;
     }
 
+    const javaInstalled = this.checkJavaInstallation();
+    if (!javaInstalled) {
+      return false;
+    }
+
     const sdkRootEnv = this.getSdkRootFromEnv();
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
 
@@ -78,6 +84,24 @@ export class AndroidSetup {
 
   showHelp() {
     console.log('Help menu for android');
+  }
+
+  checkJavaInstallation() {
+    try {
+      execSync('java -version', {
+        stdio: 'pipe',
+        cwd: this.rootDir
+      });
+
+      return true;
+    } catch {
+      console.log('Java Development Kit is required to work with Android SDKs. Download from here:');
+      console.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
+
+      console.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.`);
+
+      return false;
+    }
   }
 
   getSdkRootFromEnv(): string {
