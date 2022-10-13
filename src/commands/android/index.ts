@@ -585,9 +585,16 @@ export class AndroidSetup {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
             console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Firefox browser installed.\n`);
-          } else if (versionMatch[1] !== firefoxLatestVersion && firefoxLatestVersion !== DEFAULT_FIREFOX_VERSION) {
-            console.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
-            installFirefox = true;
+          } else if (versionMatch[1] !== firefoxLatestVersion) {
+            const currentMajorVersion = parseInt(versionMatch[1].split('.')[0], 10);
+            const latestMajorVersion = parseInt(firefoxLatestVersion.split('.')[0], 10);
+
+            if (firefoxLatestVersion === DEFAULT_FIREFOX_VERSION && currentMajorVersion >= latestMajorVersion) {
+              console.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Firefox browser.\n`);
+            } else {
+              console.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
+              installFirefox = true;
+            }
           } else {
             console.log(`  ${colors.green(symbols().ok)} Your Firefox browser is up-to-date.\n`);
           }
@@ -601,7 +608,7 @@ export class AndroidSetup {
     }
 
     if (verifyChrome) {
-      chromeLatestVersion = '106.0.5249.79';
+      chromeLatestVersion = DEFAULT_CHROME_VERSION;
 
       console.log('Verifying if Chrome is installed...');
       const stdout = execBinarySync(
@@ -625,9 +632,16 @@ export class AndroidSetup {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
             console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
-          } else if (versionMatch[1] !== chromeLatestVersion && chromeLatestVersion !== DEFAULT_CHROME_VERSION) {
-            console.log(`A new version of Chrome browser is available (${colors.cyan(versionMatch[1] + ' -> ' + chromeLatestVersion)})\n`);
-            installChrome = true;
+          } else if (versionMatch[1] !== chromeLatestVersion) {
+            const currentMajorVersion = parseInt(versionMatch[1].split('.')[0], 10);
+            const latestMajorVersion = parseInt(chromeLatestVersion.split('.')[0], 10);
+
+            if (chromeLatestVersion === DEFAULT_CHROME_VERSION && currentMajorVersion >= latestMajorVersion) {
+              console.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Chrome browser.\n`);
+            } else {
+              console.log(`A new version of Chrome browser is available (${colors.cyan(versionMatch[1] + ' -> ' + chromeLatestVersion)})\n`);
+              installChrome = true;
+            }
           } else {
             console.log(`  ${colors.green(symbols().ok)} Your Chrome browser is up-to-date.\n`);
           }
