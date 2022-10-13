@@ -13,8 +13,12 @@ import {
   NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES
 } from './constants';
 import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
-import {downloadFirefoxAndroid, getAbiForOS, getBinaryNameForOS, getFirefoxApkName, getLatestVersion, launchAVD} from './utils/common';
+import {
+  downloadFirefoxAndroid, downloadWithProgressBar, getAbiForOS,
+  getBinaryNameForOS, getFirefoxApkName, getLatestVersion, launchAVD
+} from './utils/common';
 import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
+import DOWNLOADS from './downloads.json';
 
 
 export class AndroidSetup {
@@ -524,10 +528,10 @@ export class AndroidSetup {
     const verifyChrome = ['chrome', 'both'].includes(browsers);
 
     let firefoxLatestVersion = '';
-    let chromeLatestVersion = '';
+    let installedChromeVersion = DEFAULT_CHROME_VERSION;
 
     let installFirefox = false;
-    let installChrome = false;
+    let downloadChromedriver = false;
 
     console.log(`\n${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
 
@@ -608,8 +612,6 @@ export class AndroidSetup {
     }
 
     if (verifyChrome) {
-      chromeLatestVersion = DEFAULT_CHROME_VERSION;
-
       console.log('Verifying if Chrome is installed...');
       const stdout = execBinarySync(
         this.getBinaryLocation('adb', true),
@@ -632,25 +634,21 @@ export class AndroidSetup {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
             console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
-          } else if (versionMatch[1] !== chromeLatestVersion) {
-            const currentMajorVersion = parseInt(versionMatch[1].split('.')[0], 10);
-            const latestMajorVersion = parseInt(chromeLatestVersion.split('.')[0], 10);
-
-            if (chromeLatestVersion === DEFAULT_CHROME_VERSION && currentMajorVersion >= latestMajorVersion) {
-              console.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Chrome browser.\n`);
-            } else {
-              console.log(`A new version of Chrome browser is available (${colors.cyan(versionMatch[1] + ' -> ' + chromeLatestVersion)})\n`);
-              installChrome = true;
-            }
           } else {
-            console.log(`  ${colors.green(symbols().ok)} Your Chrome browser is up-to-date.\n`);
+            console.log(`Version: ${colors.green(versionMatch[1])}\n`);
+            installedChromeVersion = versionMatch[1];
           }
+
+          console.log(`${colors.yellow('Note:')} Automatic upgrade of Chrome browser is not supported yet.\n`);
+          // console.log('You can upgrade the browser by using Play Store in the emulator if need be.');
         } else {
           console.log('Could not get the version of the installed Chrome browser.\n');
         }
+
+        downloadChromedriver = true;
       } else {
         console.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
-        installChrome = true;
+        console.log(`${colors.yellow('Note:')} Automatic installation of Chrome Browser is not supported yet.\n`);
       }
     }
 
@@ -660,7 +658,7 @@ export class AndroidSetup {
 
         const firefoxDownloaded = await downloadFirefoxAndroid(firefoxLatestVersion);
         if (firefoxDownloaded) {
-          console.log('\n Installing the downloaded APK in the running AVD...');
+          console.log('\nInstalling the downloaded APK in the running AVD...');
 
           const stdout = execBinarySync(
             this.getBinaryLocation('adb', true),
@@ -680,14 +678,43 @@ export class AndroidSetup {
           console.log(colors.cyan('  https://archive.mozilla.org/pub/fenix/releases'), '\n');
         }
       }
-
-      if (installChrome) {
-        // install chrome browser
-      }
     }
 
     console.log('Killing emulator...');
     execBinarySync(this.getBinaryLocation('adb', true), 'adb', this.platform, 'emu kill');
     console.log('Emulator will close shortly. If not, please close it manually.');
+
+    if (this.options.setup && downloadChromedriver) {
+      if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
+        console.log('\nDownloading chromedriver to work with the factory version of Chrome browser...');
+
+        const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
+        const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
+
+        const result = await downloadWithProgressBar(
+          DOWNLOADS.chromedriver[this.platform],
+          chromedriverDownloadDir,
+          true
+        );
+
+        if (result) {
+          console.log(`${colors.green('Success!')} chromedriver downloaded at '${chromedriverDownloadPath}'`);
+        } else {
+          console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
+          console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+          console.log(
+            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)'
+          );
+        }
+      } else {
+        console.log(colors.cyan('\n[CHROMEDRIVER]'));
+        console.log('Installed Chrome browser version is different from factory version.\n');
+        console.log('You can download the chromedriver for current version from the below link:');
+        console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
+        console.log(
+          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)'
+        );
+      }
+    }
   }
 }

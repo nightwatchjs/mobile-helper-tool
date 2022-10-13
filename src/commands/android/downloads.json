@@ -3,5 +3,10 @@
     "mac": "https://dl.google.com/android/repository/commandlinetools-mac-8512546_latest.zip",
     "linux": "https://dl.google.com/android/repository/commandlinetools-linux-8512546_latest.zip",
     "windows": "https://dl.google.com/android/repository/commandlinetools-win-8512546_latest.zip"
+  },
+  "chromedriver": {
+    "mac": "https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_mac64.zip",
+    "linux": "https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_linux64.zip",
+    "windows": "https://chromedriver.storage.googleapis.com/83.0.4103.39/chromedriver_win32.zip"
   }
 }
