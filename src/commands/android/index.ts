@@ -67,7 +67,9 @@ export class AndroidSetup {
       result = false;
     }
 
-    if (setupConfigs.mode !== 'real') {
+    if (setupConfigs.mode !== 'real' && (this.options.setup || missingRequirements.length === 0)) {
+      // Only verify/install browsers if working with emulator and setup flag is used.
+      // If setup flag is not used, then all other requirements should be met before verifying browsers.
       await this.verifyAndSetupBrowsers(setupConfigs.browsers);
     }
 
