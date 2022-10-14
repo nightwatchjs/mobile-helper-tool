@@ -310,7 +310,7 @@ export class AndroidSetup {
       return false;
     }
 
-    const stdout = execBinarySync(
+    let stdout = execBinarySync(
       avdLocation,
       'avdmanager',
       this.platform,
@@ -318,9 +318,13 @@ export class AndroidSetup {
     );
 
     if (stdout !== null) {
-      const workingAvds = stdout.split('---------').filter((avd) => !avd.includes('Error: '));
+      const nonWorkingAvdsIndex = stdout.indexOf('could not be loaded');
 
-      if (workingAvds.filter((avd) => avd.includes(NIGHTWATCH_AVD)).length) {
+      if (nonWorkingAvdsIndex > -1) {
+        stdout = stdout.slice(0, nonWorkingAvdsIndex);
+      }
+
+      if (stdout.includes(NIGHTWATCH_AVD)) {
         return true;
       }
     }
