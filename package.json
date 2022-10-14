@@ -2,7 +2,7 @@
   "name": "@nightwatch/mobile-helper",
   "version": "0.0.1",
   "description": "Mobile helper tool to easily setup mobile requirements",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "bin": "./index.js",
   "scripts": {
     "build": "tsc",
