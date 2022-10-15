@@ -1,3 +1,4 @@
+import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
 import {exec} from 'child_process';
 import cliProgress from 'cli-progress';
@@ -5,9 +6,11 @@ import download from 'download';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import which from 'which';
 
-import {DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD} from '../constants';
-import {Platform} from '../interfaces';
+import {symbols} from '../../../utils';
+import {DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS} from '../constants';
+import {Platform, SdkBinary} from '../interfaces';
 
 export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   if (platform !== 'windows') {
@@ -23,6 +26,62 @@ export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   }
 
   return binaryName;
+};
+
+export const getBinaryLocation = (sdkRoot: string, platform: Platform, binaryName: SdkBinary, suppressOutput = false) => {
+  const failLocations: string[] = [];
+
+  const binaryFullName = getBinaryNameForOS(platform, binaryName);
+
+  const pathToBinary = path.join(sdkRoot, SDK_BINARY_LOCATIONS[binaryName], binaryFullName);
+  if (fs.existsSync(pathToBinary)) {
+    if (!suppressOutput) {
+      console.log(
+        `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${pathToBinary}'`
+      );
+    }
+
+    return pathToBinary;
+  }
+  failLocations.push(pathToBinary);
+
+  if (binaryName === 'adb') {
+    // look for adb in sdkRoot (as it is a standalone binary).
+    const adbPath = path.join(sdkRoot, binaryFullName);
+    if (fs.existsSync(adbPath)) {
+      if (!suppressOutput) {
+        console.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}'`
+        );
+      }
+
+      return adbPath;
+    }
+    failLocations.push(adbPath);
+
+    // Look for adb in PATH also (runnable as `adb --version`)
+    const adbLocation = which.sync(binaryFullName, {nothrow: true});
+    if (adbLocation) {
+      if (!suppressOutput) {
+        console.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}' which is added in 'PATH'`
+        );
+      }
+
+      return 'PATH';
+    }
+    failLocations.push('PATH');
+  }
+
+  if (!suppressOutput) {
+    for (const location of failLocations) {
+      console.log(
+        `  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not present at '${location}'`
+      );
+    }
+  }
+
+  return '';
 };
 
 export const getAbiForOS = () => {

@@ -5,20 +5,17 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import untildify from 'untildify';
-import which from 'which';
 import {prompt} from 'inquirer';
 
 import {getPlatformName, symbols} from '../../utils';
-import {
-  BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION,
-  NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS, SETUP_CONFIG_QUES
-} from './constants';
+import {BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES} from './constants';
 import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
-  downloadFirefoxAndroid, downloadWithProgressBar, getAbiForOS,
+  downloadFirefoxAndroid, downloadWithProgressBar, getAbiForOS, getBinaryLocation,
   getBinaryNameForOS, getFirefoxApkName, getLatestVersion, launchAVD
 } from './utils/common';
 import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
+
 import DOWNLOADS from './downloads.json';
 
 
@@ -209,67 +206,11 @@ export class AndroidSetup {
     return await prompt(SETUP_CONFIG_QUES, configs);
   }
 
-  getBinaryLocation(binaryName: SdkBinary, suppressOutput = false) {
-    const failLocations: string[] = [];
-
-    const binaryFullName = getBinaryNameForOS(this.platform, binaryName);
-
-    const pathToBinary = path.join(this.sdkRoot, SDK_BINARY_LOCATIONS[binaryName], binaryFullName);
-    if (fs.existsSync(pathToBinary)) {
-      if (!suppressOutput) {
-        console.log(
-          `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${pathToBinary}'`
-        );
-      }
-
-      return pathToBinary;
-    }
-    failLocations.push(pathToBinary);
-
-    if (binaryName === 'adb') {
-      // look for adb in sdkRoot (as it is a standalone binary).
-      const adbPath = path.join(this.sdkRoot, binaryFullName);
-      if (fs.existsSync(adbPath)) {
-        if (!suppressOutput) {
-          console.log(
-            `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}'`
-          );
-        }
-
-        return adbPath;
-      }
-      failLocations.push(adbPath);
-
-      // Look for adb in PATH also (runnable as `adb --version`)
-      const adbLocation = which.sync(binaryFullName, {nothrow: true});
-      if (adbLocation) {
-        if (!suppressOutput) {
-          console.log(
-            `  ${colors.green(symbols().ok)} ${colors.cyan(binaryName)} binary is present at '${adbPath}' which is added in 'PATH'`
-          );
-        }
-
-        return 'PATH';
-      }
-      failLocations.push('PATH');
-    }
-
-    if (!suppressOutput) {
-      for (const location of failLocations) {
-        console.log(
-          `  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not present at '${location}'`
-        );
-      }
-    }
-
-    return '';
-  }
-
   checkBinariesPresent(binaries: SdkBinary[]) {
     const missingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
-      const binaryPath = this.getBinaryLocation(binaryName);
+      const binaryPath = getBinaryLocation(this.sdkRoot, this.platform, binaryName);
       if (!binaryPath) {
         missingBinaries.push(binaryName);
       }
@@ -283,7 +224,7 @@ export class AndroidSetup {
     const nonWorkingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
-      const binaryPath = this.getBinaryLocation(binaryName, true);
+      const binaryPath = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
 
       let cmd = '--version';
       if (binaryName === 'emulator') {
@@ -307,7 +248,7 @@ export class AndroidSetup {
   }
 
   verifyAvdPresent() {
-    const avdLocation = this.getBinaryLocation('avdmanager', true);
+    const avdLocation = getBinaryLocation(this.sdkRoot, this.platform, 'avdmanager', true);
     if (!avdLocation) {
       return false;
     }
@@ -337,7 +278,7 @@ export class AndroidSetup {
   verifyAdbRunning() {
     console.log('Making sure adb is running...');
 
-    const adbLocation = this.getBinaryLocation('adb', true);
+    const adbLocation = getBinaryLocation(this.sdkRoot, this.platform, 'adb', true);
     if (!adbLocation) {
       console.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
 
@@ -467,7 +408,7 @@ export class AndroidSetup {
     }
 
     let result = installPackagesUsingSdkManager(
-      this.getBinaryLocation('sdkmanager', true),
+      getBinaryLocation(this.sdkRoot, this.platform, 'sdkmanager', true),
       this.platform,
       packagesToInstall
     );
@@ -491,7 +432,7 @@ export class AndroidSetup {
         console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
 
         const avdCreated = execBinarySync(
-          this.getBinaryLocation('avdmanager', true),
+          getBinaryLocation(this.sdkRoot, this.platform, 'avdmanager', true),
           'avdmanager',
           this.platform,
           `create avd --force --name "${NIGHTWATCH_AVD}" --package "system-images;android-30;google_apis;${getAbiForOS()}" --device "pixel_5"`
@@ -566,24 +507,26 @@ export class AndroidSetup {
     console.log(`\n${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
 
     // console.log('Killing emulator...');
-    // execBinarySync(this.getBinaryLocation('adb', true), 'adb', this.platform, 'emu kill');
+    // execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, 'emu kill');
     // need to wait after killing the emulators.
     // or, fetch the emulators running and check if anyone of it is NIGHTWATCH_AVD, and if so, don't close.
 
-    launchAVD(this.getBinaryLocation('emulator', true), this.platform);
+    launchAVD(getBinaryLocation(this.sdkRoot, this.platform, 'emulator', true), this.platform);
 
     console.log('Waiting for emulator to boot up...');
-    execBinarySync(
-      this.getBinaryLocation('adb', true),
+    const bootUpStdout = execBinarySync(
+      getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
       'adb',
       this.platform,
       'wait-for-local-device'
     );
-    console.log('Boot up complete!\n');
+    if (bootUpStdout !== null) {
+      console.log('Boot up complete!\n');
+    }
 
     console.log('Making sure adb has root permissions...');
     const adbRootStdout = execBinarySync(
-      this.getBinaryLocation('adb', true),
+      getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
       'adb',
       this.platform,
       'wait-for-local-device'
@@ -599,7 +542,7 @@ export class AndroidSetup {
 
       console.log('Verifying if Firefox is installed...');
       const stdout = execBinarySync(
-        this.getBinaryLocation('adb', true),
+        getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
         'adb',
         this.platform,
         'shell pm list packages org.mozilla.firefox'
@@ -609,7 +552,7 @@ export class AndroidSetup {
 
         console.log('Checking the version of installed Firefox browser...');
         const versionStdout = execBinarySync(
-          this.getBinaryLocation('adb', true),
+          getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
           'adb',
           this.platform,
           'shell dumpsys package org.mozilla.firefox'
@@ -644,7 +587,7 @@ export class AndroidSetup {
     if (verifyChrome) {
       console.log('Verifying if Chrome is installed...');
       const stdout = execBinarySync(
-        this.getBinaryLocation('adb', true),
+        getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
         'adb',
         this.platform,
         'shell pm list packages com.android.chrome'
@@ -654,7 +597,7 @@ export class AndroidSetup {
 
         console.log('Checking the version of installed Chrome browser...');
         const versionStdout = execBinarySync(
-          this.getBinaryLocation('adb', true),
+          getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
           'adb',
           this.platform,
           'shell dumpsys package com.android.chrome'
@@ -691,7 +634,7 @@ export class AndroidSetup {
           console.log('\nInstalling the downloaded APK in the running AVD...');
 
           const stdout = execBinarySync(
-            this.getBinaryLocation('adb', true),
+            getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
             'adb',
             this.platform,
             `install -r ${path.join(os.tmpdir(), getFirefoxApkName(firefoxLatestVersion))}`
@@ -711,7 +654,7 @@ export class AndroidSetup {
     }
 
     console.log('Killing emulator...');
-    execBinarySync(this.getBinaryLocation('adb', true), 'adb', this.platform, 'emu kill');
+    execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, 'emu kill');
     console.log('Emulator will close shortly. If not, please close it manually.');
 
     if (this.options.setup && downloadChromedriver) {
