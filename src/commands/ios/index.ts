@@ -1,7 +1,7 @@
 import { prompt } from 'inquirer';
 import { Options, SetupConfigs } from './interfaces';
 import { getPlatformName, iosRealDeviceUUID, symbols } from '../../utils';
-import { SETUP_CONFIG_QUES } from './constants';
+import { AVAILABLE_OPTIONS, SETUP_CONFIG_QUES } from './constants';
 import colors from 'ansi-colors';
 import { execSync } from 'child_process';
 
@@ -19,10 +19,13 @@ export class IosSetup {
   async run() {
     let result = true;
 
-    if (this.options.help) {
-      return this.showHelp();
+    const allAvailableOptions = this.getAllAvailableOptions();
+    const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
 
-      return result;
+    if (this.options.help || unknownOptions.length) {
+      this.showHelp(unknownOptions);
+
+      return this.options.help;
     }
 
     if (this.platform !== 'mac') {
@@ -39,10 +42,7 @@ export class IosSetup {
       result = false;
     }
 
-  }
-
-  showHelp() {
-    console.log('Help menu for IOS');
+    return result;
   }
 
   getConfigFromOptions(options: { [key: string]: string | string[] | boolean }) {
@@ -115,10 +115,12 @@ export class IosSetup {
 
     if (missingRequirements.length === 0) {
 
-      console.log('Great! All the requirements are being met.');
+      console.log('\nGreat! All the requirements are being met.');
 
       if (setupConfigs.mode === 'real') {
         console.log('You can go ahead and run your tests now on your iOS device.');
+      } else if (setupConfigs.mode === 'simulator') {
+        console.log('You can go ahead and run your tests now on an iOS simulator.');
       } else {
         console.log('You can go ahead and run your tests now on an iOS device/simulator.');
       }
@@ -182,4 +184,60 @@ export class IosSetup {
 
     return result;
   }
+
+  showHelp(unknownOptions: string[]) {
+    if (unknownOptions.length) {
+      console.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
+    }
+
+    console.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper ios [options]')}`);
+    console.log('  Verify if all the requirements are met to run tests on an iOS device/simulator.\n');
+
+    console.log(`${colors.yellow('Options:')}`);
+
+    const switches = Object.keys(AVAILABLE_OPTIONS).reduce((acc: {[T: string]: string}, key) => {
+      acc[key] = [key].concat(AVAILABLE_OPTIONS[key].alias || [])
+        .map(function(sw) {
+          return (sw.length > 1 ? '--' : '-') + sw;
+        })
+        .join(', ');
+
+      return acc;
+    }, {});
+
+    const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
+
+    const switchlen = longest(Object.keys(switches).map(function(s) {
+      return switches[s] || '';
+    }));
+
+    const desclen = longest(Object.keys(AVAILABLE_OPTIONS).map((option) => {
+      return AVAILABLE_OPTIONS[option].description;
+    }));
+
+    Object.keys(AVAILABLE_OPTIONS).forEach(key => {
+      const kswitch = switches[key];
+      let desc = AVAILABLE_OPTIONS[key].description;
+      const spadding = new Array(Math.max(switchlen - kswitch.length + 3, 0)).join('.');
+      const dpadding = new Array(Math.max(desclen - desc.length + 1, 0)).join(' ');
+
+      if (dpadding.length > 0) {
+        desc += dpadding;
+      }
+
+      const prelude = '  ' + (kswitch) + ' ' + colors.grey(spadding);
+
+      console.log(prelude + ' ' + colors.grey(desc));
+    });
+  }
+
+  getAllAvailableOptions = () => {
+    const mainOptions = Object.keys(AVAILABLE_OPTIONS);
+  
+    const allOptions: string[] = [];
+    mainOptions.forEach((option) => allOptions.push(option, ...AVAILABLE_OPTIONS[option].alias));
+  
+    return allOptions;
+  };
+  
 }

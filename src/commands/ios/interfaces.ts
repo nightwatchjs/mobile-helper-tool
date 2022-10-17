@@ -5,3 +5,10 @@ export interface SetupConfigs {
 export interface Options {
   [key: string]: string | string[] | boolean;
 }
+
+export interface AvailableOptions {
+  [key: string]: {
+    alias: string[],
+    description: string;
+  }
+}
