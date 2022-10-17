@@ -1,9 +1,9 @@
-import minimist from 'minimist';
 import colors from 'ansi-colors';
+import minimist from 'minimist';
 
-import {AVAILABLE_COMMANDS} from './constants';
 import {AndroidSetup} from './commands/android';
 import {IosSetup} from './commands/ios';
+import {AVAILABLE_COMMANDS} from './constants';
 
 export const run = () => {
   try {
@@ -38,9 +38,12 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
   } else if (!helpFlag) {
     console.log(colors.red('No command passed.'), '\n');
   }
-  console.log(`Available commands: ${AVAILABLE_COMMANDS.join(', ')}`);
+
+  console.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper COMMAND [options]')}\n`);
+
+  console.log(`Available commands: ${colors.green(AVAILABLE_COMMANDS.join(', '))}\n`);
   console.log(`To know more about each command, run:
-  ${colors.cyan('npx @nightwatch/mobile-helper _command_name_ --help')}`);
+  ${colors.cyan('npx @nightwatch/mobile-helper COMMAND --help')}`);
 };
 
 export {AndroidSetup, IosSetup};
