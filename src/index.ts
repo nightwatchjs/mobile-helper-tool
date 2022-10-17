@@ -11,9 +11,10 @@ export const run = () => {
     const {_: args, ...options} = minimist(argv, {
       boolean: ['install', 'setup', 'help'],
       alias: {
+        help: 'h',
         mode: 'm',
         browsers: ['b', 'browser'],
-        setup: 'install'
+        setup: ['install', 'i']
       }
     });
 

@@ -8,8 +8,17 @@ import path from 'path';
 import which from 'which';
 
 import {symbols} from '../../../utils';
-import {ABI, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
+import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
+
+export const getAllAvailableOptions = () => {
+  const mainOptions = Object.keys(AVAILABLE_OPTIONS);
+
+  const allOptions: string[] = [];
+  mainOptions.forEach((option) => allOptions.push(option, ...AVAILABLE_OPTIONS[option].alias));
+
+  return allOptions;
+};
 
 export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   if (platform !== 'windows') {

@@ -1,7 +1,26 @@
 import inquirer from 'inquirer';
 import path from 'path';
 
-import {SdkBinary} from './interfaces';
+import {AvailableOptions, SdkBinary} from './interfaces';
+
+export const AVAILABLE_OPTIONS: AvailableOptions = {
+  help: {
+    alias: ['h'],
+    description: 'Help for android command.'
+  },
+  setup: {
+    alias: ['install', 'i'],
+    description: 'Automatically setup all the missing requirements.'
+  },
+  mode: {
+    alias: ['m'],
+    description: 'Verify/setup requirements for real-device or emulator. Available args: "real", "emulator", "both"'
+  },
+  browsers: {
+    alias: ['browser', 'b'],
+    description: 'Browsers to setup on Android emulator. Available args: "chrome", "firefox", "both", "none"'
+  }
+};
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 export const DEFAULT_FIREFOX_VERSION = '105.1.0';

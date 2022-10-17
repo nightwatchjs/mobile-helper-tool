@@ -1,3 +1,10 @@
+export interface AvailableOptions {
+  [key: string]: {
+    alias: string[],
+    description: string;
+  }
+}
+
 export interface Options {
   [key: string]: string | string[] | boolean;
 }
