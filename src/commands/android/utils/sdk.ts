@@ -58,7 +58,8 @@ export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Plat
   // re-arrange files
   fs.renameSync(cmdline_tools, temp_cmdline_tools2);
   fs.mkdirSync(cmdline_tools_new, {recursive: true});
-  fs.renameSync(temp_cmdline_tools2, cmdline_tools_new);
+  copySync(temp_cmdline_tools2, cmdline_tools_new);
+  rmDirSync(temp_cmdline_tools2);
   // bring back older cmdline-tools, if present
   if (fs.existsSync(temp_cmdline_tools1)) {
     copySync(temp_cmdline_tools1, cmdline_tools);
