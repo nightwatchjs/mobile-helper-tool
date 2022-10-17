@@ -1,6 +1,5 @@
 import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
-import {exec} from 'child_process';
 import cliProgress from 'cli-progress';
 import download from 'download';
 import fs from 'fs';
@@ -9,7 +8,7 @@ import path from 'path';
 import which from 'which';
 
 import {symbols} from '../../../utils';
-import {DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SDK_BINARY_LOCATIONS} from '../constants';
+import {ABI, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
 
 export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
@@ -84,20 +83,6 @@ export const getBinaryLocation = (sdkRoot: string, platform: Platform, binaryNam
   return '';
 };
 
-export const getAbiForOS = () => {
-  const arch = process.arch;
-
-  if (arch === 'arm') {
-    return 'armeabi-v7a';
-  } else if (arch === 'arm64') {
-    return 'arm64-v8a';
-  } else if (['ia32', 'mips', 'ppc', 's390'].includes(arch)) {
-    return 'x86';
-  }
-
-  return 'x86_64';
-};
-
 export const downloadWithProgressBar = async (url: string, dest: string, extract = false) => {
   const progressBar = new cliProgress.Bar({
     format: ' [{bar}] {percentage}% | ETA: {eta}s'
@@ -137,7 +122,7 @@ export const getLatestVersion = async (browser: 'firefox' | 'chrome'): Promise<s
 };
 
 export const getFirefoxApkName = (version: string) => {
-  return `fenix-${version}.multi.android-${getAbiForOS()}.apk`;
+  return `fenix-${version}.multi.android-${ABI}.apk`;
 };
 
 export const downloadFirefoxAndroid = async (version: string) => {
@@ -152,25 +137,7 @@ export const downloadFirefoxAndroid = async (version: string) => {
     return true;
   }
 
-  const apkDownloadUrl = `https://archive.mozilla.org/pub/fenix/releases/${version}/android/fenix-${version}-android-${getAbiForOS()}/${apkName}`;
+  const apkDownloadUrl = `https://archive.mozilla.org/pub/fenix/releases/${version}/android/fenix-${version}-android-${ABI}/${apkName}`;
 
   return await downloadWithProgressBar(apkDownloadUrl, tempdir);
-};
-
-export const launchAVD = (emuLocation: string, platform: Platform) => {
-  const emuFullName = path.basename(emuLocation);
-  const emuDirPath = path.dirname(emuLocation);
-
-  console.log(`Launching emulator with ${NIGHTWATCH_AVD} AVD...\n`);
-  let cmd: string;
-
-  if (platform === 'windows') {
-    cmd = `${emuFullName} @${NIGHTWATCH_AVD} -delay-adb`;
-  } else {
-    cmd = `./${emuFullName} @${NIGHTWATCH_AVD} -delay-adb`;
-  }
-
-  exec(cmd, {
-    cwd: emuDirPath
-  });
 };

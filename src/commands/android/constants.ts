@@ -2,11 +2,24 @@ import inquirer from 'inquirer';
 import path from 'path';
 
 import {SdkBinary} from './interfaces';
-import {getAbiForOS} from './utils/common';
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 export const DEFAULT_FIREFOX_VERSION = '105.1.0';
 export const DEFAULT_CHROME_VERSION = '83.0.4103.106';
+
+export const ABI = (() => {
+  const arch = process.arch;
+
+  if (arch === 'arm') {
+    return 'armeabi-v7a';
+  } else if (arch === 'arm64') {
+    return 'arm64-v8a';
+  } else if (['ia32', 'mips', 'ppc', 's390'].includes(arch)) {
+    return 'x86';
+  }
+
+  return 'x86_64';
+})();
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
@@ -45,5 +58,5 @@ export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary | typeof NIGHTWATCH_AVD, s
   avdmanager: 'cmdline-tools;latest',
   adb: 'platform-tools',
   emulator: 'emulator',
-  [NIGHTWATCH_AVD]: `system-images;android-30;google_apis;${getAbiForOS()}`
+  [NIGHTWATCH_AVD]: `system-images;android-30;google_apis;${ABI}`
 };
