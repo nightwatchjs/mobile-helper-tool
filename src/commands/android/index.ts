@@ -624,7 +624,7 @@ export class AndroidSetup {
         installFirefox = true;
       } else {
         // Command failed. Just add a blank line.
-        console.log('Failed to verify the presence of Firefox browser.');
+        console.log('Failed to verify the presence of Firefox browser.\n');
       }
     }
 
@@ -668,7 +668,7 @@ export class AndroidSetup {
         console.log(`${colors.yellow('Note:')} Automatic installation of Chrome browser is not supported yet.\n`);
       } else {
         // Command failed. Just add a blank line.
-        console.log('Failed to verify the presence of Chrome browser.');
+        console.log('Failed to verify the presence of Chrome browser.\n');
       }
     }
 
@@ -689,7 +689,7 @@ export class AndroidSetup {
 
           if (stdout !== null) {
             console.log(`  ${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
-            console.log('You can run your tests now on your Android Emulator\'s Firefox browser.\n');
+            console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Firefox browser.\n`);
           } else {
             console.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
           }
@@ -702,9 +702,9 @@ export class AndroidSetup {
     }
 
     if (!emulatorAlreadyRunning) {
-      console.log('Killing emulator...');
+      console.log('Closing emulator...');
       execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, `-s ${emulatorId} emu kill`);
-      console.log('Emulator will close shortly. If not, please close it manually.');
+      console.log('Emulator will close shortly. If not, please close it manually.\n');
     }
 
     if (this.options.setup && downloadChromedriver) {
@@ -721,13 +721,13 @@ export class AndroidSetup {
         );
 
         if (result) {
-          console.log(`  ${colors.green('Success!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
-          console.log('You can run your tests now on your Android Emulator\'s Chrome browser.');
+          console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
+          console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Chrome browser.\n`);
         } else {
           console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
           console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
           console.log(
-            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)'
+            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)\n'
           );
         }
       } else {
@@ -736,7 +736,7 @@ export class AndroidSetup {
         console.log('You can download the chromedriver for current version from the below link:');
         console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
         console.log(
-          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)'
+          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)\n'
         );
       }
     }
