@@ -690,23 +690,31 @@ export class AndroidSetup {
         const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
         const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
 
-        const result = await downloadWithProgressBar(
-          DOWNLOADS.chromedriver[this.platform],
-          chromedriverDownloadDir,
-          true
-        );
-
-        if (result) {
-          console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
-          console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
+        if (fs.existsSync(chromedriverDownloadPath)) {
+          console.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
           status.setupChrome = true;
         } else {
-          console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
-          console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
-          console.log(
-            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
-            '\n'
+          const result = await downloadWithProgressBar(
+            DOWNLOADS.chromedriver[this.platform],
+            chromedriverDownloadDir,
+            true
           );
+
+          if (result) {
+            console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
+            status.setupChrome = true;
+          } else {
+            console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
+            console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+            console.log(
+              '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+              '\n'
+            );
+          }
+        }
+
+        if (status.setupChrome) {
+          console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
         }
       } else {
         console.log(colors.cyan('[CHROMEDRIVER]'));
