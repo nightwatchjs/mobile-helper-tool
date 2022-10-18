@@ -143,6 +143,8 @@ export const downloadFirefoxAndroid = async (version: string) => {
 
   const apkName = getFirefoxApkName(version);
   if (fs.existsSync(path.join(tempdir, apkName))) {
+    console.log(`  ${colors.green(symbols().ok)} APK already downloaded.`);
+
     return true;
   }
 

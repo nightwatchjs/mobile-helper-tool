@@ -77,6 +77,8 @@ export class AndroidSetup {
       result = await this.verifyAndSetupBrowsers(setupConfigs.browsers);
     }
 
+    this.postSetupInstructions(result, setupConfigs, missingRequirements);
+
     if (setupConfigs.mode !== 'emulator') {
       console.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
@@ -288,10 +290,14 @@ export class AndroidSetup {
           nonWorkingBinaries.push(binaryName);
         }
       } else {
+        console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not found.`);
         nonWorkingBinaries.push(binaryName);
       }
     }
-    console.log();
+
+    if (nonWorkingBinaries.length) {
+      console.log();
+    }
 
     return nonWorkingBinaries;
   }
@@ -403,17 +409,6 @@ export class AndroidSetup {
 
     if (missingRequirements.length === 0) {
       this.verifyAdbRunning();
-
-      console.log('Great! All the requirements are being met.');
-
-      if (setupConfigs.mode === 'real') {
-        console.log('You can go ahead and run your tests now on your Android device.\n');
-      } else {
-        console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
-      }
-    } else if (!this.options.setup) {
-      console.log(`Some requirements are missing: ${missingRequirements.join(', ')}`);
-      console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
     }
 
     return missingRequirements;
@@ -435,6 +430,9 @@ export class AndroidSetup {
     // check if sdkmanager is present and working (below line will check both)
     console.log('Verifying that sdkmanager is present and working...');
     const sdkManagerWorking = this.checkBinariesWorking(['sdkmanager']).length === 0;
+    if (sdkManagerWorking) {
+      console.log(colors.green('Success!'));
+    }
 
     if (!sdkManagerWorking || missingRequirements.includes('avdmanager')) {
       // remove avdmanager from missingRequirements to avoid double downloads.
@@ -498,44 +496,7 @@ export class AndroidSetup {
 
     this.verifyAdbRunning();
 
-    if (result) {
-      console.log('Success! All requirements are set.');
-      if (setupConfigs.mode === 'real') {
-        console.log('You can go ahead and run your tests now on your Android device.\n');
-      } else {
-        console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
-      }
-    } else {
-      console.log('Some requirements failed to set up.');
-      console.log('Please try running the failed commands by yourself and then re-run this tool.\n');
-
-      console.log('If it still fails, please raise an issue with us at:');
-      console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');
-    }
-
     return result;
-  }
-
-  sdkRootEnvSetInstructions() {
-    console.log(colors.red('IMPORTANT'));
-    console.log(colors.red('---------'));
-
-    if (this.otherInfo.androidHomeInGlobalEnv && process.env.ANDROID_HOME === '') {
-      console.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
-      console.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
-      console.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
-    } else {
-      console.log(
-        `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
-          '.env'
-        )} file (set to '${this.sdkRoot}').\n`
-      );
-      console.log(`Please set ${colors.cyan(
-        'ANDROID_HOME'
-      )} env to '${this.sdkRoot}' globally and then delete it from ${colors.cyan('.env')} file.`);
-    }
-
-    console.log('Doing this now might save you from future troubles.\n');
   }
 
   async verifyAndSetupBrowsers(browsers: SetupConfigs['browsers']): Promise<boolean> {
@@ -563,7 +524,7 @@ export class AndroidSetup {
     let installFirefox = false;
     let downloadChromedriver = false;
 
-    console.log(`${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
+    console.log('Verifying if browser(s) are installed...\n');
 
     const emulatorAlreadyRunning = await getAlreadyRunningAvd(this.sdkRoot, this.platform, NIGHTWATCH_AVD);
 
@@ -668,7 +629,7 @@ export class AndroidSetup {
             installedChromeVersion = versionMatch[1];
           }
 
-          console.log(`${colors.yellow('Note:')} Automatic upgrade of Chrome browser is not supported yet.\n`);
+          console.log(`${colors.bold('Note:')} Automatic upgrade of Chrome browser is not supported yet.\n`);
           // console.log('You can upgrade the browser by using Play Store in the emulator if need be.');
         } else {
           console.log('Could not get the version of the installed Chrome browser.\n');
@@ -703,7 +664,7 @@ export class AndroidSetup {
 
           if (stdout !== null) {
             console.log(`  ${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
-            console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Firefox browser.\n`);
+            console.log('You can run your tests now on your Android Emulator\'s Firefox browser.\n');
             status.setupFirefox = true;
           } else {
             console.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
@@ -737,7 +698,7 @@ export class AndroidSetup {
 
         if (result) {
           console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
-          console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Chrome browser.\n`);
+          console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
           status.setupChrome = true;
         } else {
           console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
@@ -764,5 +725,66 @@ export class AndroidSetup {
     // will turn to false if some verify step has failed
     // and for it to turn back to true, corresponding setup step should pass.
     return (status.verifyFirefox || status.setupFirefox) && (status.verifyChrome || status.setupChrome);
+  }
+
+  postSetupInstructions(result: boolean, setupConfigs: SetupConfigs, missingRequirements: string[]) {
+    if (!this.options.setup) {
+      if (result) {
+        console.log(`${colors.green('Great!')} All the requirements are being met.`);
+
+        if (setupConfigs.mode === 'real') {
+          console.log('You can go ahead and run your tests now on your Android device.\n');
+        } else {
+          console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
+        }
+      } else {
+        if (missingRequirements.length) {
+          // some requirements missing
+          console.log(`Some requirements are missing: ${colors.red(missingRequirements.join(', '))}`);
+        } else {
+          // browser verification failed
+          console.log(`${colors.red('Pfft!')} One or more browsers could not be found.`);
+        }
+
+        console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
+      }
+    } else {
+      if (result) {
+        console.log(`${colors.green('Success!')} All requirements are set.`);
+        if (setupConfigs.mode === 'real') {
+          console.log('You can go ahead and run your tests now on your Android device.\n');
+        } else {
+          console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
+        }
+      } else {
+        console.log(`${colors.red('Error:')} Some requirements failed to set up.`);
+        console.log('Please try running the failed commands by yourself and then re-run this tool.\n');
+
+        console.log('If it still fails, please raise an issue with us at:');
+        console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');
+      }
+    }
+  }
+
+  sdkRootEnvSetInstructions() {
+    console.log(colors.red('IMPORTANT'));
+    console.log(colors.red('---------'));
+
+    if (this.otherInfo.androidHomeInGlobalEnv && process.env.ANDROID_HOME === '') {
+      console.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
+      console.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
+      console.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
+    } else {
+      console.log(
+        `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
+          '.env'
+        )} file (set to '${this.sdkRoot}').\n`
+      );
+      console.log(`Please set ${colors.cyan(
+        'ANDROID_HOME'
+      )} env to '${this.sdkRoot}' globally and then delete it from ${colors.cyan('.env')} file.`);
+    }
+
+    console.log('Doing this now might save you from future troubles.\n');
   }
 }
