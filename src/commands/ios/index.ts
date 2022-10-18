@@ -16,7 +16,7 @@ export class IosSetup {
     this.platform = getPlatformName();
   }
 
-  async run() {
+  async run(): Promise<boolean> {
     let result = true;
 
     const allAvailableOptions = this.getAllAvailableOptions();
@@ -25,11 +25,12 @@ export class IosSetup {
     if (this.options.help || unknownOptions.length) {
       this.showHelp(unknownOptions);
 
-      return this.options.help;
+      return this.options.help === true;
     }
 
     if (this.platform !== 'mac') {
       console.log('Only macOS is supported');
+      return false;
     }
 
     const setupConfigs: SetupConfigs = await this.getSetupConfigs(this.options);
@@ -176,10 +177,6 @@ export class IosSetup {
 
         result = false;
       }
-    }
-
-    if (!result) {
-      console.log(`\nRerun the command again with ${colors.magenta('--setup')} flag to verify the setup\n`)
     }
 
     return result;
