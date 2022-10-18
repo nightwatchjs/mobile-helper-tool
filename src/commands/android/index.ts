@@ -40,7 +40,7 @@ export class AndroidSetup {
     };
   }
 
-  async run() {
+  async run(): Promise<boolean> {
     let result = true;
 
     const allAvailableOptions = getAllAvailableOptions();
@@ -49,7 +49,7 @@ export class AndroidSetup {
     if (this.options.help || unknownOptions.length) {
       this.showHelp(unknownOptions);
 
-      return this.options.help;
+      return this.options.help === true;
     }
 
     const javaInstalled = this.checkJavaInstallation();
@@ -71,10 +71,10 @@ export class AndroidSetup {
       result = false;
     }
 
-    if (setupConfigs.mode !== 'real' && (this.options.setup || missingRequirements.length === 0)) {
-      // Only verify/install browsers if working with emulator and setup flag is used.
-      // If setup flag is not used, then all other requirements should be met before verifying browsers.
-      await this.verifyAndSetupBrowsers(setupConfigs.browsers);
+    if (setupConfigs.mode !== 'real' && result) {
+      // Only verify/install browsers if working with emulator and
+      // all processes before have passed.
+      result = await this.verifyAndSetupBrowsers(setupConfigs.browsers);
     }
 
     if (setupConfigs.mode !== 'emulator') {
@@ -134,7 +134,7 @@ export class AndroidSetup {
     });
   }
 
-  checkJavaInstallation() {
+  checkJavaInstallation(): boolean {
     try {
       execSync('java -version', {
         stdio: 'pipe',
@@ -191,7 +191,7 @@ export class AndroidSetup {
     return '';
   }
 
-  async getSdkRootFromUser() {
+  async getSdkRootFromUser(): Promise<string> {
     const answers: {sdkRoot: string} = await prompt([
       {
         type: 'input',
@@ -215,7 +215,7 @@ export class AndroidSetup {
     return sdkRoot;
   }
 
-  getConfigFromOptions(options: {[key: string]: string | string[] | boolean}) {
+  getConfigFromOptions(options: {[key: string]: string | string[] | boolean}): SetupConfigs {
     const configs: SetupConfigs = {};
 
     if (options.mode && typeof options.mode !== 'boolean') {
@@ -249,13 +249,13 @@ export class AndroidSetup {
     return configs;
   }
 
-  async getSetupConfigs(options: Options) {
+  async getSetupConfigs(options: Options): Promise<SetupConfigs> {
     const configs = this.getConfigFromOptions(options);
 
     return await prompt(SETUP_CONFIG_QUES, configs);
   }
 
-  checkBinariesPresent(binaries: SdkBinary[]) {
+  checkBinariesPresent(binaries: SdkBinary[]): SdkBinary[] {
     const missingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
@@ -269,7 +269,7 @@ export class AndroidSetup {
     return missingBinaries;
   }
 
-  checkBinariesWorking(binaries: SdkBinary[]) {
+  checkBinariesWorking(binaries: SdkBinary[]): SdkBinary[] {
     const nonWorkingBinaries: SdkBinary[] = [];
 
     for (const binaryName of binaries) {
@@ -296,7 +296,7 @@ export class AndroidSetup {
     return nonWorkingBinaries;
   }
 
-  verifyAvdPresent() {
+  verifyAvdPresent(): boolean {
     const avdLocation = getBinaryLocation(this.sdkRoot, this.platform, 'avdmanager', true);
     if (!avdLocation) {
       return false;
@@ -419,7 +419,7 @@ export class AndroidSetup {
     return missingRequirements;
   }
 
-  async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]) {
+  async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]): Promise<boolean> {
     if (missingRequirements.length === 0) {
       return true;
     }
@@ -538,10 +538,21 @@ export class AndroidSetup {
     console.log('Doing this now might save you from future troubles.\n');
   }
 
-  async verifyAndSetupBrowsers(browsers: SetupConfigs['browsers']) {
+  async verifyAndSetupBrowsers(browsers: SetupConfigs['browsers']): Promise<boolean> {
     if (!browsers || browsers === 'none') {
-      return;
+      return true;
     }
+
+    const status = {
+      // verify true by default
+      // (turn to false only when browser not found)
+      verifyFirefox: true,
+      verifyChrome: true,
+      // setup false by default
+      // (turn to true only when setup complete)
+      setupFirefox: false,
+      setupChrome: false
+    };
 
     const verifyFirefox = ['firefox', 'both'].includes(browsers);
     const verifyChrome = ['chrome', 'both'].includes(browsers);
@@ -561,7 +572,7 @@ export class AndroidSetup {
     if (!emulatorId) {
       console.log('Please close the emulator manually if running and not closed automatically.\n');
 
-      return;
+      return false;
     }
 
     console.log('Making sure adb has root permissions...');
@@ -621,9 +632,11 @@ export class AndroidSetup {
       } else if (stdout !== null) {
         console.log(`  ${colors.red(symbols().fail)} Firefox browser not found in the AVD.\n`);
         installFirefox = true;
+        status.verifyFirefox = false;
       } else {
-        // Command failed. Just add a blank line.
+        // Command failed.
         console.log('Failed to verify the presence of Firefox browser.\n');
+        status.verifyFirefox = false;
       }
     }
 
@@ -665,9 +678,11 @@ export class AndroidSetup {
       } else if (stdout !== null) {
         console.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
         console.log(`${colors.yellow('Note:')} Automatic installation of Chrome browser is not supported yet.\n`);
+        status.verifyChrome = false;
       } else {
-        // Command failed. Just add a blank line.
+        // Command failed.
         console.log('Failed to verify the presence of Chrome browser.\n');
+        status.verifyChrome = false;
       }
     }
 
@@ -689,6 +704,7 @@ export class AndroidSetup {
           if (stdout !== null) {
             console.log(`  ${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
             console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Firefox browser.\n`);
+            status.setupFirefox = true;
           } else {
             console.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
           }
@@ -722,6 +738,7 @@ export class AndroidSetup {
         if (result) {
           console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
           console.log(`${colors.green('Success!')} You can run your tests now on your Android Emulator's Chrome browser.\n`);
+          status.setupChrome = true;
         } else {
           console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
           console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
@@ -739,7 +756,13 @@ export class AndroidSetup {
           '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
           '\n'
         );
+        status.setupChrome = true;  // because we have done what we could do, i.e., setup from our side is complete.
       }
     }
+
+    // below is true by default
+    // will turn to false if some verify step has failed
+    // and for it to turn back to true, corresponding setup step should pass.
+    return (status.verifyFirefox || status.setupFirefox) && (status.verifyChrome || status.setupChrome);
   }
 }

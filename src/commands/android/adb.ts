@@ -57,7 +57,7 @@ export const getAlreadyRunningAvd = async (sdkRoot: string, platform: Platform, 
 
       return avdAlreadyRunning.udid;
     } else {
-      console.log(`  ${colors.red(symbols().fail)} '${avdName}' AVD not found running!\n`);
+      console.log(`  ${colors.yellow('!')} '${avdName}' AVD not found running!\n`);
     }
   } catch {
     console.log(`  ${colors.red(symbols().fail)} Failed to find running AVDs.\n`);
