@@ -78,7 +78,7 @@ export class AndroidSetup {
     }
 
     if (setupConfigs.mode !== 'emulator') {
-      console.log(`\n${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.`);
+      console.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
 
     if (!sdkRootEnv) {
@@ -407,13 +407,13 @@ export class AndroidSetup {
       console.log('Great! All the requirements are being met.');
 
       if (setupConfigs.mode === 'real') {
-        console.log('You can go ahead and run your tests now on your Android device.');
+        console.log('You can go ahead and run your tests now on your Android device.\n');
       } else {
-        console.log('You can go ahead and run your tests now on an Android device/emulator.');
+        console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
       }
     } else if (!this.options.setup) {
       console.log(`Some requirements are missing: ${missingRequirements.join(', ')}`);
-      console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.`);
+      console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
     }
 
     return missingRequirements;
@@ -501,23 +501,22 @@ export class AndroidSetup {
     if (result) {
       console.log('Success! All requirements are set.');
       if (setupConfigs.mode === 'real') {
-        console.log('You can go ahead and run your tests now on your Android device.');
+        console.log('You can go ahead and run your tests now on your Android device.\n');
       } else {
-        console.log('You can go ahead and run your tests now on an Android device/emulator.');
+        console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
       }
     } else {
       console.log('Some requirements failed to set up.');
       console.log('Please try running the failed commands by yourself and then re-run this tool.\n');
 
       console.log('If it still fails, please raise an issue with us at:');
-      console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'));
+      console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');
     }
 
     return result;
   }
 
   sdkRootEnvSetInstructions() {
-    console.log();
     console.log(colors.red('IMPORTANT'));
     console.log(colors.red('---------'));
 
@@ -553,14 +552,14 @@ export class AndroidSetup {
     let installFirefox = false;
     let downloadChromedriver = false;
 
-    console.log(`\n${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
+    console.log(`${colors.cyan('Last bit:')} Verifying if browser(s) are installed...\n`);
 
     const emulatorAlreadyRunning = await getAlreadyRunningAvd(this.sdkRoot, this.platform, NIGHTWATCH_AVD);
 
     const emulatorId = emulatorAlreadyRunning || await launchAVD(this.sdkRoot, this.platform, NIGHTWATCH_AVD);
 
     if (!emulatorId) {
-      console.log('Please close the emulator manually if running and not closed automatically.');
+      console.log('Please close the emulator manually if running and not closed automatically.\n');
 
       return;
     }
@@ -709,7 +708,7 @@ export class AndroidSetup {
 
     if (this.options.setup && downloadChromedriver) {
       if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
-        console.log('\nDownloading chromedriver to work with the factory version of Chrome browser...');
+        console.log('Downloading chromedriver to work with the factory version of Chrome browser...');
 
         const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
         const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
@@ -727,16 +726,18 @@ export class AndroidSetup {
           console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
           console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
           console.log(
-            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)\n'
+            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+            '\n'
           );
         }
       } else {
-        console.log(colors.cyan('\n[CHROMEDRIVER]'));
+        console.log(colors.cyan('[CHROMEDRIVER]'));
         console.log('Installed Chrome browser version is different from factory version.\n');
         console.log('You can download the chromedriver for current version from the below link:');
         console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
         console.log(
-          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)\n'
+          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+          '\n'
         );
       }
     }
