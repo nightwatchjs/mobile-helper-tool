@@ -720,50 +720,50 @@ export class AndroidSetup {
           console.log(colors.cyan('  https://archive.mozilla.org/pub/fenix/releases'), '\n');
         }
       }
+
+      if (downloadChromedriver) {
+        if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
+          console.log('Downloading chromedriver to work with the factory version of Chrome browser...');
+
+          const result = await downloadWithProgressBar(
+            DOWNLOADS.chromedriver[this.platform],
+            chromedriverDownloadDir,
+            true
+          );
+
+          if (result) {
+            console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
+            status.setupChrome = true;
+          } else {
+            console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
+            console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+            console.log(
+              '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+              '\n'
+            );
+          }
+
+          if (status.setupChrome) {
+            console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
+          }
+        } else {
+          console.log(colors.cyan('[CHROMEDRIVER]'));
+          console.log('Installed Chrome browser version is different from factory version.\n');
+          console.log('You can download the chromedriver for current version from the below link:');
+          console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
+          console.log(
+            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+            '\n'
+          );
+          status.setupChrome = true;  // because we have done what we could do, i.e., setup from our side is complete.
+        }
+      }
     }
 
     if (!emulatorAlreadyRunning) {
       console.log('Closing emulator...');
       execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, `-s ${emulatorId} emu kill`);
       console.log('Emulator will close shortly. If not, please close it manually.\n');
-    }
-
-    if (this.options.setup && downloadChromedriver) {
-      if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
-        console.log('Downloading chromedriver to work with the factory version of Chrome browser...');
-
-        const result = await downloadWithProgressBar(
-          DOWNLOADS.chromedriver[this.platform],
-          chromedriverDownloadDir,
-          true
-        );
-
-        if (result) {
-          console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
-          status.setupChrome = true;
-        } else {
-          console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
-          console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
-          console.log(
-            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
-            '\n'
-          );
-        }
-
-        if (status.setupChrome) {
-          console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
-        }
-      } else {
-        console.log(colors.cyan('[CHROMEDRIVER]'));
-        console.log('Installed Chrome browser version is different from factory version.\n');
-        console.log('You can download the chromedriver for current version from the below link:');
-        console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
-        console.log(
-          '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
-          '\n'
-        );
-        status.setupChrome = true;  // because we have done what we could do, i.e., setup from our side is complete.
-      }
     }
 
     // below is true by default
