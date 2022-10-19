@@ -49,3 +49,4 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
 
 export {AndroidSetup, IosSetup};
 export * from './commands/android/adb';
+export {getPlatformName} from './utils';
