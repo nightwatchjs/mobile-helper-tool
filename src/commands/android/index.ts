@@ -205,7 +205,7 @@ export class AndroidSetup {
       {
         type: 'input',
         name: 'sdkRoot',
-        message: 'Where do you wish to verify/download Android SDKs?',
+        message: 'Where do you want the Android SDK setup? Please give the path to your existing setup if any',
         default: getDefaultAndroidSdkRoot(this.platform),
         filter: (input: string) => path.resolve(this.rootDir, untildify(input))
       }
