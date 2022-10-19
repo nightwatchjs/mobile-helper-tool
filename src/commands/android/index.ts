@@ -65,10 +65,17 @@ export class AndroidSetup {
 
     const missingRequirements = this.verifySetup(setupConfigs);
 
-    if (this.options.setup) {
-      result = await this.setupAndroid(setupConfigs, missingRequirements);
-    } else if (missingRequirements.length) {
-      result = false;
+    if (missingRequirements.length) {
+      if (!this.options.setup) {
+        console.log(`Some requirements are missing: ${colors.red(missingRequirements.join(', '))}\n`);
+        this.options.setup = await this.askToSetupAndroid('Do you wish to download the missing binaries and complete setup?');
+      }
+
+      if (this.options.setup) {
+        result = await this.setupAndroid(setupConfigs, missingRequirements);
+      } else {
+        result = false;
+      }
     }
 
     if (setupConfigs.mode !== 'real' && result) {
@@ -77,7 +84,7 @@ export class AndroidSetup {
       result = await this.verifyAndSetupBrowsers(setupConfigs.browsers);
     }
 
-    this.postSetupInstructions(result, setupConfigs, missingRequirements);
+    this.postSetupInstructions(result, setupConfigs);
 
     if (setupConfigs.mode !== 'emulator') {
       console.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
@@ -257,6 +264,21 @@ export class AndroidSetup {
     return await prompt(SETUP_CONFIG_QUES, configs);
   }
 
+  async askToSetupAndroid(message: string): Promise<boolean> {
+    const answers: {setupAndroid: boolean} = await prompt([
+      {
+        type: 'list',
+        name: 'setupAndroid',
+        message: message,
+        choices: [{name: 'Yes', value: true}, {name: 'Not now', value: false}],
+        default: true
+      }
+    ]);
+    console.log();
+
+    return answers.setupAndroid;
+  }
+
   checkBinariesPresent(binaries: SdkBinary[]): SdkBinary[] {
     const missingBinaries: SdkBinary[] = [];
 
@@ -415,10 +437,6 @@ export class AndroidSetup {
   }
 
   async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]): Promise<boolean> {
-    if (missingRequirements.length === 0) {
-      return true;
-    }
-
     if (setupConfigs.mode === 'real') {
       console.log('Setting up missing requirements for real devices...\n');
     } else if (setupConfigs.mode === 'emulator') {
@@ -431,7 +449,7 @@ export class AndroidSetup {
     console.log('Verifying that sdkmanager is present and working...');
     const sdkManagerWorking = this.checkBinariesWorking(['sdkmanager']).length === 0;
     if (sdkManagerWorking) {
-      console.log(colors.green('Success!'));
+      console.log(colors.green('Success!'), '\n');
     }
 
     if (!sdkManagerWorking || missingRequirements.includes('avdmanager')) {
@@ -523,6 +541,9 @@ export class AndroidSetup {
 
     let installFirefox = false;
     let downloadChromedriver = false;
+
+    const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
+    const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
 
     console.log('Verifying if browser(s) are installed...\n');
 
@@ -635,7 +656,15 @@ export class AndroidSetup {
           console.log('Could not get the version of the installed Chrome browser.\n');
         }
 
-        downloadChromedriver = true;
+        // TODO: add major version of Chrome as suffix to chromedriver.
+        // Or, check the version of existing chromedriver using --version.
+        console.log('Checking if chromedriver is already downloaded...');
+        if (fs.existsSync(chromedriverDownloadPath)) {
+          console.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
+        } else {
+          console.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
+          downloadChromedriver = true;
+        }
       } else if (stdout !== null) {
         console.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
         console.log(`${colors.yellow('Note:')} Automatic installation of Chrome browser is not supported yet.\n`);
@@ -644,6 +673,22 @@ export class AndroidSetup {
         // Command failed.
         console.log('Failed to verify the presence of Chrome browser.\n');
         status.verifyChrome = false;
+      }
+    }
+
+    if (!this.options.setup) {
+      let message = '';
+
+      if (installFirefox && downloadChromedriver) {
+        message = 'Do you wish to setup the missing browser requirements?';
+      } else if (installFirefox) {
+        message = 'Do you wish to install/upgrade the Firefox browser?';
+      } else if (downloadChromedriver) {
+        message = 'Do you wish to setup missing requirements for Chrome browser?';
+      }
+
+      if (message) {
+        this.options.setup = await this.askToSetupAndroid(message);
       }
     }
 
@@ -687,30 +732,22 @@ export class AndroidSetup {
       if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
         console.log('Downloading chromedriver to work with the factory version of Chrome browser...');
 
-        const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
-        const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
+        const result = await downloadWithProgressBar(
+          DOWNLOADS.chromedriver[this.platform],
+          chromedriverDownloadDir,
+          true
+        );
 
-        if (fs.existsSync(chromedriverDownloadPath)) {
-          console.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
+        if (result) {
+          console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
           status.setupChrome = true;
         } else {
-          const result = await downloadWithProgressBar(
-            DOWNLOADS.chromedriver[this.platform],
-            chromedriverDownloadDir,
-            true
+          console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
+          console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+          console.log(
+            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
+            '\n'
           );
-
-          if (result) {
-            console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
-            status.setupChrome = true;
-          } else {
-            console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
-            console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
-            console.log(
-              '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
-              '\n'
-            );
-          }
         }
 
         if (status.setupChrome) {
@@ -730,12 +767,13 @@ export class AndroidSetup {
     }
 
     // below is true by default
-    // will turn to false if some verify step has failed
+    // will turn to false if some verify step has failed or chromedriver is needed to be downloaded
     // and for it to turn back to true, corresponding setup step should pass.
-    return (status.verifyFirefox || status.setupFirefox) && (status.verifyChrome || status.setupChrome);
+    // if chrome is not present, then we can't do anything but send out a warning/error.
+    return (status.verifyFirefox || status.setupFirefox) && status.verifyChrome && (!downloadChromedriver || status.setupChrome);
   }
 
-  postSetupInstructions(result: boolean, setupConfigs: SetupConfigs, missingRequirements: string[]) {
+  postSetupInstructions(result: boolean, setupConfigs: SetupConfigs) {
     if (!this.options.setup) {
       if (result) {
         console.log(`${colors.green('Great!')} All the requirements are being met.`);
@@ -746,14 +784,6 @@ export class AndroidSetup {
           console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
         }
       } else {
-        if (missingRequirements.length) {
-          // some requirements missing
-          console.log(`Some requirements are missing: ${colors.red(missingRequirements.join(', '))}`);
-        } else {
-          // browser verification failed
-          console.log(`${colors.red('Pfft!')} One or more browsers could not be found.`);
-        }
-
         console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
       }
     } else {
