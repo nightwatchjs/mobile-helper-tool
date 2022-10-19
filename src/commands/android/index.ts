@@ -7,6 +7,7 @@ import path from 'path';
 import untildify from 'untildify';
 import {prompt} from 'inquirer';
 
+import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
 import {getAlreadyRunningAvd, launchAVD} from './adb';
 import {
@@ -61,13 +62,13 @@ export class AndroidSetup {
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
 
     const setupConfigs: SetupConfigs = await this.getSetupConfigs(this.options);
-    console.log();
+    Logger.log();
 
     const missingRequirements = this.verifySetup(setupConfigs);
 
     if (missingRequirements.length) {
       if (!this.options.setup) {
-        console.log(`Some requirements are missing: ${colors.red(missingRequirements.join(', '))}\n`);
+        Logger.log(`Some requirements are missing: ${colors.red(missingRequirements.join(', '))}\n`);
         this.options.setup = await this.askToSetupAndroid('Do you wish to download the missing binaries and complete setup?');
       }
 
@@ -87,7 +88,7 @@ export class AndroidSetup {
     this.postSetupInstructions(result, setupConfigs);
 
     if (setupConfigs.mode !== 'emulator') {
-      console.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
+      Logger.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
 
     if (!sdkRootEnv) {
@@ -99,13 +100,13 @@ export class AndroidSetup {
 
   showHelp(unknownOptions: string[]) {
     if (unknownOptions.length) {
-      console.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
+      Logger.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
     }
 
-    console.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options]')}`);
-    console.log('  Verify if all the requirements are met to run tests on an Android device/emulator.\n');
+    Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options]')}`);
+    Logger.log('  Verify if all the requirements are met to run tests on an Android device/emulator.\n');
 
-    console.log(`${colors.yellow('Options:')}`);
+    Logger.log(`${colors.yellow('Options:')}`);
 
     const switches = Object.keys(AVAILABLE_OPTIONS).reduce((acc: {[T: string]: string}, key) => {
       acc[key] = [key].concat(AVAILABLE_OPTIONS[key].alias || [])
@@ -139,7 +140,7 @@ export class AndroidSetup {
 
       const prelude = '  ' + (kswitch) + ' ' + colors.grey(spadding);
 
-      console.log(prelude + ' ' + colors.grey(desc));
+      Logger.log(prelude + ' ' + colors.grey(desc));
     });
   }
 
@@ -152,17 +153,17 @@ export class AndroidSetup {
 
       return true;
     } catch {
-      console.log('Java Development Kit is required to work with Android SDKs. Download from here:');
-      console.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
+      Logger.log('Java Development Kit is required to work with Android SDKs. Download from here:');
+      Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
 
-      console.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.`);
+      Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.`);
 
       return false;
     }
   }
 
   getSdkRootFromEnv(): string {
-    console.log('Checking the value of ANDROID_HOME environment variable...');
+    Logger.log('Checking the value of ANDROID_HOME environment variable...');
 
     this.otherInfo.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
 
@@ -176,23 +177,23 @@ export class AndroidSetup {
 
       const androidHomeAbsolute = path.resolve(this.rootDir, androidHomeFinal);
       if (androidHomeFinal !== androidHomeAbsolute) {
-        console.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
-        console.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
+        Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
+        Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
 
         return androidHomeAbsolute;
       }
 
-      console.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
+      Logger.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
 
       return androidHomeFinal;
     }
 
     if (androidHome === undefined) {
-      console.log(
+      Logger.log(
         `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!\n`
       );
     } else {
-      console.log(
+      Logger.log(
         `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome}'${fromDotEnv} which is NOT a valid path!\n`
       );
     }
@@ -274,7 +275,7 @@ export class AndroidSetup {
         default: true
       }
     ]);
-    console.log();
+    Logger.log();
 
     return answers.setupAndroid;
   }
@@ -288,7 +289,7 @@ export class AndroidSetup {
         missingBinaries.push(binaryName);
       }
     }
-    console.log();
+    Logger.log();
 
     return missingBinaries;
   }
@@ -312,13 +313,13 @@ export class AndroidSetup {
           nonWorkingBinaries.push(binaryName);
         }
       } else {
-        console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not found.`);
+        Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not found.`);
         nonWorkingBinaries.push(binaryName);
       }
     }
 
     if (nonWorkingBinaries.length) {
-      console.log();
+      Logger.log();
     }
 
     return nonWorkingBinaries;
@@ -353,11 +354,11 @@ export class AndroidSetup {
   }
 
   verifyAdbRunning() {
-    console.log('Making sure adb is running...');
+    Logger.log('Making sure adb is running...');
 
     const adbLocation = getBinaryLocation(this.sdkRoot, this.platform, 'adb', true);
     if (!adbLocation) {
-      console.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
+      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
 
       return;
     }
@@ -370,9 +371,9 @@ export class AndroidSetup {
     );
 
     if (serverStarted !== null) {
-      console.log(`${colors.green('Success!')} adb server is running.\n`);
+      Logger.log(`${colors.green('Success!')} adb server is running.\n`);
     } else {
-      console.log('Please try running the above command by yourself.\n');
+      Logger.log('Please try running the above command by yourself.\n');
     }
   }
 
@@ -380,11 +381,11 @@ export class AndroidSetup {
     const missingRequirements: string[] = [];
 
     if (setupConfigs.mode === 'real') {
-      console.log('Verifying the setup requirements for real devices...');
+      Logger.log('Verifying the setup requirements for real devices...');
     } else if (setupConfigs.mode === 'emulator') {
-      console.log('Verifying the setup requirements for Android emulator...');
+      Logger.log('Verifying the setup requirements for Android emulator...');
     } else {
-      console.log('Verifying the setup requirements for real devices/emulator...');
+      Logger.log('Verifying the setup requirements for real devices/emulator...');
     }
 
     const requiredBinaries: SdkBinary[] = ['adb'];
@@ -400,11 +401,11 @@ export class AndroidSetup {
     if (requiredBinaries.includes('emulator')) {
       const platormsPath = path.join(this.sdkRoot, 'platforms');
       if (fs.existsSync(platormsPath)) {
-        console.log(
+        Logger.log(
           `  ${colors.green(symbols().ok)} ${colors.cyan('platforms')} subdirectory is present at '${platormsPath}'\n`
         );
       } else {
-        console.log(
+        Logger.log(
           `  ${colors.red(symbols().fail)} ${colors.cyan('platforms')} subdirectory not present at '${platormsPath}'\n`
         );
         missingRequirements.push('platforms');
@@ -412,11 +413,11 @@ export class AndroidSetup {
 
       const avdPresent = this.verifyAvdPresent();
       if (avdPresent) {
-        console.log(
+        Logger.log(
           `  ${colors.green(symbols().ok)} ${colors.cyan(NIGHTWATCH_AVD)} AVD is present and ready to be used.\n`
         );
       } else {
-        console.log(`  ${colors.red(symbols().fail)} ${colors.cyan(NIGHTWATCH_AVD)} AVD not found.\n`);
+        Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan(NIGHTWATCH_AVD)} AVD not found.\n`);
 
         missingRequirements.push(NIGHTWATCH_AVD);
       }
@@ -438,18 +439,18 @@ export class AndroidSetup {
 
   async setupAndroid(setupConfigs: SetupConfigs, missingRequirements: string[]): Promise<boolean> {
     if (setupConfigs.mode === 'real') {
-      console.log('Setting up missing requirements for real devices...\n');
+      Logger.log('Setting up missing requirements for real devices...\n');
     } else if (setupConfigs.mode === 'emulator') {
-      console.log('Setting up missing requirements for Android emulator...\n');
+      Logger.log('Setting up missing requirements for Android emulator...\n');
     } else {
-      console.log('Setting up missing requirements for real devices/emulator...\n');
+      Logger.log('Setting up missing requirements for real devices/emulator...\n');
     }
 
     // check if sdkmanager is present and working (below line will check both)
-    console.log('Verifying that sdkmanager is present and working...');
+    Logger.log('Verifying that sdkmanager is present and working...');
     const sdkManagerWorking = this.checkBinariesWorking(['sdkmanager']).length === 0;
     if (sdkManagerWorking) {
-      console.log(colors.green('Success!'), '\n');
+      Logger.log(colors.green('Success!'), '\n');
     }
 
     if (!sdkManagerWorking || missingRequirements.includes('avdmanager')) {
@@ -459,7 +460,7 @@ export class AndroidSetup {
         missingRequirements.splice(avdmanagerIndex, 1);
       }
 
-      console.log('Downloading cmdline-tools...');
+      Logger.log('Downloading cmdline-tools...');
       await downloadAndSetupAndroidSdk(this.sdkRoot, this.platform);
     }
 
@@ -479,7 +480,7 @@ export class AndroidSetup {
     );
 
     if (missingRequirements.includes('platforms')) {
-      console.log('Creating platforms subdirectory...');
+      Logger.log('Creating platforms subdirectory...');
 
       const platformsPath = path.join(this.sdkRoot, 'platforms');
       try {
@@ -487,14 +488,14 @@ export class AndroidSetup {
         // eslint-disable-next-line
       } catch {}
 
-      console.log(`${colors.green('Success!')} Created platforms subdirectory at ${platformsPath}\n`);
+      Logger.log(`${colors.green('Success!')} Created platforms subdirectory at ${platformsPath}\n`);
     }
 
     if (missingRequirements.includes(NIGHTWATCH_AVD)) {
       // Check if AVD is already created and only the system-image was missing.
       const avdPresent = this.verifyAvdPresent();
       if (!avdPresent) {
-        console.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
+        Logger.log(`Creating AVD "${NIGHTWATCH_AVD}" using pixel_5 hardware profile...`);
 
         const avdCreated = execBinarySync(
           getBinaryLocation(this.sdkRoot, this.platform, 'avdmanager', true),
@@ -504,9 +505,9 @@ export class AndroidSetup {
         );
 
         if (avdCreated !== null) {
-          console.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
+          Logger.log(`${colors.green('Success!')} AVD "${NIGHTWATCH_AVD}" created successfully!\n`);
         } else {
-          console.log();
+          Logger.log();
           result = false;
         }
       }
@@ -545,19 +546,19 @@ export class AndroidSetup {
     const chromedriverDownloadDir = path.join(this.rootDir, 'chromedriver-mobile');
     const chromedriverDownloadPath = path.join(chromedriverDownloadDir, getBinaryNameForOS(this.platform, 'chromedriver'));
 
-    console.log('Verifying if browser(s) are installed...\n');
+    Logger.log('Verifying if browser(s) are installed...\n');
 
     const emulatorAlreadyRunning = await getAlreadyRunningAvd(this.sdkRoot, this.platform, NIGHTWATCH_AVD);
 
     const emulatorId = emulatorAlreadyRunning || await launchAVD(this.sdkRoot, this.platform, NIGHTWATCH_AVD);
 
     if (!emulatorId) {
-      console.log('Please close the emulator manually if running and not closed automatically.\n');
+      Logger.log('Please close the emulator manually if running and not closed automatically.\n');
 
       return false;
     }
 
-    console.log('Making sure adb has root permissions...');
+    Logger.log('Making sure adb has root permissions...');
     const adbRootStdout = execBinarySync(
       getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
       'adb',
@@ -565,15 +566,15 @@ export class AndroidSetup {
       `-s ${emulatorId} root`
     );
     if (adbRootStdout !== null) {
-      console.log(`  ${colors.green(symbols().ok)} adb is running with root permissions!\n`);
+      Logger.log(`  ${colors.green(symbols().ok)} adb is running with root permissions!\n`);
     } else {
-      console.log('Please try running the above command by yourself.\n');
+      Logger.log('Please try running the above command by yourself.\n');
     }
 
     if (verifyFirefox) {
       firefoxLatestVersion = await getLatestVersion('firefox');
 
-      console.log('Verifying if Firefox is installed...');
+      Logger.log('Verifying if Firefox is installed...');
       const stdout = execBinarySync(
         getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
         'adb',
@@ -581,9 +582,9 @@ export class AndroidSetup {
         `-s ${emulatorId} shell pm list packages org.mozilla.firefox`
       );
       if (stdout) {
-        console.log(`  ${colors.green(symbols().ok)} Firefox browser is installed in the AVD.\n`);
+        Logger.log(`  ${colors.green(symbols().ok)} Firefox browser is installed in the AVD.\n`);
 
-        console.log('Checking the version of installed Firefox browser...');
+        Logger.log('Checking the version of installed Firefox browser...');
         const versionStdout = execBinarySync(
           getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
           'adb',
@@ -594,36 +595,36 @@ export class AndroidSetup {
         if (versionStdout !== null) {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
-            console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Firefox browser installed.\n`);
+            Logger.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Firefox browser installed.\n`);
           } else if (versionMatch[1] !== firefoxLatestVersion) {
             const currentMajorVersion = parseInt(versionMatch[1].split('.')[0], 10);
             const latestMajorVersion = parseInt(firefoxLatestVersion.split('.')[0], 10);
 
             if (firefoxLatestVersion === DEFAULT_FIREFOX_VERSION && currentMajorVersion >= latestMajorVersion) {
-              console.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Firefox browser.\n`);
+              Logger.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Firefox browser.\n`);
             } else {
-              console.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
+              Logger.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
               installFirefox = true;
             }
           } else {
-            console.log(`  ${colors.green(symbols().ok)} Your Firefox browser is up-to-date.\n`);
+            Logger.log(`  ${colors.green(symbols().ok)} Your Firefox browser is up-to-date.\n`);
           }
         } else {
-          console.log('Could not get the version of the installed Firefox browser.\n');
+          Logger.log('Could not get the version of the installed Firefox browser.\n');
         }
       } else if (stdout !== null) {
-        console.log(`  ${colors.red(symbols().fail)} Firefox browser not found in the AVD.\n`);
+        Logger.log(`  ${colors.red(symbols().fail)} Firefox browser not found in the AVD.\n`);
         installFirefox = true;
         status.verifyFirefox = false;
       } else {
         // Command failed.
-        console.log('Failed to verify the presence of Firefox browser.\n');
+        Logger.log('Failed to verify the presence of Firefox browser.\n');
         status.verifyFirefox = false;
       }
     }
 
     if (verifyChrome) {
-      console.log('Verifying if Chrome is installed...');
+      Logger.log('Verifying if Chrome is installed...');
       const stdout = execBinarySync(
         getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
         'adb',
@@ -631,9 +632,9 @@ export class AndroidSetup {
         `-s ${emulatorId} shell pm list packages com.android.chrome`
       );
       if (stdout) {
-        console.log(`  ${colors.green(symbols().ok)} Chrome browser is installed in the AVD.\n`);
+        Logger.log(`  ${colors.green(symbols().ok)} Chrome browser is installed in the AVD.\n`);
 
-        console.log('Checking the version of installed Chrome browser...');
+        Logger.log('Checking the version of installed Chrome browser...');
         const versionStdout = execBinarySync(
           getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
           'adb',
@@ -644,34 +645,34 @@ export class AndroidSetup {
         if (versionStdout !== null) {
           const versionMatch = versionStdout.match(/versionName=((\d+\.)+\d+)/);
           if (!versionMatch) {
-            console.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
+            Logger.log(`  ${colors.red(symbols().fail)} Failed to find the version of the Chrome browser installed.\n`);
           } else {
-            console.log(`Version: ${colors.green(versionMatch[1])}\n`);
+            Logger.log(`Version: ${colors.green(versionMatch[1])}\n`);
             installedChromeVersion = versionMatch[1];
           }
 
-          console.log(`${colors.bold('Note:')} Automatic upgrade of Chrome browser is not supported yet.\n`);
-          // console.log('You can upgrade the browser by using Play Store in the emulator if need be.');
+          Logger.log(`${colors.bold('Note:')} Automatic upgrade of Chrome browser is not supported yet.\n`);
+          // Logger.log('You can upgrade the browser by using Play Store in the emulator if need be.');
         } else {
-          console.log('Could not get the version of the installed Chrome browser.\n');
+          Logger.log('Could not get the version of the installed Chrome browser.\n');
         }
 
         // TODO: add major version of Chrome as suffix to chromedriver.
         // Or, check the version of existing chromedriver using --version.
-        console.log('Checking if chromedriver is already downloaded...');
+        Logger.log('Checking if chromedriver is already downloaded...');
         if (fs.existsSync(chromedriverDownloadPath)) {
-          console.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
+          Logger.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
         } else {
-          console.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
+          Logger.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
           downloadChromedriver = true;
         }
       } else if (stdout !== null) {
-        console.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
-        console.log(`${colors.yellow('Note:')} Automatic installation of Chrome browser is not supported yet.\n`);
+        Logger.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
+        Logger.log(`${colors.yellow('Note:')} Automatic installation of Chrome browser is not supported yet.\n`);
         status.verifyChrome = false;
       } else {
         // Command failed.
-        console.log('Failed to verify the presence of Chrome browser.\n');
+        Logger.log('Failed to verify the presence of Chrome browser.\n');
         status.verifyChrome = false;
       }
     }
@@ -694,11 +695,11 @@ export class AndroidSetup {
 
     if (this.options.setup) {
       if (installFirefox) {
-        console.log('Downloading latest Firefox APK...');
+        Logger.log('Downloading latest Firefox APK...');
 
         const firefoxDownloaded = await downloadFirefoxAndroid(firefoxLatestVersion);
         if (firefoxDownloaded) {
-          console.log('\nInstalling the downloaded APK in the running AVD...');
+          Logger.log('\nInstalling the downloaded APK in the running AVD...');
 
           const stdout = execBinarySync(
             getBinaryLocation(this.sdkRoot, this.platform, 'adb', true),
@@ -708,22 +709,22 @@ export class AndroidSetup {
           );
 
           if (stdout !== null) {
-            console.log(`  ${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
-            console.log('You can run your tests now on your Android Emulator\'s Firefox browser.\n');
+            Logger.log(`  ${colors.green(symbols().ok)} Firefox browser installed successfully!\n`);
+            Logger.log('You can run your tests now on your Android Emulator\'s Firefox browser.\n');
             status.setupFirefox = true;
           } else {
-            console.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
+            Logger.log('Please try running the above command by yourself (make sure that the emulator is running).\n');
           }
         } else {
-          console.log(`\n${colors.red('Failed!')} Please download the latest version of Firefox from the below link.`);
-          console.log('(Drag-and-drop the downloaded APK over the emulator screen to install.)');
-          console.log(colors.cyan('  https://archive.mozilla.org/pub/fenix/releases'), '\n');
+          Logger.log(`\n${colors.red('Failed!')} Please download the latest version of Firefox from the below link.`);
+          Logger.log('(Drag-and-drop the downloaded APK over the emulator screen to install.)');
+          Logger.log(colors.cyan('  https://archive.mozilla.org/pub/fenix/releases'), '\n');
         }
       }
 
       if (downloadChromedriver) {
         if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
-          console.log('Downloading chromedriver to work with the factory version of Chrome browser...');
+          Logger.log('Downloading chromedriver to work with the factory version of Chrome browser...');
 
           const result = await downloadWithProgressBar(
             DOWNLOADS.chromedriver[this.platform],
@@ -732,26 +733,26 @@ export class AndroidSetup {
           );
 
           if (result) {
-            console.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
+            Logger.log(`${colors.green('Done!')} chromedriver downloaded at '${chromedriverDownloadPath}'\n`);
             status.setupChrome = true;
           } else {
-            console.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
-            console.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
-            console.log(
+            Logger.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
+            Logger.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+            Logger.log(
               '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
               '\n'
             );
           }
 
           if (status.setupChrome) {
-            console.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
+            Logger.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
           }
         } else {
-          console.log(colors.cyan('[CHROMEDRIVER]'));
-          console.log('Installed Chrome browser version is different from factory version.\n');
-          console.log('You can download the chromedriver for current version from the below link:');
-          console.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
-          console.log(
+          Logger.log(colors.cyan('[CHROMEDRIVER]'));
+          Logger.log('Installed Chrome browser version is different from factory version.\n');
+          Logger.log('You can download the chromedriver for current version from the below link:');
+          Logger.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
+          Logger.log(
             '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
             '\n'
           );
@@ -761,9 +762,9 @@ export class AndroidSetup {
     }
 
     if (!emulatorAlreadyRunning) {
-      console.log('Closing emulator...');
+      Logger.log('Closing emulator...');
       execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, `-s ${emulatorId} emu kill`);
-      console.log('Emulator will close shortly. If not, please close it manually.\n');
+      Logger.log('Emulator will close shortly. If not, please close it manually.\n');
     }
 
     // below is true by default
@@ -776,53 +777,53 @@ export class AndroidSetup {
   postSetupInstructions(result: boolean, setupConfigs: SetupConfigs) {
     if (!this.options.setup) {
       if (result) {
-        console.log(`${colors.green('Great!')} All the requirements are being met.`);
+        Logger.log(`${colors.green('Great!')} All the requirements are being met.`);
 
         if (setupConfigs.mode === 'real') {
-          console.log('You can go ahead and run your tests now on your Android device.\n');
+          Logger.log('You can go ahead and run your tests now on your Android device.\n');
         } else {
-          console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
+          Logger.log('You can go ahead and run your tests now on an Android device/emulator.\n');
         }
       } else {
-        console.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
+        Logger.log(`Please use ${colors.magenta('--setup')} flag with the command to install all the missing requirements.\n`);
       }
     } else {
       if (result) {
-        console.log(`${colors.green('Success!')} All requirements are set.`);
+        Logger.log(`${colors.green('Success!')} All requirements are set.`);
         if (setupConfigs.mode === 'real') {
-          console.log('You can go ahead and run your tests now on your Android device.\n');
+          Logger.log('You can go ahead and run your tests now on your Android device.\n');
         } else {
-          console.log('You can go ahead and run your tests now on an Android device/emulator.\n');
+          Logger.log('You can go ahead and run your tests now on an Android device/emulator.\n');
         }
       } else {
-        console.log(`${colors.red('Error:')} Some requirements failed to set up.`);
-        console.log('Please try running the failed commands by yourself and then re-run this tool.\n');
+        Logger.log(`${colors.red('Error:')} Some requirements failed to set up.`);
+        Logger.log('Please try running the failed commands by yourself and then re-run this tool.\n');
 
-        console.log('If it still fails, please raise an issue with us at:');
-        console.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');
+        Logger.log('If it still fails, please raise an issue with us at:');
+        Logger.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');
       }
     }
   }
 
   sdkRootEnvSetInstructions() {
-    console.log(colors.red('IMPORTANT'));
-    console.log(colors.red('---------'));
+    Logger.log(colors.red('IMPORTANT'));
+    Logger.log(colors.red('---------'));
 
     if (this.otherInfo.androidHomeInGlobalEnv && process.env.ANDROID_HOME === '') {
-      console.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
-      console.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
-      console.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
+      Logger.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
+      Logger.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
+      Logger.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
     } else {
-      console.log(
+      Logger.log(
         `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
           '.env'
         )} file (set to '${this.sdkRoot}').\n`
       );
-      console.log(`Please set ${colors.cyan(
+      Logger.log(`Please set ${colors.cyan(
         'ANDROID_HOME'
       )} env to '${this.sdkRoot}' globally and then delete it from ${colors.cyan('.env')} file.`);
     }
 
-    console.log('Doing this now might save you from future troubles.\n');
+    Logger.log('Doing this now might save you from future troubles.\n');
   }
 }
