@@ -437,3 +437,244 @@ describe('test checkBinariesWorking', function() {
     assert.strictEqual(output.includes('sdkmanager binary not found.'), true);
   });
 });
+
+describe('test verifyAvdPresent', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
+
+  it('returns false when avd binary location not found', () => {
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    let avdPresent = androidSetup.verifyAvdPresent();
+    assert.strictEqual(avdPresent, false);
+  });
+
+  it('returns false when avd is not already present', () => {
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return 'something not avd';
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    let avdPresent = androidSetup.verifyAvdPresent();
+    assert.strictEqual(avdPresent, false);
+  });
+
+  it('returns false when avd command face error (returns null)', () => {
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return null;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    let avdPresent = androidSetup.verifyAvdPresent();
+    assert.strictEqual(avdPresent, false);
+  });
+
+  it('returns true when avd is already present', () => {
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return `something not avd
+        nightwatch-android-11
+        Android Virtual Devices could not be loaded
+        something not avd`;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    let avdPresent = androidSetup.verifyAvdPresent();
+    assert.strictEqual(avdPresent, true);
+  });
+
+  it('returns false when avd is already present but could not be loaded', () => {
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return `something not avd
+        something not avd again
+        Android Virtual Devices could not be loaded
+        nightwatch-android-11`;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    let avdPresent = androidSetup.verifyAvdPresent();
+    assert.strictEqual(avdPresent, false);
+  });
+});
+
+describe('test verifyAdbRunning', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
+
+  test('if adb binary location not found', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+    androidSetup.verifyAdbRunning();
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('adb binary not found.'), true);
+  });
+
+  test('if adb command face error (returns null)', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return null;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+    androidSetup.verifyAdbRunning();
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('try running the above command'), true);
+  });
+
+  test('if adb server is running', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return 'some/location';
+      }
+    });
+
+    mockery.registerMock('./utils/sdk', {
+      execBinarySync: () => {
+        return '';
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+    androidSetup.verifyAdbRunning();
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('adb server is running'), true);
+  });
+});
