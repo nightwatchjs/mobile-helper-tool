@@ -8,6 +8,7 @@
     "build": "tsc",
     "dev": "tsc && node dev.js",
     "prepublishOnly": "tsc --outDir dist",
+    "test:unit": "npx nightwatch tests/unit_tests",
     "eslint": "eslint src"
   },
   "author": "",
