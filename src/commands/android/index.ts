@@ -14,7 +14,7 @@ import {
   ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
-import {Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
+import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
   getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
@@ -41,9 +41,7 @@ export class AndroidSetup {
     };
   }
 
-  async run(): Promise<boolean> {
-    let result = true;
-
+  async run(): Promise<AndroidSetupResult | boolean> {
     const allAvailableOptions = getAllAvailableOptions();
     const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
 
@@ -57,6 +55,8 @@ export class AndroidSetup {
     if (!javaInstalled) {
       return false;
     }
+
+    let result = true;
 
     const sdkRootEnv = this.getSdkRootFromEnv();
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
@@ -95,7 +95,10 @@ export class AndroidSetup {
       this.sdkRootEnvSetInstructions();
     }
 
-    return result;
+    return {
+      status: result,
+      setup: !!this.options.setup
+    };
   }
 
   showHelp(unknownOptions: string[]) {

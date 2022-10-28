@@ -1,3 +1,8 @@
+export interface AndroidSetupResult {
+  status: boolean;
+  setup: boolean;
+}
+
 export interface AvailableOptions {
   [key: string]: {
     alias: string[],
