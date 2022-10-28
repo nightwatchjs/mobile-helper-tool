@@ -85,7 +85,7 @@ export class IosSetup {
         });
         Logger.log(`  ${colors.red(symbols().ok)} Xcode is installed in your machine\n`);
 
-        Logger.log(boxen(`Run the following command to get the list of siulators\n` +
+        Logger.log(boxen(`Run the following command to get the list of simulators\n` +
           colors.cyan.italic('xcrun simctl list devices') + '\n' +
           `\nAnd then update ${colors.cyan('safari:deviceName')} (eg: 'iphone 13') and ${colors.cyan('safari:platformVersion')} (eg: '15.0') in nightwatch configuration for ${colors.gray.italic('ios.simulator.safari')} environment accordingly.`
         , {padding: 1}));
