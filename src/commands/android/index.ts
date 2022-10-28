@@ -1,7 +1,7 @@
 import colors from 'ansi-colors';
 import {execSync} from 'child_process';
 import * as dotenv from 'dotenv';
-import fs from 'fs';
+import fs from 'node:fs';
 import os from 'os';
 import path from 'path';
 import untildify from 'untildify';
@@ -232,7 +232,7 @@ export class AndroidSetup {
       const realMode = options.mode.includes('real');
       const emulatorMode = options.mode.includes('emulator');
 
-      if (realMode && emulatorMode) {
+      if ((realMode && emulatorMode) || options.mode.includes('both')) {
         configs.mode = 'both';
       } else if (realMode) {
         configs.mode = 'real';
@@ -247,7 +247,7 @@ export class AndroidSetup {
 
       if (options.browsers.includes('none')) {
         configs.browsers = 'none';
-      } else if (chrome && firefox) {
+      } else if ((chrome && firefox) || options.browsers.includes('both')) {
         configs.browsers = 'both';
       } else if (chrome) {
         configs.browsers = 'chrome';
