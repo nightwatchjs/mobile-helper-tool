@@ -1,1 +1,81 @@
 # @nightwatch/mobile-helper
+
+## Setup for mobile-web testing
+
+### Android
+
+1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+
+   ```sh
+   npx @nightwatch/mobile-helper android
+   ```
+2. Answer a few questions related to your requirements:
+3. It will verify if all the requirements are being met.
+4. If all requirements are not being met, it will ask whether to download and setup those requirements:
+5. Voila :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
+6. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
+   ```js
+   "test_settings": {
+    // other envs above this line
+    'android.chrome': {
+      desiredCapabilities: {
+        browserName: 'chrome',
+        'goog:chromeOptions': {
+          w3c: true,
+          args: [
+            //'--no-sandbox',
+            //'--ignore-certificate-errors',
+            //'--allow-insecure-localhost',
+            //'--headless'
+          ],
+          androidPackage: 'com.android.chrome',
+          // add the device serial to run tests on, if multiple devices are online
+          // Run command: `$ANDROID_HOME/platform-tools/adb devices`
+          // androidDeviceSerial: ''
+        },
+      },
+
+      webdriver: {
+        start_process: true,
+        server_path: 'chromedriver-mobile/chromedriver',
+        cli_args: [
+          // --verbose
+        ]
+      }
+    },
+
+    'android.firefox': {
+      desiredCapabilities: {
+        browserName: 'firefox',
+        acceptInsecureCerts: true,
+        'moz:firefoxOptions': {
+          args: [
+            // '-headless',
+            // '-verbose'
+          ],
+          androidPackage: 'org.mozilla.firefox',
+          // add the device serial to run tests on, if multiple devices are online
+          // Run command: `$ANDROID_HOME/platform-tools/adb devices`
+          // androidDeviceSerial: 'ZD2222W62Y'
+        }
+      },
+      webdriver: {
+        start_process: true,
+        server_path: '',
+        cli_args: [
+          // very verbose geckodriver logs
+          // '-vv'
+        ]
+      }
+    },
+   }
+   ```
+7. If testing on real-device, make sure latest version of Chrome/Firefox browsers are installed. Otherwise install them from Google Play Store.
+8. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. Otherwise, re-run the command in first step.
+9. Run your nightwatch tests on Android mobile browsers:
+   ```sh
+    # for firefox
+    npx nightwatch --env android.firefox
+    # for chrome
+    npx nightwatch --env android.chrome
+   ```
