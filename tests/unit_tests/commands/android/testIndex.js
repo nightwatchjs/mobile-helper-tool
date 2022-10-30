@@ -677,4 +677,431 @@ describe('test verifyAdbRunning', function() {
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('adb server is running'), true);
   });
+
+  describe('test verifySetup', function() {
+    beforeEach(() => {
+      mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+    });
+
+    afterEach(() => {
+      mockery.deregisterAll();
+      mockery.resetCache();
+      mockery.disable();
+    });
+
+    test('for real mode and adb binary not present', () => {
+      const consoleOutput = [];
+      mockery.registerMock(
+        '../../logger',
+        class {
+          static log(...msgs) {
+            consoleOutput.push(...msgs);
+          }
+        }
+      );
+
+      const colorFn = (arg) => arg;
+      mockery.registerMock('ansi-colors', {
+        green: colorFn,
+        yellow: colorFn,
+        magenta: colorFn,
+        cyan: colorFn,
+        red: colorFn,
+        grey: colorFn
+      });
+
+      let platformFolderChecked = false;
+      mockery.registerMock('node:fs', {
+        existsSync(path) {
+          if (path.endsWith('platforms')) {
+            platformFolderChecked = true;
+
+            return false;
+          }
+
+          return false;
+        }
+      });
+
+      const {AndroidSetup} = require('../../../../src/commands/android/index');
+      const androidSetup = new AndroidSetup();
+
+      const binariesCheckedForPresent = [];
+      androidSetup.checkBinariesPresent = (binaries) => {
+        binariesCheckedForPresent.push(...binaries);
+
+        // all binaries missing
+        return binaries;
+      };
+
+      let checkBinariesWorkingCalled = false;
+      const binariesCheckedForWorking = [];
+      androidSetup.checkBinariesWorking = (binaries) => {
+        checkBinariesWorkingCalled = true;
+        binariesCheckedForWorking.push(...binaries);
+
+        // all binaries not working
+        return binaries;
+      };
+
+      let avdChecked = false;
+      androidSetup.verifyAvdPresent = () => {
+        avdChecked = true;
+
+        return false;
+      };
+
+      let adbRunningChecked = false;
+      androidSetup.verifyAdbRunning = () => {
+        adbRunningChecked = true;
+      };
+
+      const missingRequirements = androidSetup.verifySetup({mode: 'real'});
+
+      assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
+      assert.strictEqual(platformFolderChecked, false);
+      assert.strictEqual(avdChecked, false);
+      // adb binary not present
+      assert.strictEqual(checkBinariesWorkingCalled, false);
+      assert.strictEqual(adbRunningChecked, false);
+      assert.deepStrictEqual(missingRequirements, ['adb']);
+
+      const output = consoleOutput.toString();
+      assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+    });
+
+    test('for real mode and adb binary present and working', () => {
+      const consoleOutput = [];
+      mockery.registerMock(
+        '../../logger',
+        class {
+          static log(...msgs) {
+            consoleOutput.push(...msgs);
+          }
+        }
+      );
+
+      const colorFn = (arg) => arg;
+      mockery.registerMock('ansi-colors', {
+        green: colorFn,
+        yellow: colorFn,
+        magenta: colorFn,
+        cyan: colorFn,
+        red: colorFn,
+        grey: colorFn
+      });
+
+      let platformFolderChecked = false;
+      mockery.registerMock('node:fs', {
+        existsSync(path) {
+          if (path.endsWith('platforms')) {
+            platformFolderChecked = true;
+
+            return false;
+          }
+
+          return false;
+        }
+      });
+
+      const {AndroidSetup} = require('../../../../src/commands/android/index');
+      const androidSetup = new AndroidSetup();
+
+      const binariesCheckedForPresent = [];
+      androidSetup.checkBinariesPresent = (binaries) => {
+        binariesCheckedForPresent.push(...binaries);
+
+        // all binaries present
+        return [];
+      };
+
+      let checkBinariesWorkingCalled = false;
+      const binariesCheckedForWorking = [];
+      androidSetup.checkBinariesWorking = (binaries) => {
+        checkBinariesWorkingCalled = true;
+        binariesCheckedForWorking.push(...binaries);
+
+        // all binaries working
+        return [];
+      };
+
+      let avdChecked = false;
+      androidSetup.verifyAvdPresent = () => {
+        avdChecked = true;
+
+        return false;
+      };
+
+      let adbRunningChecked = false;
+      androidSetup.verifyAdbRunning = () => {
+        adbRunningChecked = true;
+      };
+
+      const missingRequirements = androidSetup.verifySetup({mode: 'real'});
+
+      assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
+      assert.strictEqual(platformFolderChecked, false);
+      assert.strictEqual(avdChecked, false);
+      // adb binary present and working
+      assert.strictEqual(checkBinariesWorkingCalled, true);
+      assert.deepStrictEqual(binariesCheckedForWorking, ['adb']);
+      assert.strictEqual(adbRunningChecked, true);
+      assert.deepStrictEqual(missingRequirements, []);
+
+      const output = consoleOutput.toString();
+      assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+    });
+
+    test('for emulator mode and emulator, platforms not present and adb not working', () => {
+      const consoleOutput = [];
+      mockery.registerMock(
+        '../../logger',
+        class {
+          static log(...msgs) {
+            consoleOutput.push(...msgs);
+          }
+        }
+      );
+
+      const colorFn = (arg) => arg;
+      mockery.registerMock('ansi-colors', {
+        green: colorFn,
+        yellow: colorFn,
+        magenta: colorFn,
+        cyan: colorFn,
+        red: colorFn,
+        grey: colorFn
+      });
+
+      let platformFolderChecked = false;
+      mockery.registerMock('node:fs', {
+        existsSync(path) {
+          if (path.endsWith('platforms')) {
+            platformFolderChecked = true;
+
+            return false;
+          }
+
+          return false;
+        }
+      });
+
+      const {AndroidSetup} = require('../../../../src/commands/android/index');
+      const androidSetup = new AndroidSetup();
+
+      const binariesCheckedForPresent = [];
+      androidSetup.checkBinariesPresent = (binaries) => {
+        binariesCheckedForPresent.push(...binaries);
+
+        // binaries not present
+        return ['emulator'];
+      };
+
+      let checkBinariesWorkingCalled = false;
+      const binariesCheckedForWorking = [];
+      androidSetup.checkBinariesWorking = (binaries) => {
+        checkBinariesWorkingCalled = true;
+        binariesCheckedForWorking.push(...binaries);
+
+        // binaries not working
+        return ['adb'];
+      };
+
+      let avdChecked = false;
+      androidSetup.verifyAvdPresent = () => {
+        avdChecked = true;
+
+        return true;
+      };
+
+      let adbRunningChecked = false;
+      androidSetup.verifyAdbRunning = () => {
+        adbRunningChecked = true;
+      };
+
+      const missingRequirements = androidSetup.verifySetup({mode: 'emulator'});
+
+      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+      assert.strictEqual(platformFolderChecked, true);
+      assert.strictEqual(avdChecked, true);
+      // adb binary present and working
+      assert.strictEqual(checkBinariesWorkingCalled, true);
+      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager']);
+      assert.strictEqual(adbRunningChecked, false);
+      assert.deepStrictEqual(missingRequirements, ['emulator', 'platforms', 'adb']);
+
+      const output = consoleOutput.toString();
+      assert.strictEqual(output.includes('Verifying the setup requirements for Android emulator...'), true);
+      assert.strictEqual(output.includes('platforms subdirectory not present at'), true);
+      assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
+    });
+
+    test('for both modes and AVD not present and everything working', () => {
+      const consoleOutput = [];
+      mockery.registerMock(
+        '../../logger',
+        class {
+          static log(...msgs) {
+            consoleOutput.push(...msgs);
+          }
+        }
+      );
+
+      const colorFn = (arg) => arg;
+      mockery.registerMock('ansi-colors', {
+        green: colorFn,
+        yellow: colorFn,
+        magenta: colorFn,
+        cyan: colorFn,
+        red: colorFn,
+        grey: colorFn
+      });
+
+      let platformFolderChecked = false;
+      mockery.registerMock('node:fs', {
+        existsSync(path) {
+          if (path.endsWith('platforms')) {
+            platformFolderChecked = true;
+
+            return true;
+          }
+
+          return false;
+        }
+      });
+
+      const {AndroidSetup} = require('../../../../src/commands/android/index');
+      const androidSetup = new AndroidSetup();
+
+      const binariesCheckedForPresent = [];
+      androidSetup.checkBinariesPresent = (binaries) => {
+        binariesCheckedForPresent.push(...binaries);
+
+        // binaries not present
+        return [];
+      };
+
+      let checkBinariesWorkingCalled = false;
+      const binariesCheckedForWorking = [];
+      androidSetup.checkBinariesWorking = (binaries) => {
+        checkBinariesWorkingCalled = true;
+        binariesCheckedForWorking.push(...binaries);
+
+        // binaries not working
+        return [];
+      };
+
+      let avdChecked = false;
+      androidSetup.verifyAvdPresent = () => {
+        avdChecked = true;
+
+        return false;
+      };
+
+      let adbRunningChecked = false;
+      androidSetup.verifyAdbRunning = () => {
+        adbRunningChecked = true;
+      };
+
+      const missingRequirements = androidSetup.verifySetup({mode: 'both'});
+
+      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+      assert.strictEqual(platformFolderChecked, true);
+      assert.strictEqual(avdChecked, true);
+      // adb binary present and working
+      assert.strictEqual(checkBinariesWorkingCalled, true);
+      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
+      assert.strictEqual(adbRunningChecked, false);
+      assert.deepStrictEqual(missingRequirements, ['nightwatch-android-11']);
+
+      const output = consoleOutput.toString();
+      assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
+      assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
+      assert.strictEqual(output.includes('AVD not found.'), true);
+    });
+
+    test('for both modes and everything present and working', () => {
+      const consoleOutput = [];
+      mockery.registerMock(
+        '../../logger',
+        class {
+          static log(...msgs) {
+            consoleOutput.push(...msgs);
+          }
+        }
+      );
+
+      const colorFn = (arg) => arg;
+      mockery.registerMock('ansi-colors', {
+        green: colorFn,
+        yellow: colorFn,
+        magenta: colorFn,
+        cyan: colorFn,
+        red: colorFn,
+        grey: colorFn
+      });
+
+      let platformFolderChecked = false;
+      mockery.registerMock('node:fs', {
+        existsSync(path) {
+          if (path.endsWith('platforms')) {
+            platformFolderChecked = true;
+
+            return true;
+          }
+
+          return false;
+        }
+      });
+
+      const {AndroidSetup} = require('../../../../src/commands/android/index');
+      const androidSetup = new AndroidSetup();
+
+      const binariesCheckedForPresent = [];
+      androidSetup.checkBinariesPresent = (binaries) => {
+        binariesCheckedForPresent.push(...binaries);
+
+        // binaries not present
+        return [];
+      };
+
+      let checkBinariesWorkingCalled = false;
+      const binariesCheckedForWorking = [];
+      androidSetup.checkBinariesWorking = (binaries) => {
+        checkBinariesWorkingCalled = true;
+        binariesCheckedForWorking.push(...binaries);
+
+        // binaries not working
+        return [];
+      };
+
+      let avdChecked = false;
+      androidSetup.verifyAvdPresent = () => {
+        avdChecked = true;
+
+        return true;
+      };
+
+      let adbRunningChecked = false;
+      androidSetup.verifyAdbRunning = () => {
+        adbRunningChecked = true;
+      };
+
+      const missingRequirements = androidSetup.verifySetup({mode: 'both'});
+
+      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+      assert.strictEqual(platformFolderChecked, true);
+      assert.strictEqual(avdChecked, true);
+      // adb binary present and working
+      assert.strictEqual(checkBinariesWorkingCalled, true);
+      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
+      assert.strictEqual(adbRunningChecked, true);
+      assert.deepStrictEqual(missingRequirements, []);
+
+      const output = consoleOutput.toString();
+      assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
+      assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
+      assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
+    });
+  });
 });
