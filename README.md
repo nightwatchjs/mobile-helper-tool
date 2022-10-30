@@ -11,7 +11,7 @@
    ```
 2. Answer a few questions related to your requirements:
 3. It will verify if all the requirements are being met.
-4. If all requirements are not being met, it will ask whether to download and setup those requirements:
+4. If some requirements are not being met, it will ask whether to download and setup those requirements:
 5. Voila :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 6. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
    ```js
@@ -70,8 +70,10 @@
     },
    }
    ```
-7. If testing on real-device, make sure latest version of Chrome/Firefox browsers are installed. Otherwise install them from Google Play Store.
-8. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. Otherwise, re-run the command in first step.
+7. If testing on real-device:
+   1. Make sure latest version of Chrome/Firefox browsers are installed. If not, install them from Google Play Store.
+   2. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
+8. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command in first step.
 9. Run your nightwatch tests on Android mobile browsers:
    ```sh
     # for firefox
