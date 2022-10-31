@@ -700,928 +700,928 @@ describe('test verifyAdbRunning', function() {
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('adb server is running'), true);
   });
+});
 
-  describe('test verifySetup', function() {
-    beforeEach(() => {
-      mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+describe('test verifySetup', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
 
-      mockery.registerMock('./adb', {});
-    });
-
-    afterEach(() => {
-      mockery.deregisterAll();
-      mockery.resetCache();
-      mockery.disable();
-    });
-
-    test('for real mode and adb binary not present', () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      let platformFolderChecked = false;
-      mockery.registerMock('fs', {
-        existsSync(path, ...args) {
-          if (path.endsWith('platforms')) {
-            platformFolderChecked = true;
-
-            return false;
-          }
-
-          return fs.existsSync(path, ...args);
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForPresent = [];
-      androidSetup.checkBinariesPresent = (binaries) => {
-        binariesCheckedForPresent.push(...binaries);
-
-        // all binaries missing
-        return binaries;
-      };
-
-      let checkBinariesWorkingCalled = false;
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        checkBinariesWorkingCalled = true;
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries not working
-        return binaries;
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return false;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const missingRequirements = androidSetup.verifySetup({mode: 'real'});
-
-      assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
-      assert.strictEqual(platformFolderChecked, false);
-      assert.strictEqual(avdChecked, false);
-      // adb binary not present
-      assert.strictEqual(checkBinariesWorkingCalled, false);
-      assert.strictEqual(adbRunningChecked, false);
-      assert.deepStrictEqual(missingRequirements, ['adb']);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
-    });
-
-    test('for real mode and adb binary present and working', () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      let platformFolderChecked = false;
-      mockery.registerMock('fs', {
-        existsSync(path, ...args) {
-          if (path.endsWith('platforms')) {
-            platformFolderChecked = true;
-
-            return false;
-          }
-
-          return fs.existsSync(path, ...args);
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForPresent = [];
-      androidSetup.checkBinariesPresent = (binaries) => {
-        binariesCheckedForPresent.push(...binaries);
-
-        // all binaries present
-        return [];
-      };
-
-      let checkBinariesWorkingCalled = false;
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        checkBinariesWorkingCalled = true;
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries working
-        return [];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return false;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const missingRequirements = androidSetup.verifySetup({mode: 'real'});
-
-      assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
-      assert.strictEqual(platformFolderChecked, false);
-      assert.strictEqual(avdChecked, false);
-      // adb binary present and working
-      assert.strictEqual(checkBinariesWorkingCalled, true);
-      assert.deepStrictEqual(binariesCheckedForWorking, ['adb']);
-      assert.strictEqual(adbRunningChecked, true);
-      assert.deepStrictEqual(missingRequirements, []);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
-    });
-
-    test('for emulator mode and emulator, platforms not present and adb not working', () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      let platformFolderChecked = false;
-      mockery.registerMock('fs', {
-        existsSync(path, ...args) {
-          if (path.endsWith('platforms')) {
-            platformFolderChecked = true;
-
-            return false;
-          }
-
-          return fs.existsSync(path, ...args);
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForPresent = [];
-      androidSetup.checkBinariesPresent = (binaries) => {
-        binariesCheckedForPresent.push(...binaries);
-
-        // binaries not present
-        return ['emulator'];
-      };
-
-      let checkBinariesWorkingCalled = false;
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        checkBinariesWorkingCalled = true;
-        binariesCheckedForWorking.push(...binaries);
-
-        // binaries not working
-        return ['adb'];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return true;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const missingRequirements = androidSetup.verifySetup({mode: 'emulator'});
-
-      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
-      assert.strictEqual(platformFolderChecked, true);
-      assert.strictEqual(avdChecked, true);
-
-      assert.strictEqual(checkBinariesWorkingCalled, true);
-      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager']);
-      assert.strictEqual(adbRunningChecked, false);
-      assert.deepStrictEqual(missingRequirements, ['emulator', 'platforms', 'adb']);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Verifying the setup requirements for Android emulator...'), true);
-      assert.strictEqual(output.includes('platforms subdirectory not present at'), true);
-      assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
-    });
-
-    test('for both modes and AVD not present and everything working', () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      let platformFolderChecked = false;
-      mockery.registerMock('fs', {
-        existsSync(path, ...args) {
-          if (path.endsWith('platforms')) {
-            platformFolderChecked = true;
-
-            return true;
-          }
-
-          return fs.existsSync(path, ...args);
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForPresent = [];
-      androidSetup.checkBinariesPresent = (binaries) => {
-        binariesCheckedForPresent.push(...binaries);
-
-        // binaries not present
-        return [];
-      };
-
-      let checkBinariesWorkingCalled = false;
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        checkBinariesWorkingCalled = true;
-        binariesCheckedForWorking.push(...binaries);
-
-        // binaries not working
-        return [];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return false;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const missingRequirements = androidSetup.verifySetup({mode: 'both'});
-
-      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
-      assert.strictEqual(platformFolderChecked, true);
-      assert.strictEqual(avdChecked, true);
-
-      assert.strictEqual(checkBinariesWorkingCalled, true);
-      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
-      assert.strictEqual(adbRunningChecked, false);
-      assert.deepStrictEqual(missingRequirements, ['nightwatch-android-11']);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
-      assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
-      assert.strictEqual(output.includes('AVD not found.'), true);
-    });
-
-    test('for both modes and everything present and working', () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      let platformFolderChecked = false;
-      mockery.registerMock('fs', {
-        existsSync(path, ...args) {
-          if (path.endsWith('platforms')) {
-            platformFolderChecked = true;
-
-            return true;
-          }
-
-          return fs.existsSync(path, ...args);
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForPresent = [];
-      androidSetup.checkBinariesPresent = (binaries) => {
-        binariesCheckedForPresent.push(...binaries);
-
-        // binaries not present
-        return [];
-      };
-
-      let checkBinariesWorkingCalled = false;
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        checkBinariesWorkingCalled = true;
-        binariesCheckedForWorking.push(...binaries);
-
-        // binaries not working
-        return [];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return true;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const missingRequirements = androidSetup.verifySetup({mode: 'both'});
-
-      assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
-      assert.strictEqual(platformFolderChecked, true);
-      assert.strictEqual(avdChecked, true);
-
-      assert.strictEqual(checkBinariesWorkingCalled, true);
-      assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
-      assert.strictEqual(adbRunningChecked, true);
-      assert.deepStrictEqual(missingRequirements, []);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
-      assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
-      assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
-    });
+    mockery.registerMock('./adb', {});
   });
 
-  describe('test setupAndroid', function() {
-    beforeEach(() => {
-      mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
 
-      mockery.registerMock('./adb', {});
+  test('for real mode and adb binary not present', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
     });
 
-    afterEach(() => {
-      mockery.deregisterAll();
-      mockery.resetCache();
-      mockery.disable();
-    });
-
-    test('for real mode with adb, sdkmanager not present', async () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      mockery.registerMock('./utils/common', {
-        getBinaryLocation: () => {
-          return '';
-        }
-      });
-
-      let cmdlineToolsDownloaded = false;
-      const packagesInstalled = [];
-      let avdCreationInitiated = false;
-      mockery.registerMock('./utils/sdk', {
-        downloadAndSetupAndroidSdk: () => {
-          cmdlineToolsDownloaded = true;
-        },
-        installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packagesToInstall) => {
-          packagesInstalled.push(...packagesToInstall);
-
-          return true;
-        },
-        execBinarySync: () => {
-          avdCreationInitiated = true;
-
-          return '';
-        }
-      });
-
-      let platformFolderCreated = false;
-      mockery.registerMock('fs', {
-        mkdirSync() {
-          platformFolderCreated = true;
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries not working
-        return binaries;
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return false;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const result = await androidSetup.setupAndroid({mode: 'real'}, ['adb']);
-
-      assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
-      assert.strictEqual(cmdlineToolsDownloaded, true);
-      assert.deepStrictEqual(packagesInstalled, ['platform-tools']);
-      assert.strictEqual(platformFolderCreated, false);
-      assert.strictEqual(avdChecked, false);
-      assert.strictEqual(avdCreationInitiated, false);
-      assert.strictEqual(adbRunningChecked, true);
-      assert.strictEqual(result, true);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Setting up missing requirements for real devices...'), true);
-      assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
-      assert.strictEqual(output.includes('Success!'), false); // sdkmanager not present/working
-      assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
-    });
-
-    test('for emulator mode with avdmanager, platforms, AVD not present', async () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      mockery.registerMock('./utils/common', {
-        getBinaryLocation: () => {
-          return '';
-        }
-      });
-
-      let cmdlineToolsDownloaded = false;
-      const packagesInstalled = [];
-      let avdCreationInitiated = false;
-      mockery.registerMock('./utils/sdk', {
-        downloadAndSetupAndroidSdk: () => {
-          cmdlineToolsDownloaded = true;
-        },
-        installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packagesToInstall) => {
-          packagesInstalled.push(...packagesToInstall);
-
-          return true;
-        },
-        execBinarySync: () => {
-          avdCreationInitiated = true;
-
-          return '';
-        }
-      });
-
-      let platformFolderCreated = false;
-      mockery.registerMock('fs', {
-        mkdirSync() {
-          platformFolderCreated = true;
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries working
-        return [];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return false;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const result = await androidSetup.setupAndroid({mode: 'emulator'}, ['avdmanager', 'platforms', 'nightwatch-android-11']);
-
-      assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
-      assert.strictEqual(cmdlineToolsDownloaded, true);
-      assert.deepStrictEqual(packagesInstalled, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
-      assert.strictEqual(platformFolderCreated, true);
-      assert.strictEqual(avdChecked, true);
-      assert.strictEqual(avdCreationInitiated, true);
-      assert.strictEqual(adbRunningChecked, true);
-      assert.strictEqual(result, true);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Setting up missing requirements for Android emulator...'), true);
-      assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
-      assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
-      assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
-      assert.strictEqual(output.includes('Creating platforms subdirectory...'), true);
-      assert.strictEqual(output.includes('Success! Created platforms subdirectory at'), true);
-      assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), true);
-      assert.strictEqual(output.includes('Success! AVD "nightwatch-android-11" created successfully!'), true);
-    });
-
-    test('for both modes with sdkmanager, avdmanager, emulator not present and emulator install failed', async () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
-        }
-      );
-
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
-
-      mockery.registerMock('./utils/common', {
-        getBinaryLocation: () => {
-          return '';
-        }
-      });
-
-      let cmdlineToolsDownloaded = false;
-      const packagesToInstall = [];
-      let avdCreationInitiated = false;
-      mockery.registerMock('./utils/sdk', {
-        downloadAndSetupAndroidSdk: () => {
-          cmdlineToolsDownloaded = true;
-        },
-        installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
-          packagesToInstall.push(...packages);
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
 
           return false;
-        },
-        execBinarySync: () => {
-          avdCreationInitiated = true;
-
-          return '';
         }
-      });
 
-      let platformFolderCreated = false;
-      mockery.registerMock('fs', {
-        mkdirSync() {
-          platformFolderCreated = true;
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries not working
-        return binaries;
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
-
-        return true;
-      };
-
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const result = await androidSetup.setupAndroid({mode: 'both'}, ['avdmanager', 'emulator']);
-
-      assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
-      assert.strictEqual(cmdlineToolsDownloaded, true);
-      assert.deepStrictEqual(packagesToInstall, ['emulator']);
-      assert.strictEqual(platformFolderCreated, false);
-      assert.strictEqual(avdChecked, false);
-      assert.strictEqual(avdCreationInitiated, false);
-      assert.strictEqual(adbRunningChecked, true);
-      // emulator install failed
-      assert.strictEqual(result, false);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
-      assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
-      assert.strictEqual(output.includes('Success!'), false); // sdkmanager not present/working
-      assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
-      assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), false);
+        return fs.existsSync(path, ...args);
+      }
     });
 
-    test('for both modes with sdkmanager, avdmanager present and avd not present + creation failed', async () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // all binaries missing
+      return binaries;
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries not working
+      return binaries;
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'real'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
+    assert.strictEqual(platformFolderChecked, false);
+    assert.strictEqual(avdChecked, false);
+    // adb binary not present
+    assert.strictEqual(checkBinariesWorkingCalled, false);
+    assert.strictEqual(adbRunningChecked, false);
+    assert.deepStrictEqual(missingRequirements, ['adb']);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+  });
+
+  test('for real mode and adb binary present and working', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
         }
-      );
+      }
+    );
 
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
 
-      mockery.registerMock('./utils/common', {
-        getBinaryLocation: () => {
-          return '';
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
+
+          return false;
         }
-      });
 
-      let cmdlineToolsDownloaded = false;
-      const packagesToInstall = [];
-      let avdCreationInitiated = false;
-      mockery.registerMock('./utils/sdk', {
-        downloadAndSetupAndroidSdk: () => {
-          cmdlineToolsDownloaded = true;
-        },
-        installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
-          packagesToInstall.push(...packages);
+        return fs.existsSync(path, ...args);
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // all binaries present
+      return [];
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'real'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
+    assert.strictEqual(platformFolderChecked, false);
+    assert.strictEqual(avdChecked, false);
+    // adb binary present and working
+    assert.strictEqual(checkBinariesWorkingCalled, true);
+    assert.deepStrictEqual(binariesCheckedForWorking, ['adb']);
+    assert.strictEqual(adbRunningChecked, true);
+    assert.deepStrictEqual(missingRequirements, []);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+  });
+
+  test('for emulator mode and emulator, platforms not present and adb not working', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
+
+          return false;
+        }
+
+        return fs.existsSync(path, ...args);
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // binaries not present
+      return ['emulator'];
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // binaries not working
+      return ['adb'];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return true;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'emulator'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+    assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(avdChecked, true);
+
+    assert.strictEqual(checkBinariesWorkingCalled, true);
+    assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager']);
+    assert.strictEqual(adbRunningChecked, false);
+    assert.deepStrictEqual(missingRequirements, ['emulator', 'platforms', 'adb']);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for Android emulator...'), true);
+    assert.strictEqual(output.includes('platforms subdirectory not present at'), true);
+    assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
+  });
+
+  test('for both modes and AVD not present and everything working', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
 
           return true;
-        },
-        execBinarySync: () => {
-          avdCreationInitiated = true;
-
-          return null;
         }
-      });
 
-      let platformFolderCreated = false;
-      mockery.registerMock('fs', {
-        mkdirSync() {
-          platformFolderCreated = true;
+        return fs.existsSync(path, ...args);
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // binaries not present
+      return [];
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // binaries not working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'both'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+    assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(avdChecked, true);
+
+    assert.strictEqual(checkBinariesWorkingCalled, true);
+    assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
+    assert.strictEqual(adbRunningChecked, false);
+    assert.deepStrictEqual(missingRequirements, ['nightwatch-android-11']);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
+    assert.strictEqual(output.includes('AVD not found.'), true);
+  });
+
+  test('for both modes and everything present and working', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
         }
-      });
+      }
+    );
 
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
 
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        binariesCheckedForWorking.push(...binaries);
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
 
-        // all binaries working
-        return [];
-      };
+          return true;
+        }
 
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
+        return fs.existsSync(path, ...args);
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // binaries not present
+      return [];
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // binaries not working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return true;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'both'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
+    assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(avdChecked, true);
+
+    assert.strictEqual(checkBinariesWorkingCalled, true);
+    assert.deepStrictEqual(binariesCheckedForWorking, ['adb', 'avdmanager', 'emulator']);
+    assert.strictEqual(adbRunningChecked, true);
+    assert.deepStrictEqual(missingRequirements, []);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
+    assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
+  });
+});
+
+describe('test setupAndroid', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
+
+  test('for real mode with adb, sdkmanager not present', async () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    let cmdlineToolsDownloaded = false;
+    const packagesInstalled = [];
+    let avdCreationInitiated = false;
+    mockery.registerMock('./utils/sdk', {
+      downloadAndSetupAndroidSdk: () => {
+        cmdlineToolsDownloaded = true;
+      },
+      installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packagesToInstall) => {
+        packagesInstalled.push(...packagesToInstall);
+
+        return true;
+      },
+      execBinarySync: () => {
+        avdCreationInitiated = true;
+
+        return '';
+      }
+    });
+
+    let platformFolderCreated = false;
+    mockery.registerMock('fs', {
+      mkdirSync() {
+        platformFolderCreated = true;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries not working
+      return binaries;
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const result = await androidSetup.setupAndroid({mode: 'real'}, ['adb']);
+
+    assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
+    assert.strictEqual(cmdlineToolsDownloaded, true);
+    assert.deepStrictEqual(packagesInstalled, ['platform-tools']);
+    assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(avdChecked, false);
+    assert.strictEqual(avdCreationInitiated, false);
+    assert.strictEqual(adbRunningChecked, true);
+    assert.strictEqual(result, true);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Setting up missing requirements for real devices...'), true);
+    assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
+    assert.strictEqual(output.includes('Success!'), false); // sdkmanager not present/working
+    assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
+  });
+
+  test('for emulator mode with avdmanager, platforms, AVD not present', async () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    let cmdlineToolsDownloaded = false;
+    const packagesInstalled = [];
+    let avdCreationInitiated = false;
+    mockery.registerMock('./utils/sdk', {
+      downloadAndSetupAndroidSdk: () => {
+        cmdlineToolsDownloaded = true;
+      },
+      installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packagesToInstall) => {
+        packagesInstalled.push(...packagesToInstall);
+
+        return true;
+      },
+      execBinarySync: () => {
+        avdCreationInitiated = true;
+
+        return '';
+      }
+    });
+
+    let platformFolderCreated = false;
+    mockery.registerMock('fs', {
+      mkdirSync() {
+        platformFolderCreated = true;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const result = await androidSetup.setupAndroid({mode: 'emulator'}, ['avdmanager', 'platforms', 'nightwatch-android-11']);
+
+    assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
+    assert.strictEqual(cmdlineToolsDownloaded, true);
+    assert.deepStrictEqual(packagesInstalled, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.strictEqual(platformFolderCreated, true);
+    assert.strictEqual(avdChecked, true);
+    assert.strictEqual(avdCreationInitiated, true);
+    assert.strictEqual(adbRunningChecked, true);
+    assert.strictEqual(result, true);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Setting up missing requirements for Android emulator...'), true);
+    assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
+    assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
+    assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
+    assert.strictEqual(output.includes('Creating platforms subdirectory...'), true);
+    assert.strictEqual(output.includes('Success! Created platforms subdirectory at'), true);
+    assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), true);
+    assert.strictEqual(output.includes('Success! AVD "nightwatch-android-11" created successfully!'), true);
+  });
+
+  test('for both modes with sdkmanager, avdmanager, emulator not present and emulator install failed', async () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    let cmdlineToolsDownloaded = false;
+    const packagesToInstall = [];
+    let avdCreationInitiated = false;
+    mockery.registerMock('./utils/sdk', {
+      downloadAndSetupAndroidSdk: () => {
+        cmdlineToolsDownloaded = true;
+      },
+      installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
+        packagesToInstall.push(...packages);
 
         return false;
-      };
+      },
+      execBinarySync: () => {
+        avdCreationInitiated = true;
 
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11']);
-
-      assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
-      assert.strictEqual(cmdlineToolsDownloaded, false);
-      assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
-      assert.strictEqual(platformFolderCreated, false);
-      assert.strictEqual(avdChecked, true);
-      assert.strictEqual(avdCreationInitiated, true);
-      assert.strictEqual(adbRunningChecked, true);
-      // avd creation failed
-      assert.strictEqual(result, false);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
-      assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
-      assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
-      assert.strictEqual(output.includes('Downloading cmdline-tools...'), false);
-      assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), true);
-      assert.strictEqual(output.includes('Success! AVD "nightwatch-android-11" created successfully!'), false);
+        return '';
+      }
     });
 
-    test('for both modes with system-image not installed but avd already present', async () => {
-      const consoleOutput = [];
-      mockery.registerMock(
-        '../../logger',
-        class {
-          static log(...msgs) {
-            consoleOutput.push(...msgs);
-          }
+    let platformFolderCreated = false;
+    mockery.registerMock('fs', {
+      mkdirSync() {
+        platformFolderCreated = true;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries not working
+      return binaries;
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return true;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const result = await androidSetup.setupAndroid({mode: 'both'}, ['avdmanager', 'emulator']);
+
+    assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
+    assert.strictEqual(cmdlineToolsDownloaded, true);
+    assert.deepStrictEqual(packagesToInstall, ['emulator']);
+    assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(avdChecked, false);
+    assert.strictEqual(avdCreationInitiated, false);
+    assert.strictEqual(adbRunningChecked, true);
+    // emulator install failed
+    assert.strictEqual(result, false);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
+    assert.strictEqual(output.includes('Success!'), false); // sdkmanager not present/working
+    assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
+    assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), false);
+  });
+
+  test('for both modes with sdkmanager, avdmanager present and avd not present + creation failed', async () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
         }
-      );
+      }
+    );
 
-      const colorFn = (arg) => arg;
-      mockery.registerMock('ansi-colors', {
-        green: colorFn,
-        yellow: colorFn,
-        magenta: colorFn,
-        cyan: colorFn,
-        red: colorFn,
-        grey: colorFn
-      });
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
 
-      mockery.registerMock('./utils/common', {
-        getBinaryLocation: () => {
-          return '';
-        }
-      });
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
 
-      let cmdlineToolsDownloaded = false;
-      const packagesToInstall = [];
-      let avdCreationInitiated = false;
-      mockery.registerMock('./utils/sdk', {
-        downloadAndSetupAndroidSdk: () => {
-          cmdlineToolsDownloaded = true;
-        },
-        installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
-          packagesToInstall.push(...packages);
-
-          return true;
-        },
-        execBinarySync: () => {
-          avdCreationInitiated = true;
-
-          return 'something (stdout)';
-        }
-      });
-
-      let platformFolderCreated = false;
-      mockery.registerMock('fs', {
-        mkdirSync() {
-          platformFolderCreated = true;
-        }
-      });
-
-      const {AndroidSetup} = require('../../../../src/commands/android/index');
-      const androidSetup = new AndroidSetup();
-
-      const binariesCheckedForWorking = [];
-      androidSetup.checkBinariesWorking = (binaries) => {
-        binariesCheckedForWorking.push(...binaries);
-
-        // all binaries working
-        return [];
-      };
-
-      let avdChecked = false;
-      androidSetup.verifyAvdPresent = () => {
-        avdChecked = true;
+    let cmdlineToolsDownloaded = false;
+    const packagesToInstall = [];
+    let avdCreationInitiated = false;
+    mockery.registerMock('./utils/sdk', {
+      downloadAndSetupAndroidSdk: () => {
+        cmdlineToolsDownloaded = true;
+      },
+      installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
+        packagesToInstall.push(...packages);
 
         return true;
-      };
+      },
+      execBinarySync: () => {
+        avdCreationInitiated = true;
 
-      let adbRunningChecked = false;
-      androidSetup.verifyAdbRunning = () => {
-        adbRunningChecked = true;
-      };
-
-      const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11']);
-
-      assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
-      assert.strictEqual(cmdlineToolsDownloaded, false);
-      assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
-      assert.strictEqual(platformFolderCreated, false);
-      assert.strictEqual(avdChecked, true);
-      assert.strictEqual(avdCreationInitiated, false);
-      assert.strictEqual(adbRunningChecked, true);
-      // avd creation failed
-      assert.strictEqual(result, true);
-
-      const output = consoleOutput.toString();
-      assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
-      assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
-      assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
-      assert.strictEqual(output.includes('Downloading cmdline-tools...'), false);
-      assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), false);
+        return null;
+      }
     });
+
+    let platformFolderCreated = false;
+    mockery.registerMock('fs', {
+      mkdirSync() {
+        platformFolderCreated = true;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11']);
+
+    assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
+    assert.strictEqual(cmdlineToolsDownloaded, false);
+    assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(avdChecked, true);
+    assert.strictEqual(avdCreationInitiated, true);
+    assert.strictEqual(adbRunningChecked, true);
+    // avd creation failed
+    assert.strictEqual(result, false);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
+    assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
+    assert.strictEqual(output.includes('Downloading cmdline-tools...'), false);
+    assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), true);
+    assert.strictEqual(output.includes('Success! AVD "nightwatch-android-11" created successfully!'), false);
+  });
+
+  test('for both modes with system-image not installed but avd already present', async () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    mockery.registerMock('./utils/common', {
+      getBinaryLocation: () => {
+        return '';
+      }
+    });
+
+    let cmdlineToolsDownloaded = false;
+    const packagesToInstall = [];
+    let avdCreationInitiated = false;
+    mockery.registerMock('./utils/sdk', {
+      downloadAndSetupAndroidSdk: () => {
+        cmdlineToolsDownloaded = true;
+      },
+      installPackagesUsingSdkManager: (sdkmanagerLocation, platform, packages) => {
+        packagesToInstall.push(...packages);
+
+        return true;
+      },
+      execBinarySync: () => {
+        avdCreationInitiated = true;
+
+        return 'something (stdout)';
+      }
+    });
+
+    let platformFolderCreated = false;
+    mockery.registerMock('fs', {
+      mkdirSync() {
+        platformFolderCreated = true;
+      }
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      binariesCheckedForWorking.push(...binaries);
+
+      // all binaries working
+      return [];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return true;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11']);
+
+    assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
+    assert.strictEqual(cmdlineToolsDownloaded, false);
+    assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(avdChecked, true);
+    assert.strictEqual(avdCreationInitiated, false);
+    assert.strictEqual(adbRunningChecked, true);
+    // avd creation failed
+    assert.strictEqual(result, true);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('Verifying that sdkmanager is present and working...'), true);
+    assert.strictEqual(output.includes('Success!'), true); // sdkmanager present and working
+    assert.strictEqual(output.includes('Downloading cmdline-tools...'), false);
+    assert.strictEqual(output.includes('Creating AVD "nightwatch-android-11" using pixel_5 hardware profile...'), false);
   });
 });
