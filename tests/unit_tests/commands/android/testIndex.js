@@ -194,11 +194,12 @@ describe('test getSdkRootFromUser', function() {
 
     let appendFileSyncCalled = false;
     mockery.registerMock('fs', {
-      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
       }
     });
+
+    mockery.registerMock('./adb', {});
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup({}, rootDir);
@@ -229,11 +230,12 @@ describe('test getSdkRootFromUser', function() {
 
     let appendFileSyncCalled = false;
     mockery.registerMock('fs', {
-      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
       }
     });
+
+    mockery.registerMock('./adb', {});
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup({}, rootDir);
@@ -266,13 +268,14 @@ describe('test getSdkRootFromUser', function() {
     let envPath;
     let envContent;
     mockery.registerMock('fs', {
-      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
         envPath = path;
         envContent = content;
       }
     });
+
+    mockery.registerMock('./adb', {});
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup({}, rootDir);
@@ -716,7 +719,6 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderChecked = false;
       mockery.registerMock('fs', {
-        ...fs,
         existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
@@ -727,6 +729,8 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -798,7 +802,6 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderChecked = false;
       mockery.registerMock('fs', {
-        ...fs,
         existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
@@ -809,6 +812,8 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -881,7 +886,6 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderChecked = false;
       mockery.registerMock('fs', {
-        ...fs,
         existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
@@ -892,6 +896,8 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -966,7 +972,6 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderChecked = false;
       mockery.registerMock('fs', {
-        ...fs,
         existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
@@ -977,6 +982,8 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1051,7 +1058,6 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderChecked = false;
       mockery.registerMock('fs', {
-        ...fs,
         existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
@@ -1062,6 +1068,8 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1173,11 +1181,12 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderCreated = false;
       mockery.registerMock('fs', {
-        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1268,11 +1277,12 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderCreated = false;
       mockery.registerMock('fs', {
-        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1367,11 +1377,12 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderCreated = false;
       mockery.registerMock('fs', {
-        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1464,11 +1475,12 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderCreated = false;
       mockery.registerMock('fs', {
-        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1562,11 +1574,12 @@ describe('test verifyAdbRunning', function() {
 
       let platformFolderCreated = false;
       mockery.registerMock('fs', {
-        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
       });
+
+      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
