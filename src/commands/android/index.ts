@@ -9,7 +9,7 @@ import {prompt} from 'inquirer';
 
 import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
-import {getAlreadyRunningAvd, launchAVD} from './adb';
+import {getAlreadyRunningAvd, killEmulatorWithoutWait, launchAVD} from './adb';
 import {
   ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
@@ -766,7 +766,7 @@ export class AndroidSetup {
 
     if (!emulatorAlreadyRunning) {
       Logger.log('Closing emulator...');
-      execBinarySync(getBinaryLocation(this.sdkRoot, this.platform, 'adb', true), 'adb', this.platform, `-s ${emulatorId} emu kill`);
+      killEmulatorWithoutWait(this.sdkRoot, this.platform, emulatorId);
       Logger.log('Emulator will close shortly. If not, please close it manually.\n');
     }
 
