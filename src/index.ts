@@ -49,4 +49,6 @@ const showHelp = (cmdPassed: string, helpFlag: boolean) => {
 
 export {AndroidSetup, IosSetup};
 export * from './commands/android/adb';
+export {getBinaryNameForOS, getBinaryLocation} from './commands/android/utils/common';
+export {execBinarySync} from './commands/android/utils/sdk';
 export {getPlatformName} from './utils';
