@@ -1,7 +1,7 @@
 import colors from 'ansi-colors';
 import {execSync} from 'child_process';
 import * as dotenv from 'dotenv';
-import fs from 'node:fs';
+import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import untildify from 'untildify';

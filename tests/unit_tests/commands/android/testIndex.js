@@ -1,4 +1,5 @@
 const assert = require('assert');
+const fs = require('fs');
 const mockery = require('mockery');
 const path = require('path');
 const os = require('os');
@@ -192,7 +193,8 @@ describe('test getSdkRootFromUser', function() {
     const rootDir = path.join(__dirname, 'fixtures');
 
     let appendFileSyncCalled = false;
-    mockery.registerMock('node:fs', {
+    mockery.registerMock('fs', {
+      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
       }
@@ -226,7 +228,8 @@ describe('test getSdkRootFromUser', function() {
     const rootDir = path.join(__dirname, 'fixtures');
 
     let appendFileSyncCalled = false;
-    mockery.registerMock('node:fs', {
+    mockery.registerMock('fs', {
+      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
       }
@@ -262,7 +265,8 @@ describe('test getSdkRootFromUser', function() {
     let appendFileSyncCalled = false;
     let envPath;
     let envContent;
-    mockery.registerMock('node:fs', {
+    mockery.registerMock('fs', {
+      ...fs,
       appendFileSync(path, content) {
         appendFileSyncCalled = true;
         envPath = path;
@@ -711,15 +715,16 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderChecked = false;
-      mockery.registerMock('node:fs', {
-        existsSync(path) {
+      mockery.registerMock('fs', {
+        ...fs,
+        existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
 
             return false;
           }
 
-          return false;
+          return fs.existsSync(path, ...args);
         }
       });
 
@@ -792,15 +797,16 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderChecked = false;
-      mockery.registerMock('node:fs', {
-        existsSync(path) {
+      mockery.registerMock('fs', {
+        ...fs,
+        existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
 
             return false;
           }
 
-          return false;
+          return fs.existsSync(path, ...args);
         }
       });
 
@@ -874,15 +880,16 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderChecked = false;
-      mockery.registerMock('node:fs', {
-        existsSync(path) {
+      mockery.registerMock('fs', {
+        ...fs,
+        existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
 
             return false;
           }
 
-          return false;
+          return fs.existsSync(path, ...args);
         }
       });
 
@@ -958,15 +965,16 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderChecked = false;
-      mockery.registerMock('node:fs', {
-        existsSync(path) {
+      mockery.registerMock('fs', {
+        ...fs,
+        existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
 
             return true;
           }
 
-          return false;
+          return fs.existsSync(path, ...args);
         }
       });
 
@@ -1042,15 +1050,16 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderChecked = false;
-      mockery.registerMock('node:fs', {
-        existsSync(path) {
+      mockery.registerMock('fs', {
+        ...fs,
+        existsSync(path, ...args) {
           if (path.endsWith('platforms')) {
             platformFolderChecked = true;
 
             return true;
           }
 
-          return false;
+          return fs.existsSync(path, ...args);
         }
       });
 
@@ -1163,7 +1172,8 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderCreated = false;
-      mockery.registerMock('node:fs', {
+      mockery.registerMock('fs', {
+        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
@@ -1257,7 +1267,8 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderCreated = false;
-      mockery.registerMock('node:fs', {
+      mockery.registerMock('fs', {
+        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
@@ -1355,7 +1366,8 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderCreated = false;
-      mockery.registerMock('node:fs', {
+      mockery.registerMock('fs', {
+        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
@@ -1451,7 +1463,8 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderCreated = false;
-      mockery.registerMock('node:fs', {
+      mockery.registerMock('fs', {
+        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
@@ -1548,7 +1561,8 @@ describe('test verifyAdbRunning', function() {
       });
 
       let platformFolderCreated = false;
-      mockery.registerMock('node:fs', {
+      mockery.registerMock('fs', {
+        ...fs,
         mkdirSync() {
           platformFolderCreated = true;
         }
