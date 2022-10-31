@@ -129,7 +129,7 @@ export const launchAVD = async (sdkRoot: string, platform: Platform, avdName: st
   return null;
 };
 
-export const killEmulatorWithoutWait = (sdkRoot: string, platform: Platform, emulatorId: string) => {
+export const killEmulatorWithoutWait = (sdkRoot: string, platform: Platform, emulatorId?: string) => {
   const emulatorIdFlag = emulatorId ? `-s ${emulatorId} ` : '';
 
   execBinarySync(
