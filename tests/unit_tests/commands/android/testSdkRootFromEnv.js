@@ -8,6 +8,8 @@ const os = require('os');
 describe('test getSdkRootFromEnv', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {

@@ -7,6 +7,8 @@ const os = require('os');
 describe('test showHelp', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -77,6 +79,8 @@ describe('test showHelp', function() {
 describe('test checkJavaInstallation', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -169,6 +173,8 @@ describe('test checkJavaInstallation', function() {
 describe('test getSdkRootFromUser', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -322,6 +328,8 @@ describe('test getConfigFromOptions', function() {
 describe('test getSetupConfigs', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -351,6 +359,8 @@ describe('test getSetupConfigs', function() {
 describe('test checkBinariesPresent', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -381,6 +391,8 @@ describe('test checkBinariesPresent', function() {
 describe('test checkBinariesWorking', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -448,6 +460,8 @@ describe('test checkBinariesWorking', function() {
 describe('test verifyAvdPresent', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -560,6 +574,8 @@ describe('test verifyAvdPresent', function() {
 describe('test verifyAdbRunning', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -688,6 +704,8 @@ describe('test verifyAdbRunning', function() {
   describe('test verifySetup', function() {
     beforeEach(() => {
       mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+      mockery.registerMock('./adb', {});
     });
 
     afterEach(() => {
@@ -729,8 +747,6 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -813,8 +829,6 @@ describe('test verifyAdbRunning', function() {
         }
       });
 
-      mockery.registerMock('./adb', {});
-
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
 
@@ -896,8 +910,6 @@ describe('test verifyAdbRunning', function() {
           return fs.existsSync(path, ...args);
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -983,8 +995,6 @@ describe('test verifyAdbRunning', function() {
         }
       });
 
-      mockery.registerMock('./adb', {});
-
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
 
@@ -1069,8 +1079,6 @@ describe('test verifyAdbRunning', function() {
         }
       });
 
-      mockery.registerMock('./adb', {});
-
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
 
@@ -1125,6 +1133,8 @@ describe('test verifyAdbRunning', function() {
   describe('test setupAndroid', function() {
     beforeEach(() => {
       mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+      mockery.registerMock('./adb', {});
     });
 
     afterEach(() => {
@@ -1185,8 +1195,6 @@ describe('test verifyAdbRunning', function() {
           platformFolderCreated = true;
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1281,8 +1289,6 @@ describe('test verifyAdbRunning', function() {
           platformFolderCreated = true;
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1382,8 +1388,6 @@ describe('test verifyAdbRunning', function() {
         }
       });
 
-      mockery.registerMock('./adb', {});
-
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
 
@@ -1479,8 +1483,6 @@ describe('test verifyAdbRunning', function() {
           platformFolderCreated = true;
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
@@ -1578,8 +1580,6 @@ describe('test verifyAdbRunning', function() {
           platformFolderCreated = true;
         }
       });
-
-      mockery.registerMock('./adb', {});
 
       const {AndroidSetup} = require('../../../../src/commands/android/index');
       const androidSetup = new AndroidSetup();
