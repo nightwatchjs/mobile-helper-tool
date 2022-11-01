@@ -1,6 +1,8 @@
 # @nightwatch/mobile-helper
 
-## Setup for mobile-web testing
+Official Nightwatch helper-tool to easily setup all the requirements needed to get started with running your Nightwatch tests on real mobile-browsers.
+
+## Usage
 
 ### Android
 
