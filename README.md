@@ -10,8 +10,12 @@
    npx @nightwatch/mobile-helper android
    ```
 2. Answer a few questions related to your requirements:
+   <img width="950" alt="image" src="https://user-images.githubusercontent.com/39924567/199204596-314b5ca8-36d7-4119-adb8-7618ccc8131e.png">
+
 3. It will verify if all the requirements are being met.
 4. If some requirements are not being met, it will ask whether to download and setup those requirements:
+   <img width="600" alt="image" src="https://user-images.githubusercontent.com/39924567/199204970-f95f1bce-35a6-4958-b0eb-f642331c9fb7.png">
+
 5. Voila :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 6. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
    ```js
