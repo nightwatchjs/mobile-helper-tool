@@ -10,7 +10,8 @@
    npx @nightwatch/mobile-helper android
    ```
 2. Answer a few questions related to your requirements:
-   <img width="950" alt="image" src="https://user-images.githubusercontent.com/39924567/199204596-314b5ca8-36d7-4119-adb8-7618ccc8131e.png">
+   <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
+
 
 3. It will verify if all the requirements are being met.
 4. If some requirements are not being met, it will ask whether to download and setup those requirements:
