@@ -1,9 +1,12 @@
 {
   "name": "@nightwatch/mobile-helper",
   "version": "0.0.1",
-  "description": "Mobile helper tool to easily setup mobile requirements",
+  "description": "Easily setup all the requirements needed to get started with mobile-web testing using Nightwatch.",
   "main": "dist/index.js",
   "bin": "./index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node dev.js",
