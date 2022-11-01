@@ -159,7 +159,7 @@ export class AndroidSetup {
       Logger.log('Java Development Kit is required to work with Android SDKs. Download from here:');
       Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
 
-      Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.`);
+      Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
 
       return false;
     }
@@ -209,7 +209,7 @@ export class AndroidSetup {
       {
         type: 'input',
         name: 'sdkRoot',
-        message: 'Where do you want the Android SDK setup? Please give the path to your existing setup if any',
+        message: 'Where do you want the Android SDK setup? Please give the path to your existing setup (if any):',
         default: getDefaultAndroidSdkRoot(this.platform),
         filter: (input: string) => path.resolve(this.rootDir, untildify(input))
       }

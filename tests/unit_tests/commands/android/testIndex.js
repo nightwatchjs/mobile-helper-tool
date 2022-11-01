@@ -322,6 +322,9 @@ describe('test getConfigFromOptions', function() {
 
     configs = androidSetup.getConfigFromOptions({mode: ['real', 'emulator'], browsers: ['chrome', 'something']});
     assert.deepStrictEqual(configs, {mode: 'both', browsers: 'chrome'});
+
+    configs = androidSetup.getConfigFromOptions({mode: true, browsers: []});
+    assert.deepStrictEqual(configs, {});
   });
 });
 
