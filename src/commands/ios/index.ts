@@ -1,5 +1,5 @@
 import { prompt } from 'inquirer';
-import { Options, SetupConfigs } from './interfaces';
+import { Options, SetupConfigs, IosSetupResult } from './interfaces';
 import { getPlatformName, iosRealDeviceUUID, symbols } from '../../utils';
 import { AVAILABLE_OPTIONS, SETUP_CONFIG_QUES } from './constants';
 import colors from 'ansi-colors';
@@ -18,8 +18,8 @@ export class IosSetup {
     this.platform = getPlatformName();
   }
 
-  async run(): Promise<boolean> {
-    let result = true;
+  async run(): Promise<IosSetupResult | boolean> {
+    let result: IosSetupResult | boolean = true;
 
     const allAvailableOptions = this.getAllAvailableOptions();
     const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
@@ -140,7 +140,7 @@ export class IosSetup {
       return true;
     }
 
-    let result = true;
+    let result: IosSetupResult= {simulator: true, real: true};
 
     if (setupConfigs.mode === 'simulator' || setupConfigs.mode === 'both') {
       if (missingRequirements.includes('Xcode is not installed')) {
@@ -164,7 +164,7 @@ export class IosSetup {
 
         Logger.log(`\nFollow the guide for more detailed info ${colors.magenta("https://www.freecodecamp.org/news/how-to-download-and-install-xcode/")}\n`);
 
-        result = false;
+        result.simulator = false;
       }
     }
 
@@ -176,7 +176,7 @@ export class IosSetup {
 
       if (missingRequirements.includes('Device is not connected')) {
         msg += colors.cyan(`\n\nAlso make sure your device is connected and turned on properly`);
-        result = false;
+        result.real = false;
       }
       Logger.log(boxen(msg, {padding: 1}));
     }

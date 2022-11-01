@@ -12,3 +12,8 @@ export interface AvailableOptions {
     description: string;
   }
 }
+
+export interface IosSetupResult {
+  real: boolean;
+  simulator: boolean;
+}
