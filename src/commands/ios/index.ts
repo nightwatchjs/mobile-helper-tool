@@ -1,6 +1,6 @@
 import { prompt } from 'inquirer';
 import { Options, SetupConfigs, IosSetupResult } from './interfaces';
-import { getPlatformName, iosRealDeviceUUID, symbols } from '../../utils';
+import { getPlatformName, iosRealDeviceUDID, symbols } from '../../utils';
 import { AVAILABLE_OPTIONS, SETUP_CONFIG_QUES } from './constants';
 import colors from 'ansi-colors';
 import { execSync } from 'child_process';
@@ -105,8 +105,8 @@ export class IosSetup {
 
         if (stdout.toString() !== '') {
           Logger.log(boxen(
-            colors.white(`Update ${colors.cyan('UUID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
-            colors.cyan("\nUUID: " + iosRealDeviceUUID(stdout.toString())), {padding: 1}));
+            colors.white(`Update ${colors.cyan('UDID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
+            colors.cyan("\UDID: " + iosRealDeviceUDID(stdout.toString())), {padding: 1}));
         } else {
           throw "Device is not connected";
         }
