@@ -28,6 +28,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
       desiredCapabilities: {
         browserName: 'chrome',
         real_device: false,
+        avd: 'nightwatch-android-11',
         'goog:chromeOptions': {
           w3c: true,
           args: [
@@ -56,6 +57,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
       desiredCapabilities: {
         browserName: 'firefox',
         real_device: false,
+        avd: 'nightwatch-android-11',
         acceptInsecureCerts: true,
         'moz:firefoxOptions': {
           args: [
@@ -85,7 +87,6 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    3. Set `real_device` capability to true in the configuration.
 
 8. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command in first step.
-
 9. Run your nightwatch tests on Android mobile browsers:
    ```sh
     # for firefox
@@ -94,7 +95,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     npx nightwatch --env android.chrome
    ```
 
-### Ios
+### iOS
 
 1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
 
@@ -102,58 +103,59 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    npx @nightwatch/mobile-helper ios
    ```
 2. Answer a device related question:
+
    <img width="352" alt="image" src="https://user-images.githubusercontent.com/94462364/199410412-e40da151-e545-4039-90db-e68697358665.png">
 
 
 3. It will verify if all the requirements are being met.
-4. If some requirements are not being met, follow the guide to manually setup those requirements.
+4. If some requirements are not being met, follow the guide to setup those requirements.
 
    <img width="662" alt="image" src="https://user-images.githubusercontent.com/94462364/199419711-43e7793a-df82-4d67-a832-679eb5c1f7b9.png">
 
 
-5. Voila :tada: Your setup is now complete. (re-run the command in first step to re-verify.)
+5. Voila :tada: Your setup is now complete. (Re-run the command in first step to verify.)
 
 6. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
    ```js
    "test_settings": {
-    // other envs above this line
-    'ios.real.safari': {
-      desiredCapabilities: {
-        browserName: 'safari',
-        platformName: 'iOS',
-        // add the device UDID to run tests on (necessary)
-        // Run command: `xcrun simctl list devices`
-        // 'safari:deviceUDID': '00008030-00024C2C3453402E',
-      },
-    
-      webdriver: {
-        start_process: true,
-        server_path: '',
-        cli_args: [
-          // --verbose
-        ]
-      }
-    },
-    
-    'ios.simulator.safari': {
-      desiredCapabilities: {
-        browserName: 'safari',
-        platformName: 'iOS',
-        'safari:useSimulator': true,
-        // change the deviceName, platformVersion accordingly to run tests on 
-        // Run command: `xcrun simctl list devices`
-        // 'safari:platformVersion': '15.0',
-        'safari:deviceName': 'iPhone 13'
-      },
-    
-      webdriver: {
-        start_process: true,
-        server_path: '',
-        cli_args: [
-          // --verbose
-        ]
-      }
-    },
+     // other envs above this line
+     'ios.real.safari': {
+       desiredCapabilities: {
+         browserName: 'safari',
+         platformName: 'iOS',
+         // add the device UDID to run tests on (necessary)
+         // Run command: `xcrun simctl list devices`
+         // 'safari:deviceUDID': '00008030-00024C2C3453402E',
+       },
+   
+       webdriver: {
+         start_process: true,
+         server_path: '',
+         cli_args: [
+           // --verbose
+         ]
+       }
+     },
+
+     'ios.simulator.safari': {
+       desiredCapabilities: {
+         browserName: 'safari',
+         platformName: 'iOS',
+         'safari:useSimulator': true,
+         // change the deviceName, platformVersion accordingly to run tests on 
+         // Run command: `xcrun simctl list devices`
+         // 'safari:platformVersion': '15.0',
+         'safari:deviceName': 'iPhone 13'
+       },
+
+       webdriver: {
+         start_process: true,
+         server_path: '',
+         cli_args: [
+           // --verbose
+         ]
+       }
+     },
    }
    ```
 
