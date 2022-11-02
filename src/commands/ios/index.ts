@@ -103,7 +103,7 @@ export class IosSetup {
           stdio: 'pipe'
         });
 
-        if (stdout.toString() === '') {
+        if (stdout.toString() !== '') {
           Logger.log(boxen(
             colors.white(`Update ${colors.cyan('UDID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
             "\nUDID: " + 
