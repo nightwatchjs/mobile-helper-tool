@@ -1,6 +1,7 @@
 export interface AndroidSetupResult {
   status: boolean;
   setup: boolean;
+  mode: Required<SetupConfigs>['mode'];
 }
 
 export interface AvailableOptions {

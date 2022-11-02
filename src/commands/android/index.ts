@@ -97,7 +97,8 @@ export class AndroidSetup {
 
     return {
       status: result,
-      setup: !!this.options.setup
+      setup: !!this.options.setup,
+      mode: setupConfigs.mode || 'real'
     };
   }
 
