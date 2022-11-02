@@ -61,6 +61,9 @@ export class AndroidSetup {
     const sdkRootEnv = this.getSdkRootFromEnv();
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
 
+    const originalAndroidHome = process.env.ANDROID_HOME;
+    process.env.ANDROID_HOME = this.sdkRoot;
+
     const setupConfigs: SetupConfigs = await this.getSetupConfigs(this.options);
     Logger.log();
 
@@ -90,6 +93,8 @@ export class AndroidSetup {
     if (setupConfigs.mode !== 'emulator') {
       Logger.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
+
+    process.env.ANDROID_HOME = originalAndroidHome;
 
     if (!sdkRootEnv) {
       this.sdkRootEnvSetInstructions();
