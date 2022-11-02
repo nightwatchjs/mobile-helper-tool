@@ -159,7 +159,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    }
    ```
 
-7. Update the configurations :
+7. (**Optional**) Update the configurations : 
 
     **Real Device**
     
