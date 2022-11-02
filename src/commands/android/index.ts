@@ -162,7 +162,7 @@ export class AndroidSetup {
 
       return true;
     } catch {
-      Logger.log('Java Development Kit is required to work with Android SDKs. Download from here:');
+      Logger.log(`${colors.red('Error:')} Java Development Kit is required to work with Android SDKs. Download from here:`);
       Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
 
       Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
