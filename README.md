@@ -26,9 +26,9 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     // other envs above this line
     'android.chrome': {
       desiredCapabilities: {
-        browserName: 'chrome',
         real_mobile: false,
         avd: 'nightwatch-android-11',
+        browserName: 'chrome',
         'goog:chromeOptions': {
           w3c: true,
           args: [
@@ -55,9 +55,9 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
     'android.firefox': {
       desiredCapabilities: {
-        browserName: 'firefox',
         real_mobile: false,
         avd: 'nightwatch-android-11',
+        browserName: 'firefox',
         acceptInsecureCerts: true,
         'moz:firefoxOptions': {
           args: [
@@ -113,7 +113,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    <img width="662" alt="image" src="https://user-images.githubusercontent.com/94462364/199419711-43e7793a-df82-4d67-a832-679eb5c1f7b9.png">
 
 
-5. Voila :tada: Your setup is now complete. (Re-run the command in first step to verify.)
+5. Great :tada: Your setup is now complete. (Re-run the command in the first step to verify.)
 
 6. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
    ```js
@@ -158,25 +158,24 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
      },
    }
    ```
-
-7. (**Optional**) Update the configurations : 
-
-    **Real Device**
-    
-    Run the following command to get the *UDID*
-    
-    ```sh
+7. (**Real Device**) Run the following command to get the *UDID*:
+   ```sh
     system_profiler SPUSBDataType | sed -n '/iPhone/,/Serial/p' | grep 'Serial Number:' | awk -F ': ' '{print $2}'
     ```
-    Now update *UDID* in nightwatch configuration for *ios.real.safari* environment. 
+
+8. (**Optional**) Update the configurations : 
+
+    **Real Device**
+
+    Set `safari:deviceUDID` capability to *UDID* from the previous step, in your Nightwatch configuration for `ios.real.safari` environment.
 
     **Simulators**
     
-    Run the following command to get the list of simulators 
+    Run the following command to get a list of simulators:
     ```sh
     xcrun simctl list devices
     ```
-    And then update *safari:deviceName* (eg: 'iphone 13') and *safari:platformVersion* (eg: '15.0') in nightwatch configuration for *ios.simulator.safari* environment accordingly.
+    And then update `safari:deviceName` (eg: 'iphone 13') and `safari:platformVersion` (eg: '15.0') in your Nightwatch configuration for `ios.simulator.safari` environment according to your preference.
 
 
 8. Run your nightwatch tests on Android mobile browsers:
@@ -184,6 +183,8 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     # for simulators
     npx nightwatch --env ios.simulator.safari
 
-    # for real device (if updated the config in the previous step)
+    # for real device
     npx nightwatch --env ios.real.safari --udid <YOUR-DEVICE-UDID>
+    # for real device (if updated the config in the previous step)
+    npx nightwatch --env ios.real.safari
    ```
