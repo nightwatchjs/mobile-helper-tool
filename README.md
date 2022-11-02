@@ -161,7 +161,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 7. Update the configurations :
 
-    **Real Device** (*Mandatory*)
+    **Real Device**
     
     Run the following command to get the *UDID*
     
@@ -170,7 +170,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     ```
     Now update *UDID* in nightwatch configuration for *ios.real.safari* environment. 
 
-    **Simulators** (*Optional*)
+    **Simulators**
     
     Run the following command to get the list of simulators 
     ```sh
