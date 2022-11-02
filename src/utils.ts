@@ -64,10 +64,10 @@ export const rmDirSync = (dirPath: string) => {
   }
 };
 
-export const iosRealDeviceUUID = (uuid: string) => {
-  if (uuid.length > 25) {
-    return uuid;
+export const iosRealDeviceUDID = (udid: string) => {
+  if (udid.length > 25) {
+    return udid;
   }
 
-  return `${uuid.substring(0, 8)}-${uuid.substring(9, 25)}`;
+  return `${udid.substring(0, 8)}-${udid.substring(9, 25)}`;
 };

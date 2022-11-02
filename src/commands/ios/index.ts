@@ -1,6 +1,6 @@
 import { prompt } from 'inquirer';
 import { Options, SetupConfigs, IosSetupResult } from './interfaces';
-import { getPlatformName, iosRealDeviceUUID, symbols } from '../../utils';
+import { getPlatformName, iosRealDeviceUDID, symbols } from '../../utils';
 import { AVAILABLE_OPTIONS, SETUP_CONFIG_QUES } from './constants';
 import colors from 'ansi-colors';
 import { execSync } from 'child_process';
@@ -105,8 +105,9 @@ export class IosSetup {
 
         if (stdout.toString() !== '') {
           Logger.log(boxen(
-            colors.white(`Update ${colors.cyan('UUID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
-            colors.cyan("\nUUID: " + iosRealDeviceUUID(stdout.toString())), {padding: 1}));
+            colors.white(`Update ${colors.cyan('UDID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
+            "\nUDID: " + 
+            colors.cyan(iosRealDeviceUDID(stdout.toString())), {padding: 1}));
         } else {
           throw "Device is not connected";
         }
@@ -171,11 +172,11 @@ export class IosSetup {
     if (setupConfigs.mode === 'real' || setupConfigs.mode === 'both') {
       Logger.log("\nSetting up missing requirements for real devices...")
 
-      let msg = colors.cyan("Remote Automation should be turned on (necessary) ") +
+      let msg = colors.cyan("1. Remote Automation should be turned on your iOS device.") +
         colors.grey.italic("\n(turn it on via Settings → Safari → Advanced → Remote Automation.)");
 
       if (missingRequirements.includes('Device is not connected')) {
-        msg += colors.cyan(`\n\nAlso make sure your device is connected and turned on properly`);
+        msg += colors.cyan(`\n\n2. Device is connected via data cable and turned on properly.`);
         result.real = false;
       }
       Logger.log(boxen(msg, {padding: 1}));
