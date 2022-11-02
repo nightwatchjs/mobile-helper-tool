@@ -184,6 +184,6 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     # for simulators
     npx nightwatch --env ios.simulator.safari
 
-    # for real device
+    # for real device (if updated the config in the previous step)
     npx nightwatch --env ios.real.safari --udid <YOUR-DEVICE-UDID>
    ```
