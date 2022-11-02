@@ -27,7 +27,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     'android.chrome': {
       desiredCapabilities: {
         browserName: 'chrome',
-        real_device: false,
+        real_mobile: false,
         avd: 'nightwatch-android-11',
         'goog:chromeOptions': {
           w3c: true,
@@ -56,7 +56,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     'android.firefox': {
       desiredCapabilities: {
         browserName: 'firefox',
-        real_device: false,
+        real_mobile: false,
         avd: 'nightwatch-android-11',
         acceptInsecureCerts: true,
         'moz:firefoxOptions': {
@@ -84,7 +84,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 7. If testing on real-device:
    1. Make sure latest version of Chrome/Firefox browsers are installed. If not, install them from Google Play Store.
    2. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
-   3. Set `real_device` capability to true in the configuration.
+   3. Set `real_mobile` capability to true in the configuration.
 
 8. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command in first step.
 9. Run your nightwatch tests on Android mobile browsers:
