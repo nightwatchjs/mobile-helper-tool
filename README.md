@@ -2,6 +2,8 @@
 
 Official Nightwatch helper-tool to easily setup all the requirements needed to get started with running your Nightwatch tests on real mobile-browsers.
 
+Although this tool is designed with Nightwatch in mind, it can also be used as a standalone tool to download all the required Android SDKs needed to get the Android Emulator setup and running with Android v11. It can also download and install the latest version of Firefox browser on the Android Emulator.
+
 ## Usage
 
 ### Android
