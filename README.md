@@ -9,7 +9,11 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### Android
 
-1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+1. In your [Nightwatch](https://nightwatch.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+   ```sh
+   npm i @nightwatch/mobile-helper --save-dev
+   ```
+2. From your project's root dir, run:
 
    ```sh
    npx @nightwatch/mobile-helper android
@@ -100,7 +104,11 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### iOS
 
-1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+1. In your [Nightwatch](https://nightwatch.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+   ```sh
+   npm i @nightwatch/mobile-helper --save-dev
+   ```
+2. From your project's root dir, run:
 
    ```sh
    npx @nightwatch/mobile-helper ios
