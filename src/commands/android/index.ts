@@ -612,7 +612,7 @@ export class AndroidSetup {
             if (firefoxLatestVersion === DEFAULT_FIREFOX_VERSION && currentMajorVersion >= latestMajorVersion) {
               Logger.log(`  ${colors.red(symbols().fail)} Failed to fetch the latest version of Firefox browser.\n`);
             } else {
-              Logger.log(`A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
+              Logger.log(`  ${colors.yellow('!')} A new version of Firefox browser is available (${colors.cyan(versionMatch[1] + ' -> ' + firefoxLatestVersion)})\n`);
               installFirefox = true;
             }
           } else {
