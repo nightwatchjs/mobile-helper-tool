@@ -7,6 +7,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=14.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc && node dev.js",
