@@ -19,6 +19,10 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
   browsers: {
     alias: ['browser', 'b'],
     description: 'Browsers to setup on Android emulator. Available args: "chrome", "firefox", "both", "none"'
+  },
+  appium: {
+    alias: [],
+    description: 'Make sure the final setup works with Appium out-of-the-box.'
   }
 };
 
@@ -44,17 +48,17 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
     type: 'list',
     name: 'mode',
-    message: 'Where do you want to run the tests?',
+    message: 'Select target device(s) to do the setup for:',
     choices: [
-      {name: 'On real Android device', value: 'real'},
-      {name: 'On an Android Emulator', value: 'emulator'},
+      {name: 'Real Android Device', value: 'real'},
+      {name: 'Android Emulator', value: 'emulator'},
       {name: 'Both', value: 'both'}
     ]
   },
   {
     type: 'list',
     name: 'browsers',
-    message: '[Emulator] Which browser(s) should we set up on the Emulator?',
+    message: '[Emulator] Select browser(s) to set up on the Emulator:',
     choices: [
       {name: 'Google Chrome', value: 'chrome'},
       {name: 'Mozilla Firefox', value: 'firefox'},

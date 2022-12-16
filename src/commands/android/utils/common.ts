@@ -25,7 +25,7 @@ export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
     return binaryName;
   }
 
-  if (['sdkmanager', 'avdmanager'].includes(binaryName)) {
+  if (['sdkmanager', 'avdmanager', 'apksigner'].includes(binaryName)) {
     return `${binaryName}.bat`;
   }
 

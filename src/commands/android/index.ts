@@ -19,7 +19,10 @@ import {
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
   getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
 } from './utils/common';
-import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
+import {
+  downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
+  getBuildToolsAvailableVersions, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager
+} from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
 
@@ -31,7 +34,7 @@ export class AndroidSetup {
   platform: Platform;
   otherInfo: OtherInfo;
 
-  constructor(options: Options, rootDir = process.cwd()) {
+  constructor(options: Options = {}, rootDir = process.cwd()) {
     this.sdkRoot = '';
     this.options = options;
     this.rootDir = rootDir;
@@ -406,6 +409,23 @@ export class AndroidSetup {
     const missingBinaries = this.checkBinariesPresent(requiredBinaries);
     missingRequirements.push(...missingBinaries);
 
+    // check for build-tools
+    if (this.options.appium) {
+      const buildToolsPath = path.join(this.sdkRoot, 'build-tools');
+      const availableVersions = getBuildToolsAvailableVersions(this.sdkRoot);
+      if (availableVersions.length > 0) {
+        Logger.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan('Android Build Tools')} present at '${buildToolsPath}'.`,
+          `Available versions: ${colors.cyan(availableVersions.join(', '))}\n`
+        );
+      } else {
+        Logger.log(
+          `  ${colors.red(symbols().fail)} ${colors.cyan('Android Build Tools')} not present at '${buildToolsPath}'\n`
+        );
+        missingRequirements.push('build-tools');
+      }
+    }
+
     // check for platforms subdirectory (required by emulator)
     if (requiredBinaries.includes('emulator')) {
       const platormsPath = path.join(this.sdkRoot, 'platforms');
@@ -487,6 +507,17 @@ export class AndroidSetup {
       this.platform,
       packagesToInstall
     );
+
+    // Download build-tools if using Appium
+    if (this.options.appium) {
+      const res = downloadSdkBuildTools(
+        getBinaryLocation(this.sdkRoot, this.platform, 'sdkmanager', true),
+        this.platform
+      );
+      if (!res) {
+        result = false;
+      }
+    }
 
     if (missingRequirements.includes('platforms')) {
       Logger.log('Creating platforms subdirectory...');
