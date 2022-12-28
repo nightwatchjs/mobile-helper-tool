@@ -187,8 +187,12 @@ export const execBinarySync = (
   }
 };
 
-export const getBuildToolsAvailableVersions = (sdkRoot: string): string[] => {
-  const buildToolsContent = fs.readdirSync(path.join(sdkRoot, 'build-tools'));
+export const getBuildToolsAvailableVersions = (buildToolsPath: string): string[] => {
+  if (!fs.existsSync(buildToolsPath)) {
+    return [];
+  }
+
+  const buildToolsContent = fs.readdirSync(buildToolsPath);
   const availableVersions = buildToolsContent.filter(
     (name) => name.match(/^(\d+)(\.\d+){2}(-[a-z1-9]+)?/) !== null
   );
@@ -225,6 +229,7 @@ export const downloadSdkBuildTools = (
       latestBuildTools
     );
   }
+  console.log();
 
   return false;
 };

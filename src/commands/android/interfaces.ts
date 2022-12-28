@@ -19,6 +19,7 @@ export type Platform = 'windows' | 'linux' | 'mac';
 
 export interface OtherInfo {
   androidHomeInGlobalEnv: boolean;
+  javaHomeInGlobalEnv: boolean;
 }
 
 export interface SetupConfigs {
