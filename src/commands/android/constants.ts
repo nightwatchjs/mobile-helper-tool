@@ -48,7 +48,7 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
     type: 'list',
     name: 'mode',
-    message: 'Select target device(s) to do the setup for:',
+    message: 'Select target device(s):',
     choices: [
       {name: 'Real Android Device', value: 'real'},
       {name: 'Android Emulator', value: 'emulator'},
