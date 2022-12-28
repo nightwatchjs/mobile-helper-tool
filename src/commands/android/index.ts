@@ -72,7 +72,9 @@ export class AndroidSetup {
         this.javaHomeNotFoundInstructions();
 
         if (javaHomeFound === false) {
-          Logger.log(`${colors.red('ERROR:')} JAVA_HOME env variable could not be set in a .env file. Please set the JAVA_HOME env variable as instructed above.`);
+          Logger.log(`${colors.red(
+            'ERROR:'
+          )} JAVA_HOME env variable could not be set in a .env file. Please set the JAVA_HOME env variable as instructed above.`);
 
           return false;
         }
@@ -86,10 +88,18 @@ export class AndroidSetup {
 
     const sdkRootEnv = this.getSdkRootFromEnv();
 
-    // if (this.options.appium && sdkRootEnv === '' && this.otherInfo.androidHomeInGlobalEnv) {
-    //   // this won't work for Appium. `ANDROID_HOME` should be mandatorily set to correct path for Appium to work.
-    //   return false;
-    // }
+    if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
+      // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web
+      // since ANDROID_HOME is not a mandatory requirement there and Nightwatch would complain when it
+      // is required, but for Appium to work properly, it should be set to correct path in sys env or .env.
+      Logger.log(`${colors.red('ERROR:')} For Appium to work properly, ${colors.cyan(
+        'ANDROID_HOME'
+      )} env variable must be set to a valid path in your system environment variables.`);
+
+      this.envSetHelp();
+
+      return false;
+    }
 
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
@@ -253,7 +263,7 @@ export class AndroidSetup {
   }
 
   javaHomeNotFoundInstructions(): void {
-    Logger.log(`${colors.red('NOTE:')} For Appium to work correctly, ${colors.cyan(
+    Logger.log(`${colors.red('NOTE:')} For Appium to work properly, ${colors.cyan(
       'JAVA_HOME'
     )} env variable must be set to the root folder path of your local JDK installation.`);
 
@@ -1017,5 +1027,11 @@ export class AndroidSetup {
     }
 
     Logger.log('Following the above instructions might save you from future troubles.\n');
+
+    this.envSetHelp();
+  }
+
+  envSetHelp() {
+    // Add platform-wise help or link a doc to help users set env variable.
   }
 }
