@@ -76,6 +76,8 @@ export class AndroidSetup {
             'ERROR:'
           )} JAVA_HOME env variable could not be set in a .env file. Please set the JAVA_HOME env variable as instructed above.`);
 
+          this.envSetHelp();
+
           return false;
         }
 

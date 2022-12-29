@@ -58,7 +58,7 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
     type: 'list',
     name: 'browsers',
-    message: '[Emulator] Select browser(s) to set up on the Emulator:',
+    message: '[Emulator] Select browser(s) to set up on Emulator:',
     choices: [
       {name: 'Google Chrome', value: 'chrome'},
       {name: 'Mozilla Firefox', value: 'firefox'},
