@@ -1,6 +1,6 @@
 {
   "name": "@nightwatch/mobile-helper",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Easily setup all the requirements needed to get started with mobile-web testing using Nightwatch.",
   "main": "dist/index.js",
   "bin": "./index.js",
