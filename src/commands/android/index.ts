@@ -19,25 +19,31 @@ import {
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
   getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
 } from './utils/common';
-import {downloadAndSetupAndroidSdk, execBinarySync, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager} from './utils/sdk';
+import {
+  downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
+  getBuildToolsAvailableVersions, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager
+} from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
 
 
 export class AndroidSetup {
   sdkRoot: string;
+  javaHome: string;
   options: Options;
   rootDir: string;
   platform: Platform;
   otherInfo: OtherInfo;
 
-  constructor(options: Options, rootDir = process.cwd()) {
+  constructor(options: Options = {}, rootDir = process.cwd()) {
     this.sdkRoot = '';
+    this.javaHome = '';
     this.options = options;
     this.rootDir = rootDir;
     this.platform = getPlatformName();
     this.otherInfo = {
-      androidHomeInGlobalEnv: false
+      androidHomeInGlobalEnv: false,
+      javaHomeInGlobalEnv: false
     };
   }
 
@@ -56,13 +62,51 @@ export class AndroidSetup {
       return false;
     }
 
-    let result = true;
+    this.loadEnvFromDotEnv();
+
+    let javaHomeFound: boolean | null = false;
+    if (this.options.appium) {
+      javaHomeFound = this.isJavaHomeEnvSet();
+
+      if (!javaHomeFound) {
+        this.javaHomeNotFoundInstructions();
+
+        if (javaHomeFound === false) {
+          Logger.log(`${colors.red(
+            'ERROR:'
+          )} JAVA_HOME env variable could not be set in a .env file. Please set the JAVA_HOME env variable as instructed above.`);
+
+          this.envSetHelp();
+
+          return false;
+        }
+
+        // env can be set in dotenv file (javaHomeFound=null).
+        process.env.JAVA_HOME = await this.getJavaHomeFromUser();
+      }
+
+      this.javaHome = process.env.JAVA_HOME || '';
+    }
 
     const sdkRootEnv = this.getSdkRootFromEnv();
-    this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
 
-    const originalAndroidHome = process.env.ANDROID_HOME;
+    if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
+      // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web
+      // since ANDROID_HOME is not a mandatory requirement there and Nightwatch would complain when it
+      // is required, but for Appium to work properly, it should be set to correct path in sys env or .env.
+      Logger.log(`${colors.red('ERROR:')} For Appium to work properly, ${colors.cyan(
+        'ANDROID_HOME'
+      )} env variable must be set to a valid path in your system environment variables.`);
+
+      this.envSetHelp();
+
+      return false;
+    }
+
+    this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
+
+    let result = true;
 
     const setupConfigs: SetupConfigs = await this.getSetupConfigs(this.options);
     Logger.log();
@@ -94,10 +138,8 @@ export class AndroidSetup {
       Logger.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
 
-    process.env.ANDROID_HOME = originalAndroidHome;
-
-    if (!sdkRootEnv) {
-      this.sdkRootEnvSetInstructions();
+    if (!sdkRootEnv || (this.options.appium && !javaHomeFound)) {
+      this.envSetInstructions(sdkRootEnv);
     }
 
     return {
@@ -162,7 +204,7 @@ export class AndroidSetup {
 
       return true;
     } catch {
-      Logger.log(`${colors.red('Error:')} Java Development Kit is required to work with Android SDKs. Download from here:`);
+      Logger.log(`${colors.red('Error:')} Java Development Kit v9 or above is required to work with Android SDKs. Download from here:`);
       Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
 
       Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
@@ -171,12 +213,119 @@ export class AndroidSetup {
     }
   }
 
-  getSdkRootFromEnv(): string {
-    Logger.log('Checking the value of ANDROID_HOME environment variable...');
-
+  loadEnvFromDotEnv(): void {
     this.otherInfo.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
 
+    if (this.options.appium) {
+      this.otherInfo.javaHomeInGlobalEnv = 'JAVA_HOME' in process.env;
+    }
+
     dotenv.config({path: path.join(this.rootDir, '.env')});
+  }
+
+  isJavaHomeEnvSet(): boolean | null {
+    Logger.log('Checking the value of JAVA_HOME environment variable...');
+
+    const javaHome = process.env.JAVA_HOME;
+    const fromDotEnv = this.otherInfo.javaHomeInGlobalEnv ? '' : ' (taken from .env)';
+
+    if (javaHome !== undefined && fs.existsSync(javaHome)) {
+      Logger.log(`  ${colors.green(symbols().ok)} JAVA_HOME is set to '${javaHome}'${fromDotEnv}`);
+
+      const javaHomeBin = path.resolve(javaHome, 'bin');
+      if (fs.existsSync(javaHomeBin)) {
+        Logger.log(`  ${colors.green(symbols().ok)} 'bin' subfolder exists under '${javaHome}'\n`);
+
+        return true;
+      }
+
+      Logger.log(`  ${colors.red(symbols().fail)} 'bin' subfolder does not exist under '${javaHome}'. Is ${javaHome} set to a proper value?\n`);
+      if (this.otherInfo.javaHomeInGlobalEnv) {
+        // we cannot set it ourselves
+        return false;
+      }
+
+      // We can set the env in dotenv file.
+      return null;
+    }
+
+    if (javaHome === undefined) {
+      Logger.log(`  ${colors.red(symbols().fail)} JAVA_HOME env variable is NOT set!\n`);
+    } else {
+      Logger.log(`  ${colors.red(symbols().fail)} JAVA_HOME is set to '${javaHome}'${fromDotEnv} but this is NOT a valid path!\n`);
+
+      if (this.otherInfo.javaHomeInGlobalEnv) {
+        // we cannot set it ourselves
+        return false;
+      }
+    }
+
+    // we can set the env in dotenv file.
+    return null;
+  }
+
+  javaHomeNotFoundInstructions(): void {
+    Logger.log(`${colors.red('NOTE:')} For Appium to work properly, ${colors.cyan(
+      'JAVA_HOME'
+    )} env variable must be set to the root folder path of your local JDK installation.`);
+
+    let expectedPath;
+
+    if (this.platform === 'windows') {
+      expectedPath = 'C:\\Program Files\\Java\\jdk1.8.0_111';
+    } else if (this.platform === 'mac') {
+      expectedPath = '/Library/Java/JavaVirtualMachines/jdk1.8.0_111.jdk/Contents/Home';
+    } else {
+      expectedPath = '/usr/lib/jvm/java-8-oracle';
+    }
+
+    Logger.log(`${colors.green('Hint:')} On a ${this.platform} system, the JDK installation path should be something similar to '${expectedPath}'.\n`);
+  }
+
+  async getJavaHomeFromUser(): Promise<string> {
+    let javaHome;
+
+    if (this.platform === 'mac') {
+      try {
+        const stdout = execSync('/usr/libexec/java_home', {
+          stdio: 'pipe'
+        });
+
+        javaHome = stdout.toString();
+
+        Logger.log(`Auto-detected JAVA_HOME to be: ${colors.green(javaHome)}`);
+        // eslint-disable-next-line
+      } catch {}
+    }
+
+    const answers: {javaHome: string} = await prompt([
+      {
+        type: 'input',
+        name: 'javaHome',
+        message: 'Enter the path to the root folder of your local JDK installation:',
+        validate: (input) => {
+          if (!fs.existsSync(input)) {
+            return 'Entered path does not exist';
+          }
+
+          if (!fs.existsSync(path.resolve(input, 'bin'))) {
+            return `'bin' subfolder does not exist under '${input}'`;
+          }
+
+          return true;
+        }
+      }
+    ], {javaHome});
+    Logger.log();
+
+    const envPath = path.join(this.rootDir, '.env');
+    fs.appendFileSync(envPath, `\nJAVA_HOME=${answers.javaHome}`);
+
+    return answers.javaHome;
+  }
+
+  getSdkRootFromEnv(): string {
+    Logger.log('Checking the value of ANDROID_HOME environment variable...');
 
     const androidHome = process.env.ANDROID_HOME;
     const fromDotEnv = this.otherInfo.androidHomeInGlobalEnv ? '' : ' (taken from .env)';
@@ -228,7 +377,7 @@ export class AndroidSetup {
       // this is important if global ANDROID_HOME env is set to '', in which case we
       // should not save the user supplied value to .env.
       const envPath = path.join(this.rootDir, '.env');
-      fs.appendFileSync(envPath, `\nANDROID_HOME=${sdkRoot}\n`);
+      fs.appendFileSync(envPath, `\nANDROID_HOME=${sdkRoot}`);
     }
 
     return sdkRoot;
@@ -406,6 +555,23 @@ export class AndroidSetup {
     const missingBinaries = this.checkBinariesPresent(requiredBinaries);
     missingRequirements.push(...missingBinaries);
 
+    // check for build-tools
+    if (this.options.appium) {
+      const buildToolsPath = path.join(this.sdkRoot, 'build-tools');
+      const availableVersions = getBuildToolsAvailableVersions(buildToolsPath);
+      if (availableVersions.length > 0) {
+        Logger.log(
+          `  ${colors.green(symbols().ok)} ${colors.cyan('Android Build Tools')} present at '${buildToolsPath}'.`,
+          `Available versions: ${colors.cyan(availableVersions.join(', '))}\n`
+        );
+      } else {
+        Logger.log(
+          `  ${colors.red(symbols().fail)} ${colors.cyan('Android Build Tools')} not present at '${buildToolsPath}'\n`
+        );
+        missingRequirements.push('build-tools');
+      }
+    }
+
     // check for platforms subdirectory (required by emulator)
     if (requiredBinaries.includes('emulator')) {
       const platormsPath = path.join(this.sdkRoot, 'platforms');
@@ -487,6 +653,17 @@ export class AndroidSetup {
       this.platform,
       packagesToInstall
     );
+
+    // Download build-tools if using Appium
+    if (this.options.appium) {
+      const res = downloadSdkBuildTools(
+        getBinaryLocation(this.sdkRoot, this.platform, 'sdkmanager', true),
+        this.platform
+      );
+      if (!res) {
+        result = false;
+      }
+    }
 
     if (missingRequirements.includes('platforms')) {
       Logger.log('Creating platforms subdirectory...');
@@ -814,25 +991,49 @@ export class AndroidSetup {
     }
   }
 
-  sdkRootEnvSetInstructions() {
+  envSetInstructions(sdkRootEnv: string) {
     Logger.log(colors.red('IMPORTANT'));
     Logger.log(colors.red('---------'));
 
-    if (this.otherInfo.androidHomeInGlobalEnv && process.env.ANDROID_HOME === '') {
-      Logger.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
-      Logger.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your environment variables.`);
-      Logger.log('(As ANDROID_HOME env is already set, temporarily saving it to .env won\'t work.)\n');
-    } else {
-      Logger.log(
-        `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
-          '.env'
-        )} file (set to '${this.sdkRoot}').\n`
-      );
-      Logger.log(`Please set ${colors.cyan(
-        'ANDROID_HOME'
-      )} env to '${this.sdkRoot}' globally and then delete it from ${colors.cyan('.env')} file.`);
+    if (!sdkRootEnv) {
+      // ANDROID_HOME is either undefined or '' in system env and .env.
+      if (this.otherInfo.androidHomeInGlobalEnv) {
+        // ANDROID_HOME is set in system env, to ''.
+        Logger.log(`${colors.cyan('ANDROID_HOME')} env is set to '' which is NOT a valid path!\n`);
+        Logger.log(`Please set ${colors.cyan('ANDROID_HOME')} to '${this.sdkRoot}' in your system environment variables.`);
+        Logger.log('(As ANDROID_HOME is already set in system env, temporarily saving it to .env file won\'t work.)\n');
+      } else {
+        Logger.log(
+          `${colors.cyan('ANDROID_HOME')} env was temporarily saved in ${colors.cyan(
+            '.env'
+          )} file (set to '${this.sdkRoot}').\n`
+        );
+        Logger.log(`Please set ${colors.cyan(
+          'ANDROID_HOME'
+        )} env to '${this.sdkRoot}' in your system environment variables and then delete it from ${colors.cyan('.env')} file.\n`);
+      }
     }
 
-    Logger.log('Doing this now might save you from future troubles.\n');
+    if (this.options.appium) {
+      // JAVA_HOME env was not found and we set it ourselves in .env (javaHomeFound=null).
+      // In case JAVA_HOME was found incorrect in system env (javaHomeFound=false),
+      // process should have exited with error.
+      Logger.log(
+        `${colors.cyan('JAVA_HOME')} env was temporarily saved in ${colors.cyan(
+          '.env'
+        )} file (set to '${this.javaHome}').\n`
+      );
+      Logger.log(`Please set ${colors.cyan(
+        'JAVA_HOME'
+      )} env to '${this.javaHome}' in your system environment variables and then delete it from ${colors.cyan('.env')} file.\n`);
+    }
+
+    Logger.log('Following the above instructions might save you from future troubles.\n');
+
+    this.envSetHelp();
+  }
+
+  envSetHelp() {
+    // Add platform-wise help or link a doc to help users set env variable.
   }
 }

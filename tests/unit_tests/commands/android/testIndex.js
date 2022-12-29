@@ -165,8 +165,122 @@ describe('test checkJavaInstallation', function() {
     assert.strictEqual(commandsExecuted[0], 'java -version');
 
     const output = consoleOutput.toString();
-    assert.strictEqual(output.includes('Java Development Kit is required'), true);
+    assert.strictEqual(output.includes('Java Development Kit v9 or above is required'), true);
     assert.strictEqual(output.includes('Make sure Java is installed by running java -version'), true);
+  });
+});
+
+describe('test getJavaHomeFromUser', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
+
+  test('JAVA_HOME auto-detected on mac and normally asked on others', async () => {
+    const commandsExecuted = [];
+    mockery.registerMock('child_process', {
+      execSync(command) {
+        commandsExecuted.push(command);
+
+        return 'path/to/auto/detected/jdk';
+      }
+    });
+
+    let javaHomePassedToPrompt = false;
+    mockery.registerMock('inquirer', {
+      prompt: async (questions, answers) => {
+        if (!!answers.javaHome) {
+          javaHomePassedToPrompt = true;
+
+          return answers;
+        }
+
+        return {javaHome: 'path/to/prompt/jdk'};
+      }
+    });
+
+    const rootDir = path.join(__dirname, 'fixtures');
+
+    let appendFileSyncCalledWith;;
+    mockery.registerMock('fs', {
+      appendFileSync(path, content) {
+        appendFileSyncCalledWith = content;
+      }
+    });
+
+    mockery.registerMock('./adb', {});
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup({}, rootDir);
+    const javaHome = await androidSetup.getJavaHomeFromUser();
+
+    if (androidSetup.platform === 'mac') {
+      assert.strictEqual(javaHomePassedToPrompt, true);
+      assert.strictEqual(javaHome, 'path/to/auto/detected/jdk');
+      assert.deepStrictEqual(commandsExecuted, ['/usr/libexec/java_home']);
+      assert.strictEqual(appendFileSyncCalledWith, '\nJAVA_HOME=path/to/auto/detected/jdk');
+    } else {
+      assert.strictEqual(javaHomePassedToPrompt, false);
+      assert.strictEqual(javaHome, 'path/to/prompt/jdk');
+      assert.deepStrictEqual(commandsExecuted, []);
+      assert.strictEqual(appendFileSyncCalledWith, '\nJAVA_HOME=path/to/prompt/jdk');
+    }
+  });
+
+  test('JAVA_HOME normally asked on all platforms if auto-detection fail on mac', async () => {
+    const commandsExecuted = [];
+    mockery.registerMock('child_process', {
+      execSync(command) {
+        commandsExecuted.push(command);
+
+        throw new Error();
+      }
+    });
+
+    let javaHomePassedToPrompt = false;
+    mockery.registerMock('inquirer', {
+      prompt: async (questions, answers) => {
+        if (!!answers.javaHome) {
+          javaHomePassedToPrompt = true;
+
+          return answers;
+        }
+
+        return {javaHome: 'path/to/prompt/jdk'};
+      }
+    });
+
+    const rootDir = path.join(__dirname, 'fixtures');
+
+    let appendFileSyncCalledWith;;
+    mockery.registerMock('fs', {
+      appendFileSync(path, content) {
+        appendFileSyncCalledWith = content;
+      }
+    });
+
+    mockery.registerMock('./adb', {});
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup({}, rootDir);
+    const javaHome = await androidSetup.getJavaHomeFromUser();
+
+    if (androidSetup.platform === 'mac') {
+      assert.deepStrictEqual(commandsExecuted, ['/usr/libexec/java_home']);
+    } else {
+      assert.deepStrictEqual(commandsExecuted, []);
+    }
+
+    assert.strictEqual(javaHomePassedToPrompt, false);
+    assert.strictEqual(javaHome, 'path/to/prompt/jdk');
+    assert.strictEqual(appendFileSyncCalledWith, '\nJAVA_HOME=path/to/prompt/jdk');
   });
 });
 
@@ -296,7 +410,7 @@ describe('test getSdkRootFromUser', function() {
 
     assert.strictEqual(appendFileSyncCalled, true);
     assert.strictEqual(envPath, path.join(rootDir, '.env'));
-    assert.strictEqual(envContent.includes(`ANDROID_HOME=${androidHomeAbsolute}\n`), true);
+    assert.strictEqual(envContent.includes(`ANDROID_HOME=${androidHomeAbsolute}`), true);
   });
 });
 
@@ -752,6 +866,13 @@ describe('test verifySetup', function() {
       }
     });
 
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
+      }
+    });
+
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup();
 
@@ -789,6 +910,7 @@ describe('test verifySetup', function() {
 
     assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
     assert.strictEqual(platformFolderChecked, false);
+    assert.strictEqual(buildToolsChecked, false);
     assert.strictEqual(avdChecked, false);
     // adb binary not present
     assert.strictEqual(checkBinariesWorkingCalled, false);
@@ -833,6 +955,13 @@ describe('test verifySetup', function() {
       }
     });
 
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
+      }
+    });
+
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup();
 
@@ -870,6 +999,7 @@ describe('test verifySetup', function() {
 
     assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
     assert.strictEqual(platformFolderChecked, false);
+    assert.strictEqual(buildToolsChecked, false);
     assert.strictEqual(avdChecked, false);
     // adb binary present and working
     assert.strictEqual(checkBinariesWorkingCalled, true);
@@ -879,6 +1009,99 @@ describe('test verifySetup', function() {
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+  });
+
+  test('for real mode and Appium with adb binary present not working and build-tools not present', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    let platformFolderChecked = false;
+    mockery.registerMock('fs', {
+      existsSync(path, ...args) {
+        if (path.endsWith('platforms')) {
+          platformFolderChecked = true;
+
+          return false;
+        }
+
+        return fs.existsSync(path, ...args);
+      }
+    });
+
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
+
+        return [];
+      }
+    })
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup({appium: true});
+
+    const binariesCheckedForPresent = [];
+    androidSetup.checkBinariesPresent = (binaries) => {
+      binariesCheckedForPresent.push(...binaries);
+
+      // all listed binaries present
+      return [];
+    };
+
+    let checkBinariesWorkingCalled = false;
+    const binariesCheckedForWorking = [];
+    androidSetup.checkBinariesWorking = (binaries) => {
+      checkBinariesWorkingCalled = true;
+      binariesCheckedForWorking.push(...binaries);
+
+      // adb not working
+      return ['adb'];
+    };
+
+    let avdChecked = false;
+    androidSetup.verifyAvdPresent = () => {
+      avdChecked = true;
+
+      return false;
+    };
+
+    let adbRunningChecked = false;
+    androidSetup.verifyAdbRunning = () => {
+      adbRunningChecked = true;
+    };
+
+    const missingRequirements = androidSetup.verifySetup({mode: 'real'});
+
+    assert.deepStrictEqual(binariesCheckedForPresent, ['adb']);
+    assert.strictEqual(platformFolderChecked, false);
+    assert.strictEqual(buildToolsChecked, true);
+    assert.strictEqual(avdChecked, false);
+    // adb binary present not working
+    assert.strictEqual(checkBinariesWorkingCalled, true);
+    assert.deepStrictEqual(binariesCheckedForWorking, ['adb']);
+    assert.strictEqual(adbRunningChecked, false);
+    assert.deepStrictEqual(missingRequirements, ['build-tools', 'adb']);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('Verifying the setup requirements for real devices...'), true);
+    assert.strictEqual(output.includes('Android Build Tools not present at'), true);
   });
 
   test('for emulator mode and emulator, platforms not present and adb not working', () => {
@@ -912,6 +1135,13 @@ describe('test verifySetup', function() {
         }
 
         return fs.existsSync(path, ...args);
+      }
+    });
+
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
       }
     });
 
@@ -952,6 +1182,7 @@ describe('test verifySetup', function() {
 
     assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
     assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(buildToolsChecked, false);
     assert.strictEqual(avdChecked, true);
 
     assert.strictEqual(checkBinariesWorkingCalled, true);
@@ -965,7 +1196,7 @@ describe('test verifySetup', function() {
     assert.strictEqual(output.includes('AVD is present and ready to be used.'), true);
   });
 
-  test('for both modes and AVD not present and everything working', () => {
+  test('for both modes with Appium and AVD not present and everything working', () => {
     const consoleOutput = [];
     mockery.registerMock(
       '../../logger',
@@ -999,8 +1230,17 @@ describe('test verifySetup', function() {
       }
     });
 
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
+
+        return ['31.0.1'];
+      }
+    })
+
     const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
+    const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForPresent = [];
     androidSetup.checkBinariesPresent = (binaries) => {
@@ -1036,6 +1276,7 @@ describe('test verifySetup', function() {
 
     assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
     assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(buildToolsChecked, true);
     assert.strictEqual(avdChecked, true);
 
     assert.strictEqual(checkBinariesWorkingCalled, true);
@@ -1045,6 +1286,8 @@ describe('test verifySetup', function() {
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('Verifying the setup requirements for real devices/emulator...'), true);
+    assert.strictEqual(output.includes('Android Build Tools present at'), true);
+    assert.strictEqual(output.includes('Available versions: 31.0.1'), true);
     assert.strictEqual(output.includes('platforms subdirectory is present at'), true);
     assert.strictEqual(output.includes('AVD not found.'), true);
   });
@@ -1080,6 +1323,13 @@ describe('test verifySetup', function() {
         }
 
         return fs.existsSync(path, ...args);
+      }
+    });
+
+    let buildToolsChecked = false;
+    mockery.registerMock('./utils/sdk', {
+      getBuildToolsAvailableVersions() {
+        buildToolsChecked = true;
       }
     });
 
@@ -1120,6 +1370,7 @@ describe('test verifySetup', function() {
 
     assert.deepStrictEqual(binariesCheckedForPresent, ['adb', 'avdmanager', 'emulator']);
     assert.strictEqual(platformFolderChecked, true);
+    assert.strictEqual(buildToolsChecked, false);
     assert.strictEqual(avdChecked, true);
 
     assert.strictEqual(checkBinariesWorkingCalled, true);
@@ -1147,7 +1398,7 @@ describe('test setupAndroid', function() {
     mockery.disable();
   });
 
-  test('for real mode with adb, sdkmanager not present', async () => {
+  test('for real mode and Appium with adb, sdkmanager not present and build-tools present', async () => {
     const consoleOutput = [];
     mockery.registerMock(
       '../../logger',
@@ -1177,6 +1428,7 @@ describe('test setupAndroid', function() {
     let cmdlineToolsDownloaded = false;
     const packagesInstalled = [];
     let avdCreationInitiated = false;
+    let buildToolsDownloaded = false;
     mockery.registerMock('./utils/sdk', {
       downloadAndSetupAndroidSdk: () => {
         cmdlineToolsDownloaded = true;
@@ -1190,6 +1442,11 @@ describe('test setupAndroid', function() {
         avdCreationInitiated = true;
 
         return '';
+      },
+      downloadSdkBuildTools() {
+        buildToolsDownloaded = true;
+
+        return true;
       }
     });
 
@@ -1201,7 +1458,7 @@ describe('test setupAndroid', function() {
     });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
+    const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
     androidSetup.checkBinariesWorking = (binaries) => {
@@ -1229,6 +1486,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(cmdlineToolsDownloaded, true);
     assert.deepStrictEqual(packagesInstalled, ['platform-tools']);
     assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, false);
     assert.strictEqual(avdCreationInitiated, false);
     assert.strictEqual(adbRunningChecked, true);
@@ -1241,7 +1499,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(output.includes('Downloading cmdline-tools...'), true);
   });
 
-  test('for emulator mode with avdmanager, platforms, AVD not present', async () => {
+  test('for emulator mode and Appium with avdmanager, platforms, AVD not present', async () => {
     const consoleOutput = [];
     mockery.registerMock(
       '../../logger',
@@ -1271,6 +1529,7 @@ describe('test setupAndroid', function() {
     let cmdlineToolsDownloaded = false;
     const packagesInstalled = [];
     let avdCreationInitiated = false;
+    let buildToolsDownloaded = false;
     mockery.registerMock('./utils/sdk', {
       downloadAndSetupAndroidSdk: () => {
         cmdlineToolsDownloaded = true;
@@ -1284,6 +1543,11 @@ describe('test setupAndroid', function() {
         avdCreationInitiated = true;
 
         return '';
+      },
+      downloadSdkBuildTools() {
+        buildToolsDownloaded = true;
+
+        return true;
       }
     });
 
@@ -1295,7 +1559,7 @@ describe('test setupAndroid', function() {
     });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
+    const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
     androidSetup.checkBinariesWorking = (binaries) => {
@@ -1323,6 +1587,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(cmdlineToolsDownloaded, true);
     assert.deepStrictEqual(packagesInstalled, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, true);
+    assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, true);
     assert.strictEqual(avdCreationInitiated, true);
     assert.strictEqual(adbRunningChecked, true);
@@ -1369,6 +1634,7 @@ describe('test setupAndroid', function() {
     let cmdlineToolsDownloaded = false;
     const packagesToInstall = [];
     let avdCreationInitiated = false;
+    let buildToolsDownloaded = false;
     mockery.registerMock('./utils/sdk', {
       downloadAndSetupAndroidSdk: () => {
         cmdlineToolsDownloaded = true;
@@ -1382,6 +1648,11 @@ describe('test setupAndroid', function() {
         avdCreationInitiated = true;
 
         return '';
+      },
+      downloadSdkBuildTools() {
+        buildToolsDownloaded = true;
+
+        return true;
       }
     });
 
@@ -1421,6 +1692,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(cmdlineToolsDownloaded, true);
     assert.deepStrictEqual(packagesToInstall, ['emulator']);
     assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(buildToolsDownloaded, false);
     assert.strictEqual(avdChecked, false);
     assert.strictEqual(avdCreationInitiated, false);
     assert.strictEqual(adbRunningChecked, true);
@@ -1465,6 +1737,7 @@ describe('test setupAndroid', function() {
     let cmdlineToolsDownloaded = false;
     const packagesToInstall = [];
     let avdCreationInitiated = false;
+    let buildToolsDownloaded = false;
     mockery.registerMock('./utils/sdk', {
       downloadAndSetupAndroidSdk: () => {
         cmdlineToolsDownloaded = true;
@@ -1478,6 +1751,11 @@ describe('test setupAndroid', function() {
         avdCreationInitiated = true;
 
         return null;
+      },
+      downloadSdkBuildTools() {
+        buildToolsDownloaded = true;
+
+        return true;
       }
     });
 
@@ -1517,6 +1795,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(cmdlineToolsDownloaded, false);
     assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(buildToolsDownloaded, false);
     assert.strictEqual(avdChecked, true);
     assert.strictEqual(avdCreationInitiated, true);
     assert.strictEqual(adbRunningChecked, true);
@@ -1532,7 +1811,7 @@ describe('test setupAndroid', function() {
     assert.strictEqual(output.includes('Success! AVD "nightwatch-android-11" created successfully!'), false);
   });
 
-  test('for both modes with system-image not installed but avd already present', async () => {
+  test('for both modes and Appium with system-image not installed but avd already present and build-tools not present and failed', async () => {
     const consoleOutput = [];
     mockery.registerMock(
       '../../logger',
@@ -1562,6 +1841,7 @@ describe('test setupAndroid', function() {
     let cmdlineToolsDownloaded = false;
     const packagesToInstall = [];
     let avdCreationInitiated = false;
+    let buildToolsDownloaded = false;
     mockery.registerMock('./utils/sdk', {
       downloadAndSetupAndroidSdk: () => {
         cmdlineToolsDownloaded = true;
@@ -1575,6 +1855,11 @@ describe('test setupAndroid', function() {
         avdCreationInitiated = true;
 
         return 'something (stdout)';
+      },
+      downloadSdkBuildTools() {
+        buildToolsDownloaded = true;
+
+        return false;
       }
     });
 
@@ -1586,7 +1871,7 @@ describe('test setupAndroid', function() {
     });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
+    const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
     androidSetup.checkBinariesWorking = (binaries) => {
@@ -1608,17 +1893,18 @@ describe('test setupAndroid', function() {
       adbRunningChecked = true;
     };
 
-    const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11']);
+    const result = await androidSetup.setupAndroid({mode: 'both'}, ['nightwatch-android-11', 'build-tools']);
 
     assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
     assert.strictEqual(cmdlineToolsDownloaded, false);
     assert.deepStrictEqual(packagesToInstall, ['system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, false);
+    assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, true);
     assert.strictEqual(avdCreationInitiated, false);
     assert.strictEqual(adbRunningChecked, true);
-    // avd creation failed
-    assert.strictEqual(result, true);
+    // build-tools failed
+    assert.strictEqual(result, false);
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('Setting up missing requirements for real devices/emulator...'), true);

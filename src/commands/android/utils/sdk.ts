@@ -186,3 +186,50 @@ export const execBinarySync = (
     return null;
   }
 };
+
+export const getBuildToolsAvailableVersions = (buildToolsPath: string): string[] => {
+  if (!fs.existsSync(buildToolsPath)) {
+    return [];
+  }
+
+  const buildToolsContent = fs.readdirSync(buildToolsPath);
+  const availableVersions = buildToolsContent.filter(
+    (name) => name.match(/^(\d+)(\.\d+){2}(-[a-z1-9]+)?/) !== null
+  );
+
+  return availableVersions;
+};
+
+export const downloadSdkBuildTools = (
+  sdkManagerLocation: string,
+  platform: Platform
+): boolean => {
+  console.log('Looking for the latest version of build-tools...');
+  const versionStdout = execBinarySync(
+    sdkManagerLocation,
+    'sdkmanager',
+    platform,
+    '--list'
+  );
+
+  if (versionStdout !== null) {
+    const versionMatch = versionStdout.match(/build-tools;(\d+)(\.\d+){2}(-[a-z1-9]+)?/g);
+    if (!versionMatch) {
+      console.log(`  ${colors.red(symbols().fail)} Failed to get the latest version of build-tools.\n`);
+
+      return false;
+    }
+
+    const latestBuildTools = versionMatch.slice(-1);
+    console.log();
+
+    return installPackagesUsingSdkManager(
+      sdkManagerLocation,
+      platform,
+      latestBuildTools
+    );
+  }
+  console.log();
+
+  return false;
+};
