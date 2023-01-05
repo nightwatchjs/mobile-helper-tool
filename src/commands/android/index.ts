@@ -704,8 +704,20 @@ export class AndroidSetup {
     return result;
   }
 
-  async verifyAndSetupBrowsers(browsers: SetupConfigs['browsers']): Promise<boolean> {
-    if (!browsers || browsers === 'none') {
+  async verifyAndSetupBrowsers(browsersConfig: SetupConfigs['browsers']): Promise<boolean> {
+    const browsers: ('firefox' | 'chrome')[] = [];
+    if (browsersConfig === 'both') {
+      browsers.push('chrome', 'firefox');
+    } else if (browsersConfig && browsersConfig !== 'none') {
+      browsers.push(browsersConfig);
+    }
+
+    // add chrome for web-view testing on Android Emulator
+    if (this.options.appium && !browsers.includes('chrome')) {
+      browsers.push('chrome');
+    }
+
+    if (!browsers.length) {
       return true;
     }
 
@@ -720,8 +732,8 @@ export class AndroidSetup {
       setupChrome: false
     };
 
-    const verifyFirefox = ['firefox', 'both'].includes(browsers);
-    const verifyChrome = ['chrome', 'both'].includes(browsers);
+    const verifyFirefox = browsers.includes('firefox');
+    const verifyChrome = browsers.includes('chrome');
 
     let firefoxLatestVersion = '';
     let installedChromeVersion = DEFAULT_CHROME_VERSION;
@@ -871,7 +883,7 @@ export class AndroidSetup {
       } else if (installFirefox) {
         message = 'Do you wish to install/upgrade the Firefox browser?';
       } else if (downloadChromedriver) {
-        message = 'Do you wish to setup missing requirements for Chrome browser?';
+        message = `Do you wish to setup the missing requirements for ${this.options.appium ? 'Appium' : 'Chrome browser'}?`;
       }
 
       if (message) {
