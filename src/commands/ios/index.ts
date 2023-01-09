@@ -32,6 +32,7 @@ export class IosSetup {
 
     if (this.platform !== 'mac') {
       Logger.log('Only macOS is supported');
+
       return false;
     }
 
@@ -90,7 +91,7 @@ export class IosSetup {
           `\nAnd then update ${colors.cyan('safari:deviceName')} (eg: 'iphone 13') and ${colors.cyan('safari:platformVersion')} (eg: '15.0') in nightwatch configuration for ${colors.gray.italic('ios.simulator.safari')} environment accordingly.`
         , {padding: 1}));
       } catch (error) {
-        Logger.log(`  ${colors.red(symbols().fail)} Xcode is not installed.`);
+        Logger.log(`  ${colors.red(symbols().ok)} Xcode is not installed.`);
         missingRequirements.push('Xcode is not installed')
       }
     }
@@ -113,7 +114,7 @@ export class IosSetup {
         }
       } catch (error) {
         Logger.log(`  ${colors.red(symbols().fail)} Device is either not connected or turned off.`);
-        missingRequirements.push('Device is not connected')
+        missingRequirements.push('Device is not connected');
       }
     }
 
@@ -141,7 +142,7 @@ export class IosSetup {
       return true;
     }
 
-    let result: IosSetupResult= {simulator: true, real: true};
+    const result: IosSetupResult = {simulator: true, real: true};
 
     if (setupConfigs.mode === 'simulator' || setupConfigs.mode === 'both') {
       if (missingRequirements.includes('Xcode is not installed')) {
@@ -233,11 +234,10 @@ export class IosSetup {
 
   getAllAvailableOptions = () => {
     const mainOptions = Object.keys(AVAILABLE_OPTIONS);
-  
+
     const allOptions: string[] = [];
     mainOptions.forEach((option) => allOptions.push(option, ...AVAILABLE_OPTIONS[option].alias));
-  
+
     return allOptions;
   };
-  
 }

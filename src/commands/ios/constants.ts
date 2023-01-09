@@ -1,5 +1,5 @@
 import inquirer from 'inquirer';
-import { AvailableOptions } from './interfaces';
+import {AvailableOptions} from './interfaces';
 
 export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
@@ -27,4 +27,8 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
     alias: ['m'],
     description: 'Verify/setup requirements for real-device or simulator. Available args: "real", "simulator", "both"'
   },
+  appium: {
+    alias: [],
+    description: 'Make sure the final setup works with Appium out-of-the-box.'
+  }
 };
