@@ -1,9 +1,9 @@
-import { prompt } from 'inquirer';
-import { Options, SetupConfigs, IosSetupResult } from './interfaces';
-import { getPlatformName, iosRealDeviceUDID, symbols } from '../../utils';
-import { AVAILABLE_OPTIONS, SETUP_CONFIG_QUES } from './constants';
+import {prompt} from 'inquirer';
+import {Options, SetupConfigs, IosSetupResult} from './interfaces';
+import {getPlatformName, iosRealDeviceUDID, symbols} from '../../utils';
+import {AVAILABLE_OPTIONS, SETUP_CONFIG_QUES} from './constants';
 import colors from 'ansi-colors';
-import { execSync } from 'child_process';
+import {execSync} from 'child_process';
 import boxen from 'boxen';
 import Logger from '../../logger';
 
@@ -81,18 +81,18 @@ export class IosSetup {
       Logger.log('\nVerifying the setup requirements for simulators ...');
 
       try {
-        execSync("/usr/bin/xcodebuild -version", {
+        execSync('/usr/bin/xcodebuild -version', {
           stdio: 'pipe'
         });
         Logger.log(`  ${colors.red(symbols().ok)} Xcode is installed in your machine\n`);
 
-        Logger.log(boxen(`Run the following command to get the list of simulators\n` +
+        Logger.log(boxen('Run the following command to get the list of simulators\n' +
           colors.cyan.italic('xcrun simctl list devices') + '\n' +
           `\nAnd then update ${colors.cyan('safari:deviceName')} (eg: 'iphone 13') and ${colors.cyan('safari:platformVersion')} (eg: '15.0') in nightwatch configuration for ${colors.gray.italic('ios.simulator.safari')} environment accordingly.`
         , {padding: 1}));
       } catch (error) {
         Logger.log(`  ${colors.red(symbols().ok)} Xcode is not installed.`);
-        missingRequirements.push('Xcode is not installed')
+        missingRequirements.push('Xcode is not installed');
       }
     }
 
@@ -100,6 +100,7 @@ export class IosSetup {
       Logger.log('\nVerifying the setup requirements for real devices...');
 
       try {
+        // eslint-disable-next-line
         const stdout = execSync("system_profiler SPUSBDataType | sed -n '/iPhone/,/Serial/p' | grep 'Serial Number:' | awk -F ': ' '{print $2}'", {
           stdio: 'pipe'
         });
@@ -107,10 +108,10 @@ export class IosSetup {
         if (stdout.toString() !== '') {
           Logger.log(boxen(
             colors.white(`Update ${colors.cyan('UDID')} in nightwatch configuration for ${colors.gray.italic('ios.real.safari')} environment.`) +
-            "\nUDID: " + 
+            '\nUDID: ' +
             colors.cyan(iosRealDeviceUDID(stdout.toString())), {padding: 1}));
         } else {
-          throw "Device is not connected";
+          throw 'Device is not connected';
         }
       } catch (error) {
         Logger.log(`  ${colors.red(symbols().fail)} Device is either not connected or turned off.`);
@@ -148,36 +149,36 @@ export class IosSetup {
       if (missingRequirements.includes('Xcode is not installed')) {
         Logger.log('\nSetting up missing requirements for iOS simulator...');
 
-        Logger.log(boxen(`${colors.cyan("If Xcode is already installed : ")}` +
-          `${colors.white("\n  1. Run the following after changing the Xcode app name in the command ")}` +
-          `\n     ${colors.grey.italic("sudo xcode-select -switch /Applications/Xcode_x_x.app")}\n` +
+        Logger.log(boxen(`${colors.cyan('If Xcode is already installed : ')}` +
+          `${colors.white('\n  1. Run the following after changing the Xcode app name in the command ')}` +
+          `\n     ${colors.grey.italic('sudo xcode-select -switch /Applications/Xcode_x_x.app')}\n` +
 
-          `${colors.cyan("\nIf Xcode is not installed : ")}` +
-          `${colors.green("\n  [Easiest Option] : Download via the App Store for the latest version")}` +
-          `${colors.white("\n      1. Open the App Store on your mac and Sign in with your Apple credentials")}` +
-          `${colors.white("\n      2. Search for Xcode & click install or update. That's it!!")}\n` +
-          `${colors.green("\n  [Preferred Option] : Download via the Developer site for a specific version")}` +
-          `${colors.white(`\n      1. Navigate to this URL ${colors.grey.italic("https://developer.apple.com/download/more/")}`)}` +
-          `${colors.white("\n      2. Sign in with your Apple credentials")}` +
-          `${colors.white("\n      3. Type in the version that you like, and download the Xcode_x_x.xip file")}` +
-          `${colors.white("\n      4. Once the file is downloaded, click on .xip to extract it.")}` +
-          `${colors.white("\n      5. Now click on that Xcode file complete all the installation process")}` +
-          `${colors.white("\n      6. After completion drag the Xcode to Applications folder")}`, {padding: 1}));
+          `${colors.cyan('\nIf Xcode is not installed : ')}` +
+          `${colors.green('\n  [Easiest Option] : Download via the App Store for the latest version')}` +
+          `${colors.white('\n      1. Open the App Store on your mac and Sign in with your Apple credentials')}` +
+          `${colors.white('\n      2. Search for Xcode & click install or update. That\'s it!!')}\n` +
+          `${colors.green('\n  [Preferred Option] : Download via the Developer site for a specific version')}` +
+          `${colors.white(`\n      1. Navigate to this URL ${colors.grey.italic('https://developer.apple.com/download/more/')}`)}` +
+          `${colors.white('\n      2. Sign in with your Apple credentials')}` +
+          `${colors.white('\n      3. Type in the version that you like, and download the Xcode_x_x.xip file')}` +
+          `${colors.white('\n      4. Once the file is downloaded, click on .xip to extract it.')}` +
+          `${colors.white('\n      5. Now click on that Xcode file complete all the installation process')}` +
+          `${colors.white('\n      6. After completion drag the Xcode to Applications folder')}`, {padding: 1}));
 
-        Logger.log(`\nFollow the guide for more detailed info ${colors.magenta("https://www.freecodecamp.org/news/how-to-download-and-install-xcode/")}\n`);
+        Logger.log(`\nFollow the guide for more detailed info ${colors.magenta('https://www.freecodecamp.org/news/how-to-download-and-install-xcode/')}\n`);
 
         result.simulator = false;
       }
     }
 
     if (setupConfigs.mode === 'real' || setupConfigs.mode === 'both') {
-      Logger.log("\nSetting up missing requirements for real devices...")
+      Logger.log('\nSetting up missing requirements for real devices...');
 
-      let msg = colors.cyan("1. Remote Automation should be turned on your iOS device.") +
-        colors.grey.italic("\n(turn it on via Settings → Safari → Advanced → Remote Automation.)");
+      let msg = colors.cyan('1. Remote Automation should be turned on your iOS device.') +
+        colors.grey.italic('\n(turn it on via Settings → Safari → Advanced → Remote Automation.)');
 
       if (missingRequirements.includes('Device is not connected')) {
-        msg += colors.cyan(`\n\n2. Device is connected via data cable and turned on properly.`);
+        msg += colors.cyan('\n\n2. Device is connected via data cable and turned on properly.');
         result.real = false;
       }
       Logger.log(boxen(msg, {padding: 1}));
