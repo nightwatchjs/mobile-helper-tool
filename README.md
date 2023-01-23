@@ -134,8 +134,8 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
        desiredCapabilities: {
          browserName: 'safari',
          platformName: 'iOS',
-         // add the device UDID to run tests on (necessary)
-         // Run command: `xcrun simctl list devices`
+         // add udid of the device to run tests on (necessary)
+         // Run command: `xcrun xctrace list devices`
          // 'safari:deviceUDID': '00008030-00024C2C3453402E',
        },
    
@@ -153,8 +153,8 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
          browserName: 'safari',
          platformName: 'iOS',
          'safari:useSimulator': true,
-         // change the deviceName, platformVersion accordingly to run tests on 
-         // Run command: `xcrun simctl list devices`
+         // To find the available deviceName/platformName to run tests on,
+         // run command: `xcrun simctl list devices`
          // 'safari:platformVersion': '15.0',
          'safari:deviceName': 'iPhone 13'
        },
@@ -195,7 +195,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     npx nightwatch --env ios.simulator.safari
 
     # for real device
-    npx nightwatch --env ios.real.safari --udid <YOUR-DEVICE-UDID>
+    npx nightwatch --env ios.real.safari --deviceId <YOUR-DEVICE-UDID>
     # for real device (if updated the config in the previous step)
     npx nightwatch --env ios.real.safari
    ```
