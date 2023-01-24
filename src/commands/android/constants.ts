@@ -1,5 +1,6 @@
 import inquirer from 'inquirer';
 import path from 'path';
+import os from 'os';
 
 import {AvailableOptions, SdkBinary} from './interfaces';
 
@@ -39,6 +40,11 @@ export const ABI = (() => {
     return 'arm64-v8a';
   } else if (['ia32', 'mips', 'ppc', 's390'].includes(arch)) {
     return 'x86';
+  }
+
+  // Handle case when Apple M1's arch is switched to x64.
+  if (arch === 'x64' && os.cpus()[0].model.includes('Apple')) {
+    return 'arm64-v8a';
   }
 
   return 'x86_64';
