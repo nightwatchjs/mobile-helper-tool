@@ -84,7 +84,7 @@ export class IosSetup {
         execSync('/usr/bin/xcodebuild -version', {
           stdio: 'pipe'
         });
-        Logger.log(`  ${colors.red(symbols().ok)} Xcode is installed in your machine\n`);
+        Logger.log(`  ${colors.green(symbols().ok)} Xcode is installed in your machine\n`);
 
         Logger.log(boxen('Run the following command to get the list of simulators\n' +
           colors.cyan.italic('xcrun simctl list devices') + '\n' +

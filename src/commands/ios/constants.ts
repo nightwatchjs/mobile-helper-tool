@@ -5,10 +5,10 @@ export const SETUP_CONFIG_QUES: inquirer.QuestionCollection = [
   {
     type: 'list',
     name: 'mode',
-    message: 'Where do you want to run the tests?',
+    message: 'Select target device(s):',
     choices: [
-      {name: 'On real iOS device', value: 'real'},
-      {name: 'On an iOS Simulator', value: 'simulator'},
+      {name: 'Real iOS device', value: 'real'},
+      {name: 'iOS Simulator', value: 'simulator'},
       {name: 'Both', value: 'both'}
     ]
   }
