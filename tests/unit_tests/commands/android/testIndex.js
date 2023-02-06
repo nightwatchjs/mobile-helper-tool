@@ -1052,7 +1052,7 @@ describe('test verifySetup', function() {
 
         return [];
       }
-    })
+    });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup({appium: true});
@@ -1237,7 +1237,7 @@ describe('test verifySetup', function() {
 
         return ['31.0.1'];
       }
-    })
+    });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup({appium: true});

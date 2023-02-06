@@ -291,9 +291,9 @@ export class AndroidSetup {
           stdio: 'pipe'
         });
 
-        javaHome = stdout.toString();
+        javaHome = stdout.toString().trimEnd();
 
-        Logger.log(`Auto-detected JAVA_HOME to be: ${colors.green(javaHome)}`);
+        Logger.log(`${colors.green(symbols().ok)} Auto-detected JAVA_HOME to be: ${colors.green(javaHome)}`);
         // eslint-disable-next-line
       } catch {}
     }
