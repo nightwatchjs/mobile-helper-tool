@@ -100,14 +100,17 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    2. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
    3. Set `real_mobile` capability to true in the configuration.
 
-9. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command `npx @nightwatch/mobile-helper android`.
-10. Run your nightwatch tests on Android mobile browsers:
+9. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command:
    ```sh
+   npx @nightwatch/mobile-helper android
+   ```
+10. Run your nightwatch tests on Android mobile browsers:
+    ```sh
     # for firefox
     npx nightwatch --env android.firefox
     # for chrome
     npx nightwatch --env android.chrome
-   ```
+    ```
 
 ### Mobile web testing - iOS
 
@@ -209,29 +212,27 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### Mobile app testing - Android
 
+1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+   ```sh
+   npx @nightwatch/mobile-helper android --appium
+   ```
+2. Answer a few questions related to your requirements:
+   <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
+
+3. It will verify if all the requirements are being met.
+4. If some requirements are not being met, it will ask whether to download and setup those requirements:
+   <img width="600" alt="image" src="https://user-images.githubusercontent.com/39924567/199204970-f95f1bce-35a6-4958-b0eb-f642331c9fb7.png">
+
+5. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
+
+#### Run a sample test
+
 1. In your [Nightwatch](https://nightwatch.org) project, install `appium` as a dev-dependency:
    ```sh
    npm i appium --save-dev
    ```
-2. From your project's root dir, run:
-
-   ```sh
-   npx @nightwatch/mobile-helper android --appium
-   ```
-3. Answer a few questions related to your requirements:
-   <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
-
-
-4. It will verify if all the requirements are being met.
-5. If some requirements are not being met, it will ask whether to download and setup those requirements:
-   <img width="600" alt="image" src="https://user-images.githubusercontent.com/39924567/199204970-f95f1bce-35a6-4958-b0eb-f642331c9fb7.png">
-
-6. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
-
-#### Run a sample test
-
-1. Download the [sample wikipedia app](https://raw.githubusercontent.com/priyansh3133/wikipedia/main/wikipedia.apk) and save it in your project's root directory (alongside `nightwatch.conf.js` file).
-2. Add the following env configuration to your `nightwatch.conf.js` file:
+2. Download the [sample wikipedia app](https://raw.githubusercontent.com/priyansh3133/wikipedia/main/wikipedia.apk) and save it in your project's root directory (alongside `nightwatch.conf.js` file).
+3. Add the following env configuration to your `nightwatch.conf.js` file:
    ```js
    "test_settings": {
     // other envs above this line
@@ -321,7 +322,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
     },
    }
    ```
-3. Add the following sample test to your test-suite (`test/wikipedia-app.js`):
+4. Add the following sample test to your test-suite (`test/wikipedia-app.js`):
    ```js
    describe('Wikipedia Android app test', function() {
      before(function(app) {
@@ -344,18 +345,18 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
      });
    });
    ```
-4. If testing on real-device:
+5. If testing on real-device:
    1. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
    2. Make sure latest version of Chrome browser is installed on your Android device. If not, install from Google Play Store.
    3. Make sure latest version of `chromedriver` NPM package is installed in your project. If not, install by running:
       ```sh
       npm i chromedriver@latest --save-dev
       ```
-5. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command:
+6. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command:
    ```sh
    npx @nightwatch/mobile-helper android --appium
    ```
-6. Run your nightwatch tests on Android mobile browsers:
+7. Run your nightwatch tests on Android mobile browsers:
    ```sh
     # test on emulator (assuming test saved as `test/wikipedia-app.js`)
     npx nightwatch test/wikipedia-app.js --env app.android.emulator
