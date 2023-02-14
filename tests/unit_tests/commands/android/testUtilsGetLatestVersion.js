@@ -46,6 +46,6 @@ describe('test getAllAvailableOptions', function() {
     const {getLatestVersion} = require('../../../../src/commands/android/utils/common');
     const version = await getLatestVersion('chrome');
 
-    assert.strictEqual(version, '83.0.4103.106');
+    assert.strictEqual(version, '91');
   });
 });
