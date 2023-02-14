@@ -8,7 +8,7 @@ import path from 'path';
 import which from 'which';
 
 import {symbols} from '../../../utils';
-import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSION, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
+import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
 
 export const getAllAvailableOptions = () => {
@@ -126,7 +126,7 @@ export const getLatestVersion = async (browser: 'firefox' | 'chrome'): Promise<s
       return DEFAULT_FIREFOX_VERSION;
     }
   } else {
-    return DEFAULT_CHROME_VERSION;
+    return DEFAULT_CHROME_VERSIONS[1];
   }
 };
 
