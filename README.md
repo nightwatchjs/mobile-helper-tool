@@ -212,6 +212,8 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### Mobile app testing - Android
 
+#### Setup Android SDK requirements
+
 1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
    ```sh
    npx @nightwatch/mobile-helper android --appium
@@ -225,11 +227,15 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 5. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 
-#### Run a sample test
+#### Setup mobile app testing and run first sample test
 
-1. In your [Nightwatch](https://nightwatch.org) project, install `appium` as a dev-dependency:
+1. In your [Nightwatch](https://nightwatch.org) project, install Appium v2 as a dev-dependency:
    ```sh
-   npm i appium --save-dev
+   npm i appium@next --save-dev
+   ```
+2. Install Appium UiAutomator2 driver for Android:
+   ```sh
+   npx appium driver install uiautomator2
    ```
 2. Download the [sample wikipedia app](https://raw.githubusercontent.com/priyansh3133/wikipedia/main/wikipedia.apk) and save it in your project's root directory (alongside `nightwatch.conf.js` file).
 3. Add the following env configuration to your `nightwatch.conf.js` file:
@@ -249,8 +255,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
           // automatically download the required chromedriver
           // '--allow-insecure=chromedriver_autodownload'
         ],
-        // Uncomment below line when using Appium v2
-        // default_path_prefix: ''
+        default_path_prefix: ''
       },
       webdriver: {
         timeout_options: {
