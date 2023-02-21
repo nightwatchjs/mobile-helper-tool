@@ -220,10 +220,12 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
    npx @nightwatch/mobile-helper android --appium
    ```
 2. Answer a few questions related to your requirements:
+
    <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
 
 3. It will verify if all the requirements are being met.
 4. If some requirements are not being met, it will ask whether to download and setup those requirements:
+
    <img width="600" alt="image" src="https://user-images.githubusercontent.com/39924567/199204970-f95f1bce-35a6-4958-b0eb-f642331c9fb7.png">
 
 5. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
@@ -309,7 +311,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
           automationName: 'UiAutomator2',
           // While Appium v1 supports relative paths, it's more safe to use absolute paths instead.
           // Appium v2 does not support relative paths.
-          app: `${__dirname}/nightwatch/sample-apps/wikipedia.apk`,
+          app: `${__dirname}/wikipedia.apk`,
           appPackage: 'org.wikipedia',
           appActivity: 'org.wikipedia.main.MainActivity',
           appWaitActivity: 'org.wikipedia.onboarding.InitialOnboardingActivity',
