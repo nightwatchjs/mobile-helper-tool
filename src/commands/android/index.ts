@@ -6,12 +6,13 @@ import os from 'os';
 import path from 'path';
 import untildify from 'untildify';
 import {prompt} from 'inquirer';
+import boxen from 'boxen';
 
 import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
 import {getAlreadyRunningAvd, killEmulatorWithoutWait, launchAVD} from './adb';
 import {
-  ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSION,
+  ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
@@ -736,7 +737,7 @@ export class AndroidSetup {
     const verifyChrome = browsers.includes('chrome');
 
     let firefoxLatestVersion = '';
-    let installedChromeVersion = DEFAULT_CHROME_VERSION;
+    let installedChromeVersion = '';
 
     let installFirefox = false;
     let downloadChromedriver = false;
@@ -921,11 +922,13 @@ export class AndroidSetup {
       }
 
       if (downloadChromedriver) {
-        if (installedChromeVersion === DEFAULT_CHROME_VERSION) {
+        const chromeMajorVersion = installedChromeVersion.split('.')[0];
+        if (DEFAULT_CHROME_VERSIONS.includes(chromeMajorVersion)) {
           Logger.log('Downloading chromedriver to work with the factory version of Chrome browser...');
 
+          const chromedriverDownloadLink = (DOWNLOADS.chromedriver as any)[chromeMajorVersion][this.platform];
           const result = await downloadWithProgressBar(
-            DOWNLOADS.chromedriver[this.platform],
+            chromedriverDownloadLink,
             chromedriverDownloadDir,
             true
           );
@@ -935,7 +938,7 @@ export class AndroidSetup {
             status.setupChrome = true;
           } else {
             Logger.log(`\n${colors.red('Failed!')} You can download the chromedriver yourself from the below link:`);
-            Logger.log(colors.cyan(`  ${DOWNLOADS.chromedriver[this.platform]}`));
+            Logger.log(colors.cyan(`  ${chromedriverDownloadLink}`));
             Logger.log(
               '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
               '\n'
@@ -945,16 +948,17 @@ export class AndroidSetup {
           if (status.setupChrome) {
             Logger.log('You can run your tests now on your Android Emulator\'s Chrome browser.\n');
           }
+        } else if (installedChromeVersion === '') {
+          Logger.log(colors.red(symbols().fail), 'chromedriver could not be downloaded (installed browser version unknown).\n');
         } else {
-          Logger.log(colors.cyan('[CHROMEDRIVER]'));
-          Logger.log('Installed Chrome browser version is different from factory version.\n');
-          Logger.log('You can download the chromedriver for current version from the below link:');
-          Logger.log(colors.cyan('  https://chromedriver.storage.googleapis.com/index.html'));
-          Logger.log(
-            '  (Extract and copy the chromedriver binary and paste it in your Nightwatch project inside \'chromedriver-mobile\' folder.)',
-            '\n'
-          );
-          status.setupChrome = true;  // because we have done what we could do, i.e., setup from our side is complete.
+          Logger.log(boxen(
+            colors.cyan('[CHROMEDRIVER]\n\n') +
+            colors.red('Could not download chromedriver (installed Chrome version is different from the factory versions).\n\n') +
+            'You can download chromedriver for the installed Chrome version from the below link:\n' +
+            colors.cyan('  https://chromedriver.storage.googleapis.com/index.html\n\n') +
+            'After downloading, extract the zip file, copy the extracted chromedriver binary, and put in inside \'chromedriver-mobile\' folder in your Nightwatch project.',
+            {padding: 1}
+          ), '\n');
         }
       }
     }
@@ -995,7 +999,7 @@ export class AndroidSetup {
         }
       } else {
         Logger.log(`${colors.red('Error:')} Some requirements failed to set up.`);
-        Logger.log('Please try running the failed commands by yourself and then re-run this tool.\n');
+        Logger.log('Please look for the errors above and try running any failed commands by yourself and then re-run this tool.\n');
 
         Logger.log('If it still fails, please raise an issue with us at:');
         Logger.log(colors.cyan('  https://github.com/nightwatchjs/mobile-helper-tool/issues'), '\n');

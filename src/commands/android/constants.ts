@@ -29,7 +29,7 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 export const DEFAULT_FIREFOX_VERSION = '105.1.0';
-export const DEFAULT_CHROME_VERSION = '83.0.4103.106';
+export const DEFAULT_CHROME_VERSIONS = ['83', '91'];
 
 export const ABI = (() => {
   const arch = process.arch;
