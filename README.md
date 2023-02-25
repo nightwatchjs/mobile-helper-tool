@@ -16,7 +16,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### Mobile web testing - Android
 
-1. In your [Nightwatch](https://nightwatch.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
    ```sh
    npm i @nightwatch/mobile-helper --save-dev
    ```
