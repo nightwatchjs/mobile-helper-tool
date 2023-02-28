@@ -116,7 +116,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 ### Mobile web testing - iOS
 
-1. In your [Nightwatch](https://nightwatch.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
    ```sh
    npm i @nightwatch/mobile-helper --save-dev
    ```
@@ -215,7 +215,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 #### Setup Android SDK requirements
 
-1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
    ```sh
    npx @nightwatch/mobile-helper android --appium
    ```
@@ -232,7 +232,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 #### Setup mobile app testing and run first sample test
 
-1. In your [Nightwatch](https://nightwatch.org) project, install Appium v2 as a dev-dependency:
+1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
    ```sh
    npm i appium@next --save-dev
    ```
@@ -377,7 +377,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 #### Setup iOS SDK requirements
 
-1. From your [Nightwatch](https://nightwatch.org) project's root dir, run:
+1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
    ```sh
    npx @nightwatch/mobile-helper ios --setup
    ```
@@ -394,7 +394,7 @@ Official Nightwatch helper-tool to easily setup all the requirements needed to g
 
 #### Setup mobile app testing and run first sample test
 
-1. In your [Nightwatch](https://nightwatch.org) project, install Appium v2 as a dev-dependency:
+1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
    ```sh
    npm i appium@next --save-dev
    ```
