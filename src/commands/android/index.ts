@@ -415,6 +415,10 @@ export class AndroidSetup {
       }
     }
 
+    if (options.standalone && options.browsers !== true && !configs.browsers) {
+      configs.browsers = 'none';
+    }
+
     return configs;
   }
 
@@ -858,12 +862,14 @@ export class AndroidSetup {
 
         // TODO: add major version of Chrome as suffix to chromedriver.
         // Or, check the version of existing chromedriver using --version.
-        Logger.log('Checking if chromedriver is already downloaded...');
-        if (fs.existsSync(chromedriverDownloadPath)) {
-          Logger.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
-        } else {
-          Logger.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
-          downloadChromedriver = true;
+        if (!this.options.standalone) {
+          Logger.log('Checking if chromedriver is already downloaded...');
+          if (fs.existsSync(chromedriverDownloadPath)) {
+            Logger.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
+          } else {
+            Logger.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
+            downloadChromedriver = true;
+          }
         }
       } else if (stdout !== null) {
         Logger.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);
