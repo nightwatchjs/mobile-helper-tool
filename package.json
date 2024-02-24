@@ -17,6 +17,9 @@
     "test:unit": "npx nightwatch tests/unit_tests",
     "eslint": "eslint src"
   },
+  "overrides": {
+    "semver": "^7.5.3"
+  },
   "author": "",
   "license": "MIT",
   "repository": {
