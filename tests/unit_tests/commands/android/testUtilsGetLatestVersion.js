@@ -31,16 +31,18 @@ describe('test getAllAvailableOptions', function() {
     assert.strictEqual(version, '105.2.0');
   });
 
-  test('when firefox version not found (error)', async () => {
+  test('should throw an error when the API call fails', async () => {
     nock('https://api.github.com')
       .get('/repos/mozilla-mobile/fenix/releases/latest')
       .reply(502);
 
-    const {getLatestVersion} = require('../../../../src/commands/android/utils/common');
-    const version = await getLatestVersion('firefox');
+    const { getLatestVersion } = require('../../../../src/commands/android/utils/common');
 
-    assert.strictEqual(version, '105.1.0');
+    await assert.rejects(async () => {
+      await getLatestVersion('firefox');
+    }, new Error('API call failed: AxiosError: Request failed with status code 502'));
   });
+
 
   test('when asked for chrome version', async () => {
     const {getLatestVersion} = require('../../../../src/commands/android/utils/common');

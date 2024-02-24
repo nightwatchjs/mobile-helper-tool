@@ -119,11 +119,10 @@ export const downloadWithProgressBar = async (url: string, dest: string, extract
 export const getLatestVersion = async (browser: 'firefox' | 'chrome'): Promise<string> => {
   if (browser === 'firefox') {
     try {
-      const {data}: AxiosResponse<{tag_name: string}> = await axios('https://api.github.com/repos/mozilla-mobile/fenix/releases/latest');
-
+      const { data }: AxiosResponse<{ tag_name: string }> = await axios('https://api.github.com/repos/mozilla-mobile/fenix/releases/latest');
       return data['tag_name'].slice(1);
-    } catch {
-      return DEFAULT_FIREFOX_VERSION;
+    } catch (error) {
+      throw new Error(`API call failed: ${error}`);
     }
   } else {
     return DEFAULT_CHROME_VERSIONS[1];
