@@ -3,7 +3,7 @@ const fs = require('fs');
 const mockery = require('mockery');
 const path = require('path');
 const os = require('os');
-import { ABI } from '../../../../src/commands/android/constants'
+import { ABI } from '../../../../src/commands/android/constants';
 
 describe('test showHelp', function() {
   beforeEach(() => {
