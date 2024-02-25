@@ -3,6 +3,7 @@ const fs = require('fs');
 const mockery = require('mockery');
 const path = require('path');
 const os = require('os');
+import { ABI } from '../../../../src/commands/android/constants'
 
 describe('test showHelp', function() {
   beforeEach(() => {
@@ -1585,7 +1586,7 @@ describe('test setupAndroid', function() {
 
     assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
     assert.strictEqual(cmdlineToolsDownloaded, true);
-    assert.deepStrictEqual(packagesInstalled, [os.arch() === 'arm64' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.deepStrictEqual(packagesInstalled, [ABI === 'arm64-v8a' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, true);
     assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, true);
@@ -1793,7 +1794,7 @@ describe('test setupAndroid', function() {
 
     assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
     assert.strictEqual(cmdlineToolsDownloaded, false);
-    assert.deepStrictEqual(packagesToInstall, [os.arch() === 'arm64' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.deepStrictEqual(packagesToInstall, [ABI === 'arm64-v8a' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, false);
     assert.strictEqual(buildToolsDownloaded, false);
     assert.strictEqual(avdChecked, true);
@@ -1897,7 +1898,7 @@ describe('test setupAndroid', function() {
 
     assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
     assert.strictEqual(cmdlineToolsDownloaded, false);
-    assert.deepStrictEqual(packagesToInstall, [os.arch() === 'arm64' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.deepStrictEqual(packagesToInstall, [ABI === 'arm64-v8a' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, false);
     assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, true);
