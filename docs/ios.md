@@ -1,4 +1,10 @@
-### Mobile web testing - iOS
+# IOS Testing
+
+- [Web testing](#mobile-web-testing---ios)
+- [App testing](#mobile-app-testing---ios)
+
+
+## Mobile web testing - iOS
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
    ```sh
@@ -95,9 +101,9 @@
     npx nightwatch --env ios.real.safari
     ```
 
-### Mobile app testing - iOS
+## Mobile app testing - iOS
 
-#### Setup iOS SDK requirements
+### Setup iOS SDK requirements
 
 1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
    ```sh
@@ -114,7 +120,7 @@
 
 5. And done! :tada: Your setup is now complete. (Re-run the command in the first step to verify.)
 
-#### Setup mobile app testing and run first sample test
+### Setup mobile app testing and run first sample test
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
    ```sh

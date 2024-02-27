@@ -1,4 +1,11 @@
-### Mobile web testing - Android
+# Android Testing
+
+- [Web Testing](#mobile-web-testing---android)
+- [App Testing](#mobile-app-testing---android)
+
+
+
+## Mobile web testing - Android
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
    ```sh
@@ -98,9 +105,9 @@
     npx nightwatch --env android.chrome
     ```
 
-### Mobile app testing - Android
+## Mobile app testing - Android
 
-#### Setup Android SDK requirements
+### Setup Android SDK requirements
 
 1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
    ```sh
@@ -117,7 +124,7 @@
 
 5. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 
-#### Setup mobile app testing and run first sample test
+### Setup mobile app testing and run first sample test
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
    ```sh
