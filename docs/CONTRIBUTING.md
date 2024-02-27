@@ -12,7 +12,7 @@ Contributors are expected to adhere to the [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## Submit an issue
 
-Before submitting a new issues, try searching for a similar one here: https://github.com/nightwatchjs/nightwatch/search?type=Issues and add your scenario there and anything else which you think will help with fixing it;
+Before submitting a new issues, try searching for a similar one here: https://github.com/nightwatchjs/mobile-helper-tool/issues and add your scenario there and anything else which you think will help with fixing it;
 
 If you are filing a bug report, regression issue or what it appears to be strange behaviour, please follow the steps below:
 

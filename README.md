@@ -16,14 +16,6 @@ Nightwatch helper-tool can be used on both Android and IOS devices. You can use 
 - [Android](docs/ANDROID.md)
 - [IOS](docs/IOS.md)
 
-
-- [Mobile web testing](#mobile-web-testing---android)
-   - [On Android](#mobile-web-testing---android)
-   - [On iOS](#mobile-web-testing---ios)
-- [Mobile app testing](#mobile-app-testing---android)
-   - [On Android](#mobile-app-testing---android)
-   - [On iOS](#mobile-app-testing---ios)
-
 ## Contributing
 
 We welcome any and all contributions from the community which can help improve Nightwatch. Please check out [CONTRIBUTING.md](docs/CONTRIBUTING.md) for more extensive contributing guidelines.
