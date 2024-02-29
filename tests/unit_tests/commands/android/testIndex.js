@@ -1586,7 +1586,7 @@ describe('test setupAndroid', function() {
 
     assert.deepStrictEqual(binariesCheckedForWorking, ['sdkmanager']);
     assert.strictEqual(cmdlineToolsDownloaded, true);
-    assert.deepStrictEqual(packagesInstalled, [ABI === 'arm64-v8a' ? 'system-images;android-30;google_apis;arm64-v8a' : 'system-images;android-30;google_apis;x86_64', 'emulator']); // emulator updated
+    assert.deepStrictEqual(packagesInstalled, [`system-images;android-30;google_apis;${ABI}`, 'emulator']); // emulator updated
     assert.strictEqual(platformFolderCreated, true);
     assert.strictEqual(buildToolsDownloaded, true);
     assert.strictEqual(avdChecked, true);
