@@ -17,7 +17,7 @@ If `adb` is not available directly, you can either add its location to your `PAT
 
 For both the cases, you'd need the location where you've setup your Android SDK, which you can get that by running `npx @nightwatch/mobile-helper android` again:
 
-![Alt text](image.png)
+<img width="517" alt="ANDROID_HOME" src="https://github.com/nightwatchjs/mobile-helper-tool/assets/39924567/20289460-1f1b-489e-9558-b0a7764d15e0">
 
 The `adb` binary will be present in the `platform-tools` sub-directory of your Android SDK setup location from above. Eg: `/path/to/Android/sdk/platform-tools/`.
 
