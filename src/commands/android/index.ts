@@ -415,8 +415,14 @@ export class AndroidSetup {
       }
     }
 
-    if (options.standalone && options.browsers !== true && !configs.browsers) {
+    if (options.standalone && !configs.browsers) {
       configs.browsers = 'none';
+
+      // if just the `--browsers` flag is passed with no argument,
+      // ask the browser question even in the case of standalone.
+      if (options.browsers === true) {
+        delete configs.browsers;
+      }
     }
 
     return configs;
