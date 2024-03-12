@@ -447,6 +447,7 @@ describe('test getConfigFromOptions', function() {
     configs = androidSetup.getConfigFromOptions({standalone: true, browsers: false});
     assert.deepStrictEqual(configs, {browsers: 'none'});
 
+    // if just `--browsers` option is passed with no argument, ask the browsers question.
     configs = androidSetup.getConfigFromOptions({standalone: true, browsers: true});
     assert.deepStrictEqual(configs, {});
 
