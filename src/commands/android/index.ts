@@ -26,6 +26,7 @@ import {
 } from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
+import {connectWirelessAdb} from './utils/adbWirelessConnect';
 
 
 export class AndroidSetup {
@@ -106,6 +107,10 @@ export class AndroidSetup {
 
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
+
+    if (this.options.wireless) {
+      return await connectWirelessAdb(this.sdkRoot, this.platform);
+    }
 
     let result = true;
 

@@ -9,7 +9,7 @@ export const run = () => {
   try {
     const argv = process.argv.slice(2);
     const {_: args, ...options} = minimist(argv, {
-      boolean: ['install', 'setup', 'help', 'appium', 'standalone'],
+      boolean: ['install', 'setup', 'help', 'appium', 'standalone', 'wireless'],
       alias: {
         help: 'h',
         mode: 'm',

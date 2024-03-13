@@ -28,6 +28,10 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
   standalone: {
     alias: [],
     description: 'Do standalone setup for Android Emulator (no Nightwatch-related requirements will be downloaded).'
+  },
+  wireless: {
+    alias: [],
+    description: 'Connect ADB with wireless connection.'
   }
 };
 
