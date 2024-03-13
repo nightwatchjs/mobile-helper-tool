@@ -135,7 +135,7 @@ export class AndroidSetup {
 
     this.postSetupInstructions(result, setupConfigs);
 
-    if (setupConfigs.mode !== 'emulator') {
+    if (setupConfigs.mode !== 'emulator' && !this.options.standalone) {
       Logger.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
 
@@ -995,6 +995,10 @@ export class AndroidSetup {
       if (result) {
         Logger.log(`${colors.green('Great!')} All the requirements are being met.`);
 
+        if (this.options.standalone) {
+          // comments related to testing are not applicable for standalone mode.
+          return;
+        }
         if (setupConfigs.mode === 'real') {
           Logger.log('You can go ahead and run your tests now on your Android device.\n');
         } else {
@@ -1006,6 +1010,11 @@ export class AndroidSetup {
     } else {
       if (result) {
         Logger.log(`${colors.green('Success!')} All requirements are set.`);
+
+        if (this.options.standalone) {
+          // comments related to testing are not applicable for standalone mode.
+          return;
+        }
         if (setupConfigs.mode === 'real') {
           Logger.log('You can go ahead and run your tests now on your Android device.\n');
         } else {
