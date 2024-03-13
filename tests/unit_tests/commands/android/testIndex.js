@@ -440,6 +440,25 @@ describe('test getConfigFromOptions', function() {
 
     configs = androidSetup.getConfigFromOptions({mode: true, browsers: []});
     assert.deepStrictEqual(configs, {});
+
+    configs = androidSetup.getConfigFromOptions({standalone: true});
+    assert.deepStrictEqual(configs, {browsers: 'none'});
+
+    configs = androidSetup.getConfigFromOptions({standalone: true, browsers: false});
+    assert.deepStrictEqual(configs, {browsers: 'none'});
+
+    // if just `--browsers` option is passed with no argument, ask the browsers question.
+    configs = androidSetup.getConfigFromOptions({standalone: true, browsers: true});
+    assert.deepStrictEqual(configs, {});
+
+    configs = androidSetup.getConfigFromOptions({standalone: true, browsers: 'chrome'});
+    assert.deepStrictEqual(configs, {browsers: 'chrome'});
+
+    configs = androidSetup.getConfigFromOptions({standalone: true, browsers: 'chrome,firefox'});
+    assert.deepStrictEqual(configs, {browsers: 'both'});
+
+    configs = androidSetup.getConfigFromOptions({standalone: true, browsers: 'brave'});
+    assert.deepStrictEqual(configs, {browsers: 'none'});
   });
 });
 
