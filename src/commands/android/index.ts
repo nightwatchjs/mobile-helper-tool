@@ -26,6 +26,7 @@ import {
 } from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
+import {connectAdbWirelessly} from './utils/adbWirelessConnect';
 
 
 export class AndroidSetup {
@@ -106,6 +107,12 @@ export class AndroidSetup {
 
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
+
+    if (this.options.wireless) {
+      const adbLocation = getBinaryLocation(this.sdkRoot, this.platform, 'adb', true);
+
+      return await connectAdbWirelessly(adbLocation, this.platform);
+    }
 
     let result = true;
 
