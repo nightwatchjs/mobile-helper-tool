@@ -24,6 +24,7 @@
     "url": "git+https://github.com/nightwatchjs/mobile-helper-tool"
   },
   "devDependencies": {
+    "@nightwatch/mobile-helper": "^0.1.12",
     "@types/appium-adb": "^9.4.1",
     "@types/cli-progress": "^3.11.0",
     "@types/download": "^8.0.1",
