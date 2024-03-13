@@ -26,6 +26,7 @@ import {
 } from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
+import {connectAdbWirelessly} from './utils/adbWirelessConnect';
 
 
 export class AndroidSetup {
@@ -106,6 +107,12 @@ export class AndroidSetup {
 
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
+
+    if (this.options.wireless) {
+      const adbLocation = getBinaryLocation(this.sdkRoot, this.platform, 'adb', true);
+
+      return await connectAdbWirelessly(adbLocation, this.platform);
+    }
 
     let result = true;
 
@@ -412,6 +419,18 @@ export class AndroidSetup {
         configs.browsers = 'chrome';
       } else if (firefox) {
         configs.browsers = 'firefox';
+      }
+    }
+
+    // For standalone mode, don't ask the browser question (set `configs.browsers` to 'none').
+    // But if a user explicitly provides a browser using the `--browsers` flag, use it.
+    if (options.standalone && !configs.browsers) {
+      configs.browsers = 'none';
+
+      // if just the `--browsers` flag is passed with no argument,
+      // ask the browser question even in the case of standalone.
+      if (options.browsers === true) {
+        delete configs.browsers;
       }
     }
 
@@ -858,12 +877,14 @@ export class AndroidSetup {
 
         // TODO: add major version of Chrome as suffix to chromedriver.
         // Or, check the version of existing chromedriver using --version.
-        Logger.log('Checking if chromedriver is already downloaded...');
-        if (fs.existsSync(chromedriverDownloadPath)) {
-          Logger.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
-        } else {
-          Logger.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
-          downloadChromedriver = true;
+        if (!this.options.standalone) {
+          Logger.log('Checking if chromedriver is already downloaded...');
+          if (fs.existsSync(chromedriverDownloadPath)) {
+            Logger.log(`  ${colors.green(symbols().ok)} chromedriver already present at '${chromedriverDownloadPath}'\n`);
+          } else {
+            Logger.log(`  ${colors.red(symbols().fail)} chromedriver not found at '${chromedriverDownloadPath}'\n`);
+            downloadChromedriver = true;
+          }
         }
       } else if (stdout !== null) {
         Logger.log(`  ${colors.red(symbols().fail)} Chrome browser not found in the AVD.\n`);

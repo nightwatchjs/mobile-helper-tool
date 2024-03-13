@@ -24,6 +24,14 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
   appium: {
     alias: [],
     description: 'Make sure the final setup works with Appium out-of-the-box.'
+  },
+  standalone: {
+    alias: [],
+    description: 'Do standalone setup for Android Emulator (no Nightwatch-related requirements will be downloaded).'
+  },
+  wireless: {
+    alias: [],
+    description: 'Connect ADB with wireless connection.'
   }
 };
 
