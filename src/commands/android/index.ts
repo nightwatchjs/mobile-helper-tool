@@ -415,6 +415,8 @@ export class AndroidSetup {
       }
     }
 
+    // For standalone mode, don't ask the browser question (set `configs.browsers` to 'none').
+    // But if a user explicitly provides a browser using the `--browsers` flag, use it.
     if (options.standalone && !configs.browsers) {
       configs.browsers = 'none';
 
