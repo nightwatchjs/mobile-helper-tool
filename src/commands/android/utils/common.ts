@@ -1,11 +1,13 @@
 import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
 import cliProgress from 'cli-progress';
-import download from 'download';
+import decompress from 'decompress';
+import {DownloaderHelper} from 'node-downloader-helper';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import which from 'which';
+import fsP from 'fs/promises';
 
 import {symbols} from '../../../utils';
 import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
@@ -93,27 +95,53 @@ export const getBinaryLocation = (sdkRoot: string, platform: Platform, binaryNam
 };
 
 export const downloadWithProgressBar = async (url: string, dest: string, extract = false) => {
+  const absoluteFolderPath = path.resolve(dest);
+
+  // Check if the destination directory exists, if not, create it
+  if (!fs.existsSync(absoluteFolderPath)) {
+    fs.mkdirSync(absoluteFolderPath, { recursive: true });
+  }
+
   const progressBar = new cliProgress.Bar({
     format: ' [{bar}] {percentage}% | ETA: {eta}s'
   }, cliProgress.Presets.shades_classic);
 
-  try {
-    const stream = download(url, dest, {
-      extract
+  const downloader = new DownloaderHelper(url, dest, { override: { skip: true } });
+
+  downloader.on('start', () => progressBar.start(100, 0));
+  downloader.on('progress', (stats) => {
+    progressBar.update(stats.progress);
+  });
+ 
+  // Return a new promise to handle the asynchronous operation of decompressing the installed zip file.
+  return new Promise((resolve, reject) => {
+    downloader.on('end', async (downloadInfo) => {
+      progressBar.stop();
+      if (extract) {
+        try {
+          await decompress(downloadInfo.filePath, dest);
+          // remove the zip file after extraction
+          await fsP.unlink(downloadInfo.filePath);
+          resolve(true);
+        } catch (error) {
+          console.error(`Error during decompression: ${error}`);
+          reject(error);
+        }
+      } else {
+        resolve(true);
+      }
     });
-    progressBar.start(100, 0);
 
-    await stream.on('downloadProgress', function(progress) {
-      progressBar.update(progress.percent*100);
+    downloader.on('error', (error) => {
+      progressBar.stop();
+      reject(error);
     });
-    progressBar.stop();
 
-    return true;
-  } catch {
-    progressBar.stop();
-
-    return false;
-  }
+    downloader.start().catch((error) => {
+      progressBar.stop();
+      reject(error);
+    });
+  });
 };
 
 export const getLatestVersion = async (browser: 'firefox' | 'chrome'): Promise<string> => {
