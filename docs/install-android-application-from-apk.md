@@ -9,13 +9,13 @@ This guide will show you how to install an application from an APK file on an An
 - Setup Android Emulator using [mobile-helper-tool](https://github.com/nightwatchjs/mobile-helper-tool): `npx @nightwatch/mobile-helper android`.
 - APK file of the application you want to install
 
-### Android Device Bridge (adb)
+### Android Debug Bridge (adb)
 
 The whole process is done using `adb` command line tool. So, you would need to make sure that `adb` is available from your terminal. You can check this by running `adb --version`.
 
 If `adb` is not available directly, you can either add its location to your `PATH` environment variable, or `cd` to the location where the `adb` binary is present and use it directly from there.
 
-For both the cases, you'd need the location where you've setup your Android SDK, which you can get that by running `npx @nightwatch/mobile-helper android` again:
+For both the cases, you'd need the location where you've setup your Android SDK, which you can get by running `npx @nightwatch/mobile-helper android` again:
 
 <img width="517" alt="ANDROID_HOME" src="https://github.com/nightwatchjs/mobile-helper-tool/assets/39924567/20289460-1f1b-489e-9558-b0a7764d15e0">
 
@@ -43,7 +43,7 @@ Add the below path to your `PATH` environment variable in the Control Panel and 
 
 ### Using `adb` directly
 
-To use `adb` directly (without adding it to `PATH`), simply go to the directly where the binary is present and use it as follows:
+To use `adb` directly (without adding it to `PATH`), simply go to the directory where the binary is present and use it as follows:
 
 ```bash
 cd /path/to/Android/sdk/platform-tools/
