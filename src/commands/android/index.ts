@@ -135,7 +135,7 @@ export class AndroidSetup {
 
     this.postSetupInstructions(result, setupConfigs);
 
-    if (setupConfigs.mode !== 'emulator' && !this.options.standalone) {
+    if (!this.options.standalone && setupConfigs.mode !== 'emulator') {
       Logger.log(`${colors.bold('Note:')} Please make sure you have required browsers installed on your real-device before running tests.\n`);
     }
 
