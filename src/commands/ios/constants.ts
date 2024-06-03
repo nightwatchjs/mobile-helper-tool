@@ -30,5 +30,9 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
   appium: {
     alias: [],
     description: 'Make sure the final setup works with Appium out-of-the-box.'
+  },
+  standalone: {
+    alias: [],
+    description: 'Do standalone setup (no Nightwatch-related requirements will be downloaded).'
   }
 };
