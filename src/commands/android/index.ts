@@ -12,13 +12,15 @@ import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
 import {getAlreadyRunningAvd, killEmulatorWithoutWait, launchAVD} from './adb';
 import {
-  ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
+  ABI, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
-  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
+  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion,
+  getSdkRootFromEnv,
+  showHelp
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
@@ -26,7 +28,6 @@ import {
 } from './utils/sdk';
 
 import DOWNLOADS from './downloads.json';
-import {connectWirelessAdb} from './utils/adbWirelessConnect';
 
 
 export class AndroidSetup {
@@ -54,7 +55,7 @@ export class AndroidSetup {
     const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
 
     if (this.options.help || unknownOptions.length) {
-      this.showHelp(unknownOptions);
+      showHelp(unknownOptions);
 
       return this.options.help === true;
     }
@@ -90,7 +91,7 @@ export class AndroidSetup {
       this.javaHome = process.env.JAVA_HOME || '';
     }
 
-    const sdkRootEnv = this.getSdkRootFromEnv();
+    const sdkRootEnv = getSdkRootFromEnv(this.otherInfo.androidHomeInGlobalEnv, this.rootDir);
 
     if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
       // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web
@@ -107,10 +108,6 @@ export class AndroidSetup {
 
     this.sdkRoot = sdkRootEnv || await this.getSdkRootFromUser();
     process.env.ANDROID_HOME = this.sdkRoot;
-
-    if (this.options.wireless) {
-      return await connectWirelessAdb(this.sdkRoot, this.platform);
-    }
 
     let result = true;
 
@@ -153,52 +150,6 @@ export class AndroidSetup {
       setup: !!this.options.setup,
       mode: setupConfigs.mode || 'real'
     };
-  }
-
-  showHelp(unknownOptions: string[]) {
-    if (unknownOptions.length) {
-      Logger.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
-    }
-
-    Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options]')}`);
-    Logger.log('  Verify if all the requirements are met to run tests on an Android device/emulator.\n');
-
-    Logger.log(`${colors.yellow('Options:')}`);
-
-    const switches = Object.keys(AVAILABLE_OPTIONS).reduce((acc: {[T: string]: string}, key) => {
-      acc[key] = [key].concat(AVAILABLE_OPTIONS[key].alias || [])
-        .map(function(sw) {
-          return (sw.length > 1 ? '--' : '-') + sw;
-        })
-        .join(', ');
-
-      return acc;
-    }, {});
-
-    const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
-
-    const switchlen = longest(Object.keys(switches).map(function(s) {
-      return switches[s] || '';
-    }));
-
-    const desclen = longest(Object.keys(AVAILABLE_OPTIONS).map((option) => {
-      return AVAILABLE_OPTIONS[option].description;
-    }));
-
-    Object.keys(AVAILABLE_OPTIONS).forEach(key => {
-      const kswitch = switches[key];
-      let desc = AVAILABLE_OPTIONS[key].description;
-      const spadding = new Array(Math.max(switchlen - kswitch.length + 3, 0)).join('.');
-      const dpadding = new Array(Math.max(desclen - desc.length + 1, 0)).join(' ');
-
-      if (dpadding.length > 0) {
-        desc += dpadding;
-      }
-
-      const prelude = '  ' + (kswitch) + ' ' + colors.grey(spadding);
-
-      Logger.log(prelude + ' ' + colors.grey(desc));
-    });
   }
 
   checkJavaInstallation(): boolean {
@@ -328,41 +279,6 @@ export class AndroidSetup {
     fs.appendFileSync(envPath, `\nJAVA_HOME=${answers.javaHome}`);
 
     return answers.javaHome;
-  }
-
-  getSdkRootFromEnv(): string {
-    Logger.log('Checking the value of ANDROID_HOME environment variable...');
-
-    const androidHome = process.env.ANDROID_HOME;
-    const fromDotEnv = this.otherInfo.androidHomeInGlobalEnv ? '' : ' (taken from .env)';
-
-    if (androidHome) {
-      const androidHomeFinal = untildify(androidHome);
-
-      const androidHomeAbsolute = path.resolve(this.rootDir, androidHomeFinal);
-      if (androidHomeFinal !== androidHomeAbsolute) {
-        Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
-        Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
-
-        return androidHomeAbsolute;
-      }
-
-      Logger.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
-
-      return androidHomeFinal;
-    }
-
-    if (androidHome === undefined) {
-      Logger.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!\n`
-      );
-    } else {
-      Logger.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome}'${fromDotEnv} which is NOT a valid path!\n`
-      );
-    }
-
-    return '';
   }
 
   async getSdkRootFromUser(): Promise<string> {

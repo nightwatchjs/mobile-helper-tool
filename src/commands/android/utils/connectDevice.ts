@@ -4,6 +4,8 @@ import Logger from '../../../logger';
 import inquirer from 'inquirer';
 import colors from 'ansi-colors';
 import { getBinaryLocation } from './common';
+import { launchAVD } from '../adb';
+import ADB from 'appium-adb';
 
 export async function connectWirelessAdb(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -77,7 +79,7 @@ export async function connectWirelessAdb(sdkRoot: string, platform: Platform): P
     }
 
     const connecting = execBinarySync(adbLocation, 'adb', platform, `connect ${deviceIP}:${port}`);
-    if (connecting) {
+    if (connecting?.includes('connected')) {
       Logger.log(colors.green('Connected to device wirelessly.'));
     } else {
       Logger.log(`${colors.red('Failed to connect!')} Please try again.`);
@@ -92,4 +94,115 @@ export async function connectWirelessAdb(sdkRoot: string, platform: Platform): P
 
     return false;
   }
+}
+
+export async function connectAvd (sdkRoot: string, platform: Platform): Promise<boolean> {
+  const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
+  const availableAVDsDetails = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd');
+
+  if (availableAVDsDetails) {
+    Logger.log('Available AVDs:');
+    Logger.log(availableAVDsDetails);
+  }
+
+  const availableAVDs = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
+
+  if (availableAVDs) {
+    const avdAnswer = await inquirer.prompt({
+      type: 'list',
+      name: 'avdName',
+      message: 'Select the AVD to connect:',
+      choices: availableAVDs.split('\n').filter(avd => avd !== '')
+    });
+    const avdName = avdAnswer.avdName;
+
+    Logger.log(`Connecting to ${avdName}...`);
+    const connectingAvd = await launchAVD(sdkRoot, platform, avdName);
+
+    if (connectingAvd) {
+      return true;
+    }
+
+    return false;
+  } else {
+    Logger.log(`${colors.red('No AVDs found!')} Use ${colors.magenta('--setup')} flag with the main command to setup missing requirements.`);
+  }
+  return false;
+}
+
+export async function disconnectDevice (sdkRoot: string, platform: Platform) {
+    const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
+    const adb = await ADB.createADB({allowOfflineDevices: true});
+    const devices = await adb.getConnectedDevices();
+
+    if (devices.length === 0) {
+        Logger.log(`${colors.yellow('No device found running.')}`);
+        return true;
+    }
+
+    const deviceAnswer = await inquirer.prompt({
+      type: 'list',
+      name: 'device',
+      message: 'Select the device to disconnect:',
+      choices: devices.map(device => device.udid)
+    });
+    const deviceId = deviceAnswer.device;
+
+    let disconnecting;
+    if (deviceId.includes('emulator')) {
+        disconnecting = execBinarySync(adbLocation, 'adb', platform, `-s ${deviceId} emu kill`);
+    } else {
+        disconnecting = execBinarySync(adbLocation, 'adb', platform, `disconnect ${deviceId}`);
+    }
+    console.log(disconnecting);
+    
+    return false;
+}
+
+export async function listRunningDevices() {
+    const adb = await ADB.createADB({ allowOfflineDevices: true });
+    const devices = await adb.getConnectedDevices();
+
+    if (devices.length === 0) {
+        Logger.log(`No device connected.`);
+        return true;
+    }
+
+    Logger.log(colors.bold('Connected Devices:'));
+
+    const maxUdidLength = devices.reduce((max, device) => Math.max(max, device.udid.length), 0);
+    const paddedLength = maxUdidLength + 2;
+
+    devices.forEach((device) => {
+        const paddedUdid = device.udid.padEnd(paddedLength);
+        Logger.log(`${paddedUdid}${device.state}`);
+    });
+
+    return true;
+}
+
+export async function defaultConnectFlow(sdkRoot: string, platform: Platform) {
+    await listRunningDevices();
+    
+    Logger.log();
+
+    const connectAnswer = await inquirer.prompt({
+      type: 'list',
+      name: 'connectOption',
+      message: 'Select the type of device to connect:',
+      choices: ['Real Device', 'AVD']
+    });
+    const connectOption = connectAnswer.connectOption;
+    
+    Logger.log();
+
+    switch (connectOption) {
+      case 'Real Device':
+        return await connectWirelessAdb(sdkRoot, platform);
+      case 'AVD':
+        return await connectAvd(sdkRoot, platform);
+      default:
+        Logger.log('Invalid option selected.');
+        return false;
+    }
 }

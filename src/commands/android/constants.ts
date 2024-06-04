@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import path from 'path';
 import os from 'os';
 
-import {AvailableOptions, SdkBinary} from './interfaces';
+import {AvailableOptions, AvailableSubcommands, SdkBinary} from './interfaces';
 
 export const AVAILABLE_OPTIONS: AvailableOptions = {
   help: {
@@ -29,11 +29,30 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
     alias: [],
     description: 'Do standalone setup for Android Emulator (no Nightwatch-related requirements will be downloaded).'
   },
-  wireless: {
-    alias: [],
-    description: 'Connect ADB with wireless connection.'
-  }
 };
+
+export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
+  connect: {
+    description: 'Connect to a device',
+    options: [
+      {
+        name: "wireless",
+        description: "Connect a real device wirelessly",
+      },
+      {
+        name: "avd",
+        description: "Connect to an Android Virtual Device",
+      },
+      {
+        name: "list",
+        description: "List all connected devices",
+      }
+    ]
+  },
+  disconnect: {
+    description: 'Disconnect an AVD or a real device',
+  }
+}
 
 export const NIGHTWATCH_AVD = 'nightwatch-android-11';
 export const DEFAULT_FIREFOX_VERSION = '105.1.0';
