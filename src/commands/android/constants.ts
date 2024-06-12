@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import path from 'path';
 import os from 'os';
 
-import {AvailableOptions, SdkBinary} from './interfaces';
+import {AvailableOptions, AvailableSubcommands, SdkBinary} from './interfaces';
 
 export const AVAILABLE_OPTIONS: AvailableOptions = {
   help: {
@@ -28,6 +28,18 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
   standalone: {
     alias: [],
     description: 'Do standalone setup for Android Emulator (no Nightwatch-related requirements will be downloaded).'
+  }
+};
+
+export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
+  connect: {
+    description: 'Connect to a device',
+    options: [
+      {
+        name: 'wireless',
+        description: 'Connect to a real device wirelessly'
+      }
+    ]
   }
 };
 

@@ -12,7 +12,7 @@ import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
 import {getAlreadyRunningAvd, killEmulatorWithoutWait, launchAVD} from './adb';
 import {
-  ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
+  ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
@@ -89,7 +89,7 @@ export class AndroidSetup {
       this.javaHome = process.env.JAVA_HOME || '';
     }
 
-    const sdkRootEnv = this.getSdkRootFromEnv();
+    const sdkRootEnv = this.getSdkRootFromEnv(this.otherInfo.androidHomeInGlobalEnv, this.rootDir);
 
     if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
       // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web
@@ -150,12 +150,14 @@ export class AndroidSetup {
     };
   }
 
-  showHelp(unknownOptions: string[]) {
-    if (unknownOptions.length) {
+  showHelp(unknownOptions: string[], unknownSubcommand?: string) {
+    if (unknownSubcommand) {
+      Logger.log(colors.red(`unknown subcommand passed: ${unknownSubcommand}\n`));
+    } else if (unknownOptions.length) {
       Logger.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
     }
 
-    Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options]')}`);
+    Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options] [subcommand] [subcommand-options]')}`);
     Logger.log('  Verify if all the requirements are met to run tests on an Android device/emulator.\n');
 
     Logger.log(`${colors.yellow('Options:')}`);
@@ -193,6 +195,26 @@ export class AndroidSetup {
       const prelude = '  ' + (kswitch) + ' ' + colors.grey(spadding);
 
       Logger.log(prelude + ' ' + colors.grey(desc));
+    });
+
+    Logger.log(`\n${colors.yellow('Subcommands and Subcommand-Options:')}`);
+
+    Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
+      const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
+      const subcmdOptions = subcmd.options.map(option => `[--${option.name}]`).join(' ');
+
+      Logger.log(`  ${colors.cyan(subcommand)} ${subcmdOptions}`);
+      Logger.log(`  ${colors.grey(subcmd.description)}`);
+
+      if (subcmd.options && subcmd.options.length > 0) {
+        const optionLongest = longest(subcmd.options.map(option => `--${option.name}`));
+        subcmd.options.forEach(option => {
+          const optionStr = `--${option.name}`;
+          const optionPadding = new Array(Math.max(optionLongest - optionStr.length + 3, 0)).join('.');
+          Logger.log(`    ${optionStr} ${colors.grey(optionPadding)} ${colors.grey(option.description)}`);
+        });
+      }
+      Logger.log();
     });
   }
 
@@ -325,16 +347,16 @@ export class AndroidSetup {
     return answers.javaHome;
   }
 
-  getSdkRootFromEnv(): string {
+  getSdkRootFromEnv(androidHomeInGlobalEnv: boolean, rootDir: string): string {
     Logger.log('Checking the value of ANDROID_HOME environment variable...');
 
     const androidHome = process.env.ANDROID_HOME;
-    const fromDotEnv = this.otherInfo.androidHomeInGlobalEnv ? '' : ' (taken from .env)';
+    const fromDotEnv = androidHomeInGlobalEnv ? '' : ' (taken from .env)';
 
     if (androidHome) {
       const androidHomeFinal = untildify(androidHome);
 
-      const androidHomeAbsolute = path.resolve(this.rootDir, androidHomeFinal);
+      const androidHomeAbsolute = path.resolve(rootDir, androidHomeFinal);
       if (androidHomeFinal !== androidHomeAbsolute) {
         Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
         Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
