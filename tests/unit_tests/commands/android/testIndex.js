@@ -8,8 +8,6 @@ import { ABI } from '../../../../src/commands/android/constants';
 describe('test showHelp', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
-
-    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -18,10 +16,10 @@ describe('test showHelp', function() {
     mockery.disable();
   });
 
-  it('shows error for unknown options', () => {
+  it('shows error for unknown options and no unknown subcommand', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -39,18 +37,18 @@ describe('test showHelp', function() {
       grey: colorFn
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
-    androidSetup.showHelp(['random']);
+    const {showHelp} = require('../../../../src/commands/android/utils/common');
+    showHelp(['random-option']);
 
     const output = consoleOutput.toString();
-    assert.strictEqual(output.includes('unknown option(s) passed: random'), true);
+    assert.strictEqual(output.includes('unknown option(s) passed: random-option'), true);
+    assert.strictEqual(output.includes('unknown subcommand passed:'), false);
   });
 
-  it('does not shows error for no unknown options', () => {
+  it('shows error for no unknown options and unknown subcommand', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -68,12 +66,70 @@ describe('test showHelp', function() {
       grey: colorFn
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
-    androidSetup.showHelp([]);
+    const {showHelp} = require('../../../../src/commands/android/utils/common');
+    showHelp([], 'random-command');
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('unknown option(s) passed:'), false);
+    assert.strictEqual(output.includes('unknown subcommand passed: random-command'), true);
+  });
+
+  it('shows error for unknown options and unknown subcommand', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    const {showHelp} = require('../../../../src/commands/android/utils/common');
+    showHelp(['random-option'], 'random-command');
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('unknown option(s) passed:'), false);
+    assert.strictEqual(output.includes('unknown subcommand passed: random-command'), true);
+  });
+
+  it('does not shows error for no unknown options and no unknown subcommand', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    const {showHelp} = require('../../../../src/commands/android/utils/common');
+    showHelp([]);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('unknown option(s) passed:'), false);
+    assert.strictEqual(output.includes('unknown subcommand passed:'), false);
   });
 });
 

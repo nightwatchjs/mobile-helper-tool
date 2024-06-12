@@ -360,7 +360,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME defined in env with absolute path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -386,9 +386,10 @@ describe('test getSdkRootFromEnv', function() {
     const rootDir = path.join(__dirname, 'fixtures');
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     assert.strictEqual(result, platformAndroidHome);
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, true);
@@ -400,7 +401,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME defined in env with ~ path and in .env with absolute path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -441,9 +442,10 @@ describe('test getSdkRootFromEnv', function() {
     process.env.ANDROID_HOME = androidHome;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     const absoluteAndroidHome = path.join(os.homedir(), 'android_sdk_tilde');
     assert.strictEqual(result, absoluteAndroidHome);
@@ -457,7 +459,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME defined in env with relative path and in .env with absolute path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -498,9 +500,10 @@ describe('test getSdkRootFromEnv', function() {
     process.env.ANDROID_HOME = androidHome;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     const absoluteAndroidHome = path.join(rootDir, androidHome);
     // ANDROID_HOME should be absolute now.
@@ -516,7 +519,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME defined in env with empty path and in .env with absolute path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -557,9 +560,10 @@ describe('test getSdkRootFromEnv', function() {
     process.env.ANDROID_HOME = androidHome;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, true);
@@ -572,7 +576,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME not defined in env and not defined in .env as well', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -596,9 +600,10 @@ describe('test getSdkRootFromEnv', function() {
     const rootDir = path.join(__dirname, 'fixtures');
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);
@@ -610,7 +615,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME not defined in env but defined in .env with absolute path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -650,9 +655,10 @@ describe('test getSdkRootFromEnv', function() {
     delete process.env.ANDROID_HOME;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     assert.strictEqual(result, platformAbsoluteAndroidHome);
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);
@@ -665,7 +671,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME not defined in env but defined in .env with relative path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -704,9 +710,10 @@ describe('test getSdkRootFromEnv', function() {
     delete process.env.ANDROID_HOME;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     const absoluteAndroidHome = path.join(rootDir, androidHome);
     assert.strictEqual(result, absoluteAndroidHome);
@@ -721,7 +728,7 @@ describe('test getSdkRootFromEnv', function() {
   test('when ANDROID_HOME not defined in env but defined in .env with empty path', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -760,9 +767,10 @@ describe('test getSdkRootFromEnv', function() {
     delete process.env.ANDROID_HOME;
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = androidSetup.getSdkRootFromEnv();
+    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);
