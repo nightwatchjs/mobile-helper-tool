@@ -1,8 +1,8 @@
-# Start Android Emulator using `emulator` command-line tool
+# Launch Android Emulator using `emulator` command-line tool
 
 ## Introduction
 
-This guide will show you how to start an Android Emulator with various start-up options using the `emulator` command-line tool.
+This guide will show you how to launch an Android Emulator with various start-up options using the `emulator` command-line tool.
 
 ## Prerequisites
 
