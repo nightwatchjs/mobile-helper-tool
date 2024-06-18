@@ -1,35 +1,35 @@
-# Use the emulator from the command line
+# Start Android Emulator using `emulator` command-line tool
 
 ## Introduction
 
-This guide will show you how to start the emulator from the CLI along with various start up options.
+This guide will show you how to start an Android Emulator with various start-up options using the `emulator` command-line tool.
 
 ## Prerequisites
 
-- Setup Android Emulator using [mobile-helper-tool](https://github.com/nightwatchjs/mobile-helper-tool): `npx @nightwatch/mobile-helper android`.
+- Setup Android Emulator environment from scratch using [mobile-helper-tool](https://github.com/nightwatchjs/mobile-helper-tool): `npx @nightwatch/mobile-helper android --standalone`.
 
-### Emulator command line tool
+## Check if `emulator` is available and working
 
-The whole process is done using the `emulator` command line tool. So, you would need to make sure that `emulator` is available from your terminal. You can check this by running `emulator -version`.
+The whole process depends on the `emulator` command line tool. So, you would need to make sure that `emulator` is available from your terminal. You can check this by running `emulator -version`.
 
-If emulator is not available directly, you can either add its location to your `PATH` environment variable, or cd to the location where the emulator binary is present and use it directly from there.
+If `emulator` is not available directly, you can either add its location to your `PATH` environment variable, or `cd` to the location where the `emulator` binary is present and use it directly from there.
 
-For both cases, you'd need the location where you've set up your Android SDK, which you can get by running `npx @nightwatch/mobile-helper android` again:
+> For both cases, you'd need the location where you've set up your Android SDK, which you can get by running `npx @nightwatch/mobile-helper android` again:
+>
+> <img width="517" alt="ANDROID_HOME" src="https://github.com/nightwatchjs/mobile-helper-tool/assets/39924567/20289460-1f1b-489e-9558-b0a7764d15e0">   
 
-<img width="517" alt="ANDROID_HOME" src="https://github.com/nightwatchjs/mobile-helper-tool/assets/39924567/20289460-1f1b-489e-9558-b0a7764d15e0">
-
-The `emulator` binary will be present in the emulator sub-directory of your Android SDK setup location from above. Eg: `/path/to/Android/sdk/emulator/`.
+You can find the `emulator` binary located within the `emulator/` sub-directory of your Android SDK setup location from above. Eg: `/path/to/Android/sdk/emulator/`.
 
 ### Adding `emulator` location to `PATH`
 
-Add the path of the `emulator` directory to your `PATH` environment variable.
+Add the path of the `emulator/` directory to your `PATH` environment variable.
 
 **Linux/Mac**:
 
 Add the below command at the end of your `~/.bashrc` or `~./bash_profile` file and restart the terminal.
 
 ```bash
-export PATH=$PATH:/path/to/Android/Sdk/emulator/
+export PATH=$PATH:/path/to/Android/sdk/emulator/
 ```
 
 **Windows**:
@@ -47,14 +47,16 @@ To use `emulator` binary directly (without adding it to `PATH`), simply go to th
 ```bash
 cd /path/to/Android/Sdk/emulator/
 
-#for windows
+# for windows
 emulator.exe -version
 
-#for mac/linux
+# for mac/linux
 ./emulator -version
 ```
 
 ## Commands
+
+> **Note:** The "avd" below represents Android Virtual Device (AVD), which is what you run inside an Android Emulator. Each AVD can have different configurations representing different Android devices.
 
 ### Basic command syntax
 
