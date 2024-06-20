@@ -1,14 +1,13 @@
-import { getSdkRootFromEnv, showHelp } from "./utils/common";
-import { getPlatformName } from "../../utils";
-import { Options, Platform } from "./interfaces";
-import * as dotenv from "dotenv";
 import path from "path";
 import colors from "ansi-colors";
+import * as dotenv from "dotenv";
+
 import Logger from "../../logger";
-import {
-  connectWirelessAdb,
-} from "./utils/connectDevice";
+import { getPlatformName } from "../../utils";
+import { Options, Platform } from "./interfaces";
 import { AVAILABLE_SUBCOMMANDS } from "./constants";
+import { getSdkRootFromEnv, showHelp } from "./utils/common";
+import { connectWirelessAdb } from "./commands/connect/connect-wireless-adb";
 
 export class SdkCommandExecute {
   sdkRoot: string;

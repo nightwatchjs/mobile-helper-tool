@@ -4,7 +4,7 @@ import minimist from 'minimist';
 import {AndroidSetup} from './commands/android';
 import {IosSetup} from './commands/ios';
 import {AVAILABLE_COMMANDS} from './constants';
-import { SdkCommandExecute } from './commands/android/execute-sdk-scripts';
+import { SdkCommandExecute } from './commands/android/execute-commands';
 
 export const run = () => {
   try {
