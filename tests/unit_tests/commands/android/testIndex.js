@@ -3,7 +3,79 @@ const fs = require('fs');
 const mockery = require('mockery');
 const path = require('path');
 const os = require('os');
-import { ABI } from '../../../../src/commands/android/constants';
+import {ABI} from '../../../../src/commands/android/constants';
+
+describe('test showHelp', function() {
+  beforeEach(() => {
+    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
+
+    mockery.registerMock('./adb', {});
+  });
+
+  afterEach(() => {
+    mockery.deregisterAll();
+    mockery.resetCache();
+    mockery.disable();
+  });
+
+  it('shows error for unknown options', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+    androidSetup.showHelp(['random']);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('unknown option(s) passed: random'), true);
+  });
+
+  it('does not shows error for no unknown options', () => {
+    const consoleOutput = [];
+    mockery.registerMock(
+      '../../logger',
+      class {
+        static log(...msgs) {
+          consoleOutput.push(...msgs);
+        }
+      }
+    );
+
+    const colorFn = (arg) => arg;
+    mockery.registerMock('ansi-colors', {
+      green: colorFn,
+      yellow: colorFn,
+      magenta: colorFn,
+      cyan: colorFn,
+      red: colorFn,
+      grey: colorFn
+    });
+
+    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const androidSetup = new AndroidSetup();
+    androidSetup.showHelp([]);
+
+    const output = consoleOutput.toString();
+    assert.strictEqual(output.includes('unknown option(s) passed:'), false);
+  });
+});
 
 describe('test checkJavaInstallation', function() {
   beforeEach(() => {
@@ -21,7 +93,7 @@ describe('test checkJavaInstallation', function() {
   it('returns true if command executed successfully', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -47,8 +119,9 @@ describe('test checkJavaInstallation', function() {
     });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {checkJavaInstallation} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup();
-    const result = androidSetup.checkJavaInstallation();
+    const result = checkJavaInstallation(androidSetup.rootDir);
 
     assert.strictEqual(result, true);
     assert.strictEqual(commandsExecuted[0], 'java -version');
@@ -60,7 +133,7 @@ describe('test checkJavaInstallation', function() {
   it('returns false if command execution failed', () => {
     const consoleOutput = [];
     mockery.registerMock(
-      '../../logger',
+      '../../../logger',
       class {
         static log(...msgs) {
           consoleOutput.push(...msgs);
@@ -87,8 +160,9 @@ describe('test checkJavaInstallation', function() {
     });
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {checkJavaInstallation} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup();
-    const result = androidSetup.checkJavaInstallation();
+    const result = checkJavaInstallation(androidSetup.rootDir);
 
     assert.strictEqual(result, false);
     assert.strictEqual(commandsExecuted[0], 'java -version');

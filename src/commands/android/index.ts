@@ -12,15 +12,15 @@ import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
 import {getAlreadyRunningAvd, killEmulatorWithoutWait, launchAVD} from './adb';
 import {
-  ABI, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
+  ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
+  checkJavaInstallation,
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
   getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion,
-  getSdkRootFromEnv,
-  showHelp
+  getSdkRootFromEnv
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
@@ -55,12 +55,12 @@ export class AndroidSetup {
     const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
 
     if (this.options.help || unknownOptions.length) {
-      showHelp(unknownOptions);
+      this.showHelp(unknownOptions);
 
       return this.options.help === true;
     }
 
-    const javaInstalled = this.checkJavaInstallation();
+    const javaInstalled = checkJavaInstallation(this.rootDir);
     if (!javaInstalled) {
       return false;
     }
@@ -152,22 +152,50 @@ export class AndroidSetup {
     };
   }
 
-  checkJavaInstallation(): boolean {
-    try {
-      execSync('java -version', {
-        stdio: 'pipe',
-        cwd: this.rootDir
-      });
-
-      return true;
-    } catch {
-      Logger.log(`${colors.red('Error:')} Java Development Kit v9 or above is required to work with Android SDKs. Download from here:`);
-      Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
-
-      Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
-
-      return false;
+  showHelp(unknownOptions: string[]) {
+    if (unknownOptions.length) {
+      Logger.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
     }
+
+    Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [options]')}`);
+    Logger.log('  Verify if all the requirements are met to run tests on an Android device/emulator.\n');
+
+    Logger.log(`${colors.yellow('Options:')}`);
+
+    const switches = Object.keys(AVAILABLE_OPTIONS).reduce((acc: {[T: string]: string}, key) => {
+      acc[key] = [key].concat(AVAILABLE_OPTIONS[key].alias || [])
+        .map(function(sw) {
+          return (sw.length > 1 ? '--' : '-') + sw;
+        })
+        .join(', ');
+
+      return acc;
+    }, {});
+
+    const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
+
+    const switchlen = longest(Object.keys(switches).map(function(s) {
+      return switches[s] || '';
+    }));
+
+    const desclen = longest(Object.keys(AVAILABLE_OPTIONS).map((option) => {
+      return AVAILABLE_OPTIONS[option].description;
+    }));
+
+    Object.keys(AVAILABLE_OPTIONS).forEach(key => {
+      const kswitch = switches[key];
+      let desc = AVAILABLE_OPTIONS[key].description;
+      const spadding = new Array(Math.max(switchlen - kswitch.length + 3, 0)).join('.');
+      const dpadding = new Array(Math.max(desclen - desc.length + 1, 0)).join(' ');
+
+      if (dpadding.length > 0) {
+        desc += dpadding;
+      }
+
+      const prelude = '  ' + (kswitch) + ' ' + colors.grey(spadding);
+
+      Logger.log(prelude + ' ' + colors.grey(desc));
+    });
   }
 
   loadEnvFromDotEnv(): void {
