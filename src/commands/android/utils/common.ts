@@ -8,7 +8,7 @@ import path from 'path';
 import which from 'which';
 
 import {symbols} from '../../../utils';
-import {ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
+import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
 import Logger from '../../../logger';
 import untildify from 'untildify';
