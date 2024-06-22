@@ -2,11 +2,11 @@ import path from 'path';
 import colors from 'ansi-colors';
 import * as dotenv from 'dotenv';
 
+import {connect} from './connect';
 import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
 import {Options, Platform} from '../interfaces';
-import {getSdkRootFromEnv} from '../utils/common';
-import {connect} from './connect';
+import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -27,10 +27,18 @@ export class AndroidSubcommand {
 
   async run(): Promise<boolean> {
     this.loadEnvFromDotEnv();
-    const sdkRootEnv = getSdkRootFromEnv(this.androidHomeInGlobalEnv, this.rootDir);
 
+    const javaInstalled = checkJavaInstallation(this.rootDir);
+    if (!javaInstalled) {
+      return false;
+    }
+
+    const sdkRootEnv = getSdkRootFromEnv(this.androidHomeInGlobalEnv, this.rootDir);
     if (!sdkRootEnv) {
-      Logger.log(`Use ${colors.magenta('--standalone')} flag with the main command to setup the Android SDK.`);
+      Logger.log(colors.red('Path to Android SDK not found in environment variables!\n'));
+      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup Android SDK`);
+      Logger.log('     or provide the path to Android SDK if already installed.');
+      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
 
       return false;
     }
