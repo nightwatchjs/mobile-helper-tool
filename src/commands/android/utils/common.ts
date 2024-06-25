@@ -8,8 +8,9 @@ import path from 'path';
 import which from 'which';
 
 import {symbols} from '../../../utils';
-import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
+import {ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
+import Logger from '../../../logger';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -151,4 +152,33 @@ export const downloadFirefoxAndroid = async (version: string) => {
   const apkDownloadUrl = `https://archive.mozilla.org/pub/fenix/releases/${version}/android/fenix-${version}-android-${ABI}/${apkName}`;
 
   return await downloadWithProgressBar(apkDownloadUrl, tempdir);
+};
+
+export const showSubcommandHelp = (unknownSubcommand?: string) => {
+  if (unknownSubcommand) {
+    Logger.log(`${colors.red('unknown subcommand passed:')} ${unknownSubcommand}\n`);
+  }
+  Logger.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [subcmd] [subcmd-options]')}`);
+  Logger.log('  The following subcommands are used for different operations on Android SDK:\n');
+  Logger.log(`${colors.yellow('Subcommands and Subcommand-Options:')}`);
+
+  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
+
+  Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
+    const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
+    const subcmdOptions = subcmd.options?.map(option => `[--${option.name}]`).join(' ') || '';
+
+    Logger.log(`  ${colors.cyan(subcommand)} ${subcmdOptions}`);
+    Logger.log(`  ${colors.gray(subcmd.description)}`);
+
+    if (subcmd.options && subcmd.options.length > 0) {
+      const optionLongest = longest(subcmd.options.map(option => `--${option.name}`));
+      subcmd.options.forEach(option => {
+        const optionStr = `--${option.name}`;
+        const optionPadding = new Array(Math.max(optionLongest - optionStr.length + 3, 0)).join('.');
+        Logger.log(`    ${optionStr} ${colors.grey(optionPadding)} ${colors.gray(option.description)}`);
+      });
+    }
+    Logger.log();
+  });
 };

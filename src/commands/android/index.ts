@@ -18,7 +18,8 @@ import {
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
   downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
-  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
+  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion,
+  showSubcommandHelp
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
@@ -194,6 +195,11 @@ export class AndroidSetup {
 
       Logger.log(prelude + ' ' + colors.grey(desc));
     });
+
+    if (this.options.help) {
+      Logger.log();
+      showSubcommandHelp();
+    }
   }
 
   checkJavaInstallation(): boolean {
