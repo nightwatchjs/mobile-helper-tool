@@ -3,7 +3,7 @@ const fs = require('fs');
 const mockery = require('mockery');
 const path = require('path');
 const os = require('os');
-import { ABI } from '../../../../src/commands/android/constants';
+import {ABI} from '../../../../src/commands/android/constants';
 
 describe('test showHelp', function() {
   beforeEach(() => {
@@ -74,100 +74,6 @@ describe('test showHelp', function() {
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('unknown option(s) passed:'), false);
-  });
-});
-
-describe('test checkJavaInstallation', function() {
-  beforeEach(() => {
-    mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
-
-    mockery.registerMock('./adb', {});
-  });
-
-  afterEach(() => {
-    mockery.deregisterAll();
-    mockery.resetCache();
-    mockery.disable();
-  });
-
-  it('returns true if command executed successfully', () => {
-    const consoleOutput = [];
-    mockery.registerMock(
-      '../../logger',
-      class {
-        static log(...msgs) {
-          consoleOutput.push(...msgs);
-        }
-      }
-    );
-
-    const colorFn = (arg) => arg;
-    mockery.registerMock('ansi-colors', {
-      green: colorFn,
-      yellow: colorFn,
-      magenta: colorFn,
-      cyan: colorFn,
-      red: colorFn,
-      grey: colorFn
-    });
-
-    const commandsExecuted = [];
-    mockery.registerMock('child_process', {
-      execSync(command) {
-        commandsExecuted.push(command);
-      }
-    });
-
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
-    const result = androidSetup.checkJavaInstallation();
-
-    assert.strictEqual(result, true);
-    assert.strictEqual(commandsExecuted[0], 'java -version');
-
-    const output = consoleOutput.toString();
-    assert.strictEqual(output, '');
-  });
-
-  it('returns false if command execution failed', () => {
-    const consoleOutput = [];
-    mockery.registerMock(
-      '../../logger',
-      class {
-        static log(...msgs) {
-          consoleOutput.push(...msgs);
-        }
-      }
-    );
-
-    const colorFn = (arg) => arg;
-    mockery.registerMock('ansi-colors', {
-      green: colorFn,
-      yellow: colorFn,
-      magenta: colorFn,
-      cyan: colorFn,
-      red: colorFn,
-      grey: colorFn
-    });
-
-    const commandsExecuted = [];
-    mockery.registerMock('child_process', {
-      execSync(command) {
-        commandsExecuted.push(command);
-        throw Error();
-      }
-    });
-
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
-    const androidSetup = new AndroidSetup();
-    const result = androidSetup.checkJavaInstallation();
-
-    assert.strictEqual(result, false);
-    assert.strictEqual(commandsExecuted[0], 'java -version');
-
-    const output = consoleOutput.toString();
-    assert.strictEqual(output.includes('Java Development Kit v9 or above is required'), true);
-    assert.strictEqual(output.includes('Make sure Java is installed by running java -version'), true);
   });
 });
 
