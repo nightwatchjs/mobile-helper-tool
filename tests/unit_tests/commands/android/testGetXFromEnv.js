@@ -389,7 +389,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     assert.strictEqual(result, platformAndroidHome);
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, true);
@@ -445,7 +445,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     const absoluteAndroidHome = path.join(os.homedir(), 'android_sdk_tilde');
     assert.strictEqual(result, absoluteAndroidHome);
@@ -503,7 +503,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     const absoluteAndroidHome = path.join(rootDir, androidHome);
     // ANDROID_HOME should be absolute now.
@@ -563,7 +563,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, true);
@@ -603,7 +603,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);
@@ -658,7 +658,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     assert.strictEqual(result, platformAbsoluteAndroidHome);
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);
@@ -713,7 +713,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     const absoluteAndroidHome = path.join(rootDir, androidHome);
     assert.strictEqual(result, absoluteAndroidHome);
@@ -770,7 +770,7 @@ describe('test getSdkRootFromEnv', function() {
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
-    const result = getSdkRootFromEnv(androidSetup.otherInfo.androidHomeInGlobalEnv, androidSetup.rootDir);
+    const result = getSdkRootFromEnv(androidSetup.rootDir, androidSetup.otherInfo.androidHomeInGlobalEnv);
 
     assert.strictEqual(result, '');
     assert.strictEqual(androidSetup.otherInfo.androidHomeInGlobalEnv, false);

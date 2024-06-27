@@ -195,8 +195,6 @@ describe('test downloadWithProgressBar', function() {
 describe('test checkJavaInstallation', function() {
   beforeEach(() => {
     mockery.enable({useCleanCache: true, warnOnReplace: false, warnOnUnregistered: false});
-
-    mockery.registerMock('./adb', {});
   });
 
   afterEach(() => {
@@ -233,10 +231,8 @@ describe('test checkJavaInstallation', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
     const {checkJavaInstallation} = require('../../../../src/commands/android/utils/common');
-    const androidSetup = new AndroidSetup();
-    const result = checkJavaInstallation(androidSetup.rootDir);
+    const result = checkJavaInstallation(process.cwd());
 
     assert.strictEqual(result, true);
     assert.strictEqual(commandsExecuted[0], 'java -version');
@@ -274,10 +270,8 @@ describe('test checkJavaInstallation', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
     const {checkJavaInstallation} = require('../../../../src/commands/android/utils/common');
-    const androidSetup = new AndroidSetup();
-    const result = checkJavaInstallation(androidSetup.rootDir);
+    const result = checkJavaInstallation(process.cwd());
 
     assert.strictEqual(result, false);
     assert.strictEqual(commandsExecuted[0], 'java -version');

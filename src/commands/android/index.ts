@@ -91,7 +91,7 @@ export class AndroidSetup {
       this.javaHome = process.env.JAVA_HOME || '';
     }
 
-    const sdkRootEnv = getSdkRootFromEnv(this.otherInfo.androidHomeInGlobalEnv, this.rootDir);
+    const sdkRootEnv = getSdkRootFromEnv(this.rootDir, this.otherInfo.androidHomeInGlobalEnv);
 
     if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
       // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web

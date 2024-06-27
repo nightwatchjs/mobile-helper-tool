@@ -2,17 +2,17 @@ import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
 import cliProgress from 'cli-progress';
 import download from 'download';
+import {execSync} from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import untildify from 'untildify';
 import which from 'which';
 
 import {symbols} from '../../../utils';
 import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
 import Logger from '../../../logger';
-import untildify from 'untildify';
-import {execSync} from 'child_process';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -156,7 +156,7 @@ export const downloadFirefoxAndroid = async (version: string) => {
   return await downloadWithProgressBar(apkDownloadUrl, tempdir);
 };
 
-export const getSdkRootFromEnv = (androidHomeInGlobalEnv: boolean, rootDir: string): string => {
+export const getSdkRootFromEnv = (rootDir: string, androidHomeInGlobalEnv: boolean): string => {
   Logger.log('Checking the value of ANDROID_HOME environment variable...');
 
   const androidHome = process.env.ANDROID_HOME;
@@ -191,11 +191,11 @@ export const getSdkRootFromEnv = (androidHomeInGlobalEnv: boolean, rootDir: stri
   return '';
 };
 
-export const checkJavaInstallation = (rootDir: string): boolean => {
+export const checkJavaInstallation = (cwd: string): boolean => {
   try {
     execSync('java -version', {
       stdio: 'pipe',
-      cwd: rootDir
+      cwd: cwd
     });
 
     return true;
