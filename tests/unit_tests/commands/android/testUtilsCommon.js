@@ -281,3 +281,4 @@ describe('test checkJavaInstallation', function() {
     assert.strictEqual(output.includes('Make sure Java is installed by running java -version'), true);
   });
 });
+

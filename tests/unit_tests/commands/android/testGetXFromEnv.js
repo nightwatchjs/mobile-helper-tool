@@ -780,3 +780,4 @@ describe('test getSdkRootFromEnv', function() {
     assert.strictEqual(output.includes('ANDROID_HOME is set to \'\' (taken from .env) which is NOT a valid path!'), true);
   });
 });
+
