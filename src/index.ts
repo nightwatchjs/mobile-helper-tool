@@ -3,7 +3,9 @@ import minimist from 'minimist';
 
 import {AndroidSetup} from './commands/android';
 import {IosSetup} from './commands/ios';
-import {AVAILABLE_COMMANDS} from './constants';
+import {ANDROID_DOT_COMMANDS, AVAILABLE_COMMANDS, AVAILABLE_DOT_COMMANDS} from './constants';
+import {AndroidDotCommand} from './commands/android/dotcommands';
+import {SdkBinary} from './commands/android/interfaces';
 
 export const run = () => {
   try {
@@ -18,14 +20,38 @@ export const run = () => {
       }
     });
 
-    if (!args[0] || !AVAILABLE_COMMANDS.includes(args[0])) {
+    if (!args[0]) {
       showHelp(args[0], options.help);
-    } else if (args[0] === 'android') {
-      const androidSetup = new AndroidSetup(options);
-      androidSetup.run();
     } else {
-      const iOSSetup = new IosSetup(options);
-      iOSSetup.run();
+      if (args[0].includes('.')) {
+        // Handle dot commands
+        const dotCommandArgs = args[0].split('.');
+        if (dotCommandArgs.length !== 2 || !AVAILABLE_DOT_COMMANDS.includes(dotCommandArgs[0])) {
+          showHelp(args[0], options.help);
+        } else {
+          if (dotCommandArgs[0] === 'android') {
+            if (!ANDROID_DOT_COMMANDS.includes(dotCommandArgs[1])) {
+              showHelp(args[0], options.help);
+            } else {
+              const androidDotCommand = new AndroidDotCommand((dotCommandArgs[1] as SdkBinary), args[1]);
+              androidDotCommand.run();
+            }
+          }
+        }
+      } else {
+        // Handle main commands
+        if (!AVAILABLE_COMMANDS.includes(args[0]) || args.length > 2) {
+          showHelp(args[0], options.help);
+        } else {
+          if (args[0] === 'android') {
+            const androidSetup = new AndroidSetup(options, args[1]);
+            androidSetup.run();
+          } else if (args[0] === 'ios') {
+            const iOSSetup = new IosSetup(options);
+            iOSSetup.run();
+          }
+        }
+      }
     }
   } catch (err) {
     console.error(err as string);
