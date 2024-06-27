@@ -41,7 +41,7 @@ describe('test showHelp', function() {
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup();
-    androidSetup.showHelp(['random']);
+    androidSetup.showOptionsHelp(['random']);
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('unknown option(s) passed: random'), true);
@@ -70,7 +70,7 @@ describe('test showHelp', function() {
 
     const {AndroidSetup} = require('../../../../src/commands/android/index');
     const androidSetup = new AndroidSetup();
-    androidSetup.showHelp([]);
+    androidSetup.showOptionsHelp([]);
 
     const output = consoleOutput.toString();
     assert.strictEqual(output.includes('unknown option(s) passed:'), false);
