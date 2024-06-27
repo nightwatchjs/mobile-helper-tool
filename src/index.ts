@@ -2,9 +2,9 @@ import colors from 'ansi-colors';
 import minimist from 'minimist';
 
 import {AndroidSetup} from './commands/android';
-import {IosSetup} from './commands/ios';
+import {AndroidSubcommand} from './commands/android/subcommands';
 import {AVAILABLE_COMMANDS} from './constants';
-import {AndroidSubcommand} from './commands/android/subcommands/index';
+import {IosSetup} from './commands/ios';
 
 export const run = () => {
   try {
@@ -19,14 +19,29 @@ export const run = () => {
       }
     });
 
-    if (!args[0] || !AVAILABLE_COMMANDS.includes(args[0]) || args.length > 2) {
-      showHelp(args, options.help);
+    if (!args[0]) {
+      if (!options.help) {
+        // Show error message if help flag is not present.
+        console.log(`${colors.red('No command passed.')}\n`);
+      }
+      showHelp();
+    } else if (!AVAILABLE_COMMANDS.includes(args[0])) {
+      console.log(`${colors.red(`Unknown command passed: ${args[0]}`)}\n`);
+      showHelp();
+    } else if (args.length > 2 || (args[0] === 'ios' && args.length > 1)) {
+      // android command can accept only one subcommand.
+      // ios command does not accept subcommands.
+      console.log(`${colors.red(`Too many arguments passed: ${args.slice(1).join(', ')}`)}\n`);
+      showHelp();
     } else if (args[0] === 'android') {
       if (args[1]) {
+        // args[1] represents the android subcommand.
+        // If subcommand is present then proceed to run the subcommand.
         const androidSubcommand = new AndroidSubcommand(args[1], options);
         androidSubcommand.run();
       } else {
-        const androidSetup = new AndroidSetup(options, args[1]);
+        // If no subcommand is present then proceed to run the main android setup.
+        const androidSetup = new AndroidSetup(options);
         androidSetup.run();
       }
     } else if (args[0] === 'ios') {
@@ -39,16 +54,8 @@ export const run = () => {
   }
 };
 
-const showHelp = (args: string[], helpFlag: boolean) => {
-  if (args.length > 2) {
-    console.log(colors.red('Too many arguments passed.'), '\n');
-  } else if (args[0]) {
-    console.log(colors.red(`unknown command: ${args[0]}`), '\n');
-  } else if (!args[0] && !helpFlag) {
-    console.log(colors.red('No command passed.'), '\n');
-  }
-
-  console.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper COMMAND [args|options]')}\n`);
+const showHelp = () => {
+  console.log(`Usage: ${colors.cyan('npx @nightwatch/mobile-helper COMMAND [options|args]')}\n`);
 
   console.log(`Available commands: ${colors.green(AVAILABLE_COMMANDS.join(', '))}\n`);
   console.log(`To know more about each command, run:
