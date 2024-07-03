@@ -1,11 +1,11 @@
 import inquirer from 'inquirer';
 import colors from 'ansi-colors';
 
-import {Platform} from '../interfaces';
-import {getBinaryLocation} from './common';
-import {execBinarySync} from './sdk';
-import Logger from '../../../logger';
-import {symbols} from '../../../utils';
+import {Platform} from '../../interfaces';
+import {getBinaryLocation} from '../../utils/common';
+import {execBinarySync} from '../../utils/sdk';
+import Logger from '../../../../logger';
+import {symbols} from '../../../../utils';
 
 export async function connectWirelessAdb(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
