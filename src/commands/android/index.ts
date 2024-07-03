@@ -57,9 +57,7 @@ export class AndroidSetup {
       this.showOptionsHelp(unknownOptions);
 
       if (this.options.help) {
-        const subcommandHelp = getSubcommandHelp();
-        Logger.log();
-        Logger.log(subcommandHelp);
+        Logger.log('\n' + getSubcommandHelp());
       }
 
       return this.options.help === true;
