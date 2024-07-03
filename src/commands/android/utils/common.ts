@@ -1,8 +1,8 @@
 import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
+import {execSync} from 'child_process';
 import cliProgress from 'cli-progress';
 import download from 'download';
-import {execSync} from 'child_process';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -156,7 +156,7 @@ export const downloadFirefoxAndroid = async (version: string) => {
   return await downloadWithProgressBar(apkDownloadUrl, tempdir);
 };
 
-export const getSdkRootFromEnv = (rootDir: string, androidHomeInGlobalEnv: boolean): string => {
+export const getSdkRootFromEnv = (cwd: string, androidHomeInGlobalEnv: boolean): string => {
   Logger.log('Checking the value of ANDROID_HOME environment variable...');
 
   const androidHome = process.env.ANDROID_HOME;
@@ -165,7 +165,7 @@ export const getSdkRootFromEnv = (rootDir: string, androidHomeInGlobalEnv: boole
   if (androidHome) {
     const androidHomeFinal = untildify(androidHome);
 
-    const androidHomeAbsolute = path.resolve(rootDir, androidHomeFinal);
+    const androidHomeAbsolute = path.resolve(cwd, androidHomeFinal);
     if (androidHomeFinal !== androidHomeAbsolute) {
       Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
       Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);

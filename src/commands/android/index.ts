@@ -17,10 +17,9 @@ import {
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
-  checkJavaInstallation,
-  downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
-  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion,
-  getSdkRootFromEnv
+  checkJavaInstallation, downloadFirefoxAndroid, downloadWithProgressBar,
+  getAllAvailableOptions, getBinaryLocation, getBinaryNameForOS,
+  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
