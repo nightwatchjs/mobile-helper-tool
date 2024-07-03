@@ -1,6 +1,6 @@
-import path from 'path';
 import colors from 'ansi-colors';
 import * as dotenv from 'dotenv';
+import path from 'path';
 
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
 import {connect} from './connect';
@@ -33,10 +33,10 @@ export class AndroidSubcommand {
       return false;
     }
 
-    const sdkRootEnv = getSdkRootFromEnv(this.androidHomeInGlobalEnv, this.rootDir);
+    const sdkRootEnv = getSdkRootFromEnv(this.rootDir, this.androidHomeInGlobalEnv);
     if (!sdkRootEnv) {
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup Android SDK`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to fix this issue.`);
+      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if using the tool for testing.)\n`);
 
       return false;
     }
@@ -55,9 +55,10 @@ export class AndroidSubcommand {
 
   async executeSubcommand(): Promise<boolean> {
     if (this.subcommand === 'connect') {
-      return connect(this.options, this.sdkRoot, this.platform);
+      return await connect(this.options, this.sdkRoot, this.platform);
     }
 
     return false;
   }
 }
+
