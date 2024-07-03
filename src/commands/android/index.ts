@@ -19,7 +19,7 @@ import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfig
 import {
   checkJavaInstallation, downloadFirefoxAndroid, downloadWithProgressBar,
   getAllAvailableOptions, getBinaryLocation, getBinaryNameForOS,
-  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv
+  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv, getSubcommandHelp
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
@@ -54,7 +54,11 @@ export class AndroidSetup {
     const unknownOptions = Object.keys(this.options).filter((option) => !allAvailableOptions.includes(option));
 
     if (this.options.help || unknownOptions.length) {
-      this.showHelp(unknownOptions);
+      this.showOptionsHelp(unknownOptions);
+
+      if (this.options.help) {
+        Logger.log('\n' + getSubcommandHelp());
+      }
 
       return this.options.help === true;
     }
@@ -151,7 +155,7 @@ export class AndroidSetup {
     };
   }
 
-  showHelp(unknownOptions: string[]) {
+  showOptionsHelp(unknownOptions: string[]) {
     if (unknownOptions.length) {
       Logger.log(colors.red(`unknown option(s) passed: ${unknownOptions.join(', ')}\n`));
     }
