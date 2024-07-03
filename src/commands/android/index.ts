@@ -17,8 +17,9 @@ import {
 } from './constants';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
 import {
-  downloadFirefoxAndroid, downloadWithProgressBar, getAllAvailableOptions,
-  getBinaryLocation, getBinaryNameForOS, getFirefoxApkName, getLatestVersion
+  checkJavaInstallation, downloadFirefoxAndroid, downloadWithProgressBar,
+  getAllAvailableOptions, getBinaryLocation, getBinaryNameForOS,
+  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
@@ -58,7 +59,7 @@ export class AndroidSetup {
       return this.options.help === true;
     }
 
-    const javaInstalled = this.checkJavaInstallation();
+    const javaInstalled = checkJavaInstallation(this.rootDir);
     if (!javaInstalled) {
       return false;
     }
@@ -89,7 +90,7 @@ export class AndroidSetup {
       this.javaHome = process.env.JAVA_HOME || '';
     }
 
-    const sdkRootEnv = this.getSdkRootFromEnv();
+    const sdkRootEnv = getSdkRootFromEnv(this.rootDir, this.otherInfo.androidHomeInGlobalEnv);
 
     if (this.options.appium && !sdkRootEnv && this.otherInfo.androidHomeInGlobalEnv) {
       // ANDROID_HOME is set to an invalid path in system env. We can get around this for mobile-web
@@ -194,24 +195,6 @@ export class AndroidSetup {
 
       Logger.log(prelude + ' ' + colors.grey(desc));
     });
-  }
-
-  checkJavaInstallation(): boolean {
-    try {
-      execSync('java -version', {
-        stdio: 'pipe',
-        cwd: this.rootDir
-      });
-
-      return true;
-    } catch {
-      Logger.log(`${colors.red('Error:')} Java Development Kit v9 or above is required to work with Android SDKs. Download from here:`);
-      Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
-
-      Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
-
-      return false;
-    }
   }
 
   loadEnvFromDotEnv(): void {
@@ -323,41 +306,6 @@ export class AndroidSetup {
     fs.appendFileSync(envPath, `\nJAVA_HOME=${answers.javaHome}`);
 
     return answers.javaHome;
-  }
-
-  getSdkRootFromEnv(): string {
-    Logger.log('Checking the value of ANDROID_HOME environment variable...');
-
-    const androidHome = process.env.ANDROID_HOME;
-    const fromDotEnv = this.otherInfo.androidHomeInGlobalEnv ? '' : ' (taken from .env)';
-
-    if (androidHome) {
-      const androidHomeFinal = untildify(androidHome);
-
-      const androidHomeAbsolute = path.resolve(this.rootDir, androidHomeFinal);
-      if (androidHomeFinal !== androidHomeAbsolute) {
-        Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
-        Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
-
-        return androidHomeAbsolute;
-      }
-
-      Logger.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
-
-      return androidHomeFinal;
-    }
-
-    if (androidHome === undefined) {
-      Logger.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!\n`
-      );
-    } else {
-      Logger.log(
-        `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome}'${fromDotEnv} which is NOT a valid path!\n`
-      );
-    }
-
-    return '';
   }
 
   async getSdkRootFromUser(): Promise<string> {

@@ -1,15 +1,18 @@
 import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
+import {execSync} from 'child_process';
 import cliProgress from 'cli-progress';
 import download from 'download';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import untildify from 'untildify';
 import which from 'which';
 
 import {symbols} from '../../../utils';
 import {ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
+import Logger from '../../../logger';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -152,3 +155,57 @@ export const downloadFirefoxAndroid = async (version: string) => {
 
   return await downloadWithProgressBar(apkDownloadUrl, tempdir);
 };
+
+export const getSdkRootFromEnv = (cwd: string, androidHomeInGlobalEnv: boolean): string => {
+  Logger.log('Checking the value of ANDROID_HOME environment variable...');
+
+  const androidHome = process.env.ANDROID_HOME;
+  const fromDotEnv = androidHomeInGlobalEnv ? '' : ' (taken from .env)';
+
+  if (androidHome) {
+    const androidHomeFinal = untildify(androidHome);
+
+    const androidHomeAbsolute = path.resolve(cwd, androidHomeFinal);
+    if (androidHomeFinal !== androidHomeAbsolute) {
+      Logger.log(`  ${colors.yellow('!')} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv} which is NOT an absolute path.`);
+      Logger.log(`  ${colors.green(symbols().ok)} Considering ANDROID_HOME to be '${androidHomeAbsolute}'\n`);
+
+      return androidHomeAbsolute;
+    }
+
+    Logger.log(`  ${colors.green(symbols().ok)} ANDROID_HOME is set to '${androidHomeFinal}'${fromDotEnv}\n`);
+
+    return androidHomeFinal;
+  }
+
+  if (androidHome === undefined) {
+    Logger.log(
+      `  ${colors.red(symbols().fail)} ANDROID_HOME environment variable is NOT set!\n`
+    );
+  } else {
+    Logger.log(
+      `  ${colors.red(symbols().fail)} ANDROID_HOME is set to '${androidHome}'${fromDotEnv} which is NOT a valid path!\n`
+    );
+  }
+
+  return '';
+};
+
+export const checkJavaInstallation = (cwd: string): boolean => {
+  try {
+    execSync('java -version', {
+      stdio: 'pipe',
+      cwd: cwd
+    });
+
+    return true;
+  } catch {
+    Logger.log(`${colors.red('Error:')} Java Development Kit v9 or above is required to work with Android SDKs. Download from here:`);
+    Logger.log(colors.cyan('  https://www.oracle.com/java/technologies/downloads/'), '\n');
+
+    Logger.log(`Make sure Java is installed by running ${colors.green('java -version')} command and then re-run this tool.\n`);
+
+    return false;
+  }
+};
+
