@@ -32,6 +32,7 @@ export class AndroidSubcommand {
 
       const help = getSubcommandHelp();
       Logger.log(help);
+      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}`);
 
       return false;
     }
