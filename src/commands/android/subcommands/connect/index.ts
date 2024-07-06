@@ -1,12 +1,12 @@
 import {connectWirelessAdb} from './wireless';
 import {Options, Platform} from '../../interfaces';
-import {showConnectedDevices} from './list';
+import {showConnectedDevices} from '../common';
 
 export async function connect(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   if (options.wireless) {
+    await showConnectedDevices(options);
+
     return await connectWirelessAdb(sdkRoot, platform);
-  } else if (options.list) {
-    return await showConnectedDevices();
   }
 
   return false;
