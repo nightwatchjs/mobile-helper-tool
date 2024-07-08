@@ -15,14 +15,16 @@ export interface Options {
   [key: string]: string | string[] | boolean;
 }
 
-export interface AvailableSubcommands {
-  [key: string]: {
+export interface Subcommand {
+  description: string;
+  options: {
+    name: string;
     description: string;
-    options: {
-      name: string;
-      description: string;
-    }[];
-  }
+  }[];
+}
+
+export interface AvailableSubcommands {
+  [key: string]: Subcommand;
 }
 
 export type Platform = 'windows' | 'linux' | 'mac';
