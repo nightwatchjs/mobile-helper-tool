@@ -1,14 +1,14 @@
 import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
-import {launchAVD} from '../../adb';
 import Logger from '../../../../logger';
 import {symbols} from '../../../../utils';
-import {Platform} from '../../interfaces';
-import {execBinarySync} from '../../utils/sdk';
+import {launchAVD} from '../../adb';
+import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
+import {execBinarySync} from '../../utils/sdk';
 
-export async function connectAvd(sdkRoot: string, platform: Platform): Promise<boolean> {
+export async function connectAVD(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (avdmanagerLocation === '') {
@@ -30,18 +30,25 @@ export async function connectAvd(sdkRoot: string, platform: Platform): Promise<b
 
     const availableAVDsList = availableAVDs.split('\n').filter(avd => avd !== '');
 
-    const avdAnswer = await inquirer.prompt({
-      type: 'list',
-      name: 'avdName',
-      message: 'Select the AVD to connect:',
-      choices: availableAVDsList
-    });
-    const avdName = avdAnswer.avdName;
+    if (options.avd && !availableAVDsList.includes(options.avd as string)) {
+      Logger.log(colors.yellow('Provided AVD not found!\n'));
+      options.avd = '';
+    }
+
+    if (!options.avd) {
+      const avdAnswer = await inquirer.prompt({
+        type: 'list',
+        name: 'avdName',
+        message: 'Select the AVD to connect:',
+        choices: availableAVDsList
+      });
+      options.avd = avdAnswer.avdName;
+    }
 
     Logger.log();
-    Logger.log(`Launching ${avdName}...`);
+    Logger.log(`Launching ${options.avd}...`);
 
-    const connectionStatus = await launchAVD(sdkRoot, platform, avdName);
+    const connectionStatus = await launchAVD(sdkRoot, platform, options.avd as string);
 
     if (!connectionStatus) {
       return false;
@@ -55,4 +62,3 @@ export async function connectAvd(sdkRoot: string, platform: Platform): Promise<b
     return false;
   }
 }
-
