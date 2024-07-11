@@ -1,7 +1,7 @@
 import colors from 'ansi-colors';
 import minimist from 'minimist';
 
-import {AndroidSetup} from './commands/android';
+import {AndroidSetup} from './commands/android/androidSetup';
 import {AndroidSubcommand} from './commands/android/subcommands';
 import {AVAILABLE_COMMANDS} from './constants';
 import {IosSetup} from './commands/ios';
