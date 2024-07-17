@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This guide will demonstrate how to manage Android Virtual Devices (AVDs) using the avdmanager tool, which is a part of the Android SDK. This includes creating, deleting, and listing AVDs.
+This guide will demonstrate how to create Android Virtual Devices (AVDs) using the `avdmanager` tool, which is a part of the Android SDK command line tools.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ The `avdmanager` binary will be present in the `cmdline-tools/latest/bin` sub-di
 
 ### Adding `avdmanager` location to `PATH`
 
-Add the path of `cmdline-tools/latest/bin` directory to your `PATH` environment variable.
+Add the path of `cmdline-tools/latest/bin/` directory to your `PATH` environment variable.
 
 **Linux/Mac**:
 
@@ -89,7 +89,14 @@ avdmanager create avd -n <avd_name> -k <sdk_id> [-d <device_name>] [-c {<path>|<
 
 - **-k <sdk_id>**
 
-    This option specifies the system image to use for the AVD. The `sdk_id` should be in the format `"system-images;android-<API_level>;<image_type>;<architecture>"`. For example, `"system-images;android-30;default;x86"` specifies an Android 30 (Android 11) system image for the x86 architecture.
+    This option specifies the system image to use for the AVD. The `sdk_id` should be in the format
+    ```bash
+    system-images;android-<API_level>;<image_type>;<architecture>
+    ```
+    For example, the below system image representation specifies an Android 30 (Android 11) system image for the x86 architecture.
+    ```bash
+    system-images;android-30;default;x86 
+    ```
 
 - **-d <device_name> (Optional)**
 
@@ -142,7 +149,7 @@ avdmanager move avd -n <name> [-p <path>] [-r <new_name>]
 **4. List targets, device definitions, or AVDs**
 
 ```bash
-# show a list of available targets, device definitions or AVDs
+# Show a list of available targets, device definitions or AVDs
 list [target|device|avd] [-c]
 ```
 
