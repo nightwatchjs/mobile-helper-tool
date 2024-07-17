@@ -39,7 +39,7 @@ describe('test showHelp', function() {
       grey: colorFn
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
     androidSetup.showOptionsHelp(['random']);
 
@@ -68,7 +68,7 @@ describe('test showHelp', function() {
       grey: colorFn
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
     androidSetup.showOptionsHelp([]);
 
@@ -124,7 +124,7 @@ describe('test getJavaHomeFromUser', function() {
 
     mockery.registerMock('./adb', {});
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     const javaHome = await androidSetup.getJavaHomeFromUser();
 
@@ -175,7 +175,7 @@ describe('test getJavaHomeFromUser', function() {
 
     mockery.registerMock('./adb', {});
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     const javaHome = await androidSetup.getJavaHomeFromUser();
 
@@ -228,7 +228,7 @@ describe('test getSdkRootFromUser', function() {
 
     mockery.registerMock('./adb', {});
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.androidHomeInGlobalEnv = true;
     const sdkRoot = await androidSetup.getSdkRootFromUser();
@@ -264,7 +264,7 @@ describe('test getSdkRootFromUser', function() {
 
     mockery.registerMock('./adb', {});
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.androidHomeInGlobalEnv = true;
     const sdkRoot = await androidSetup.getSdkRootFromUser();
@@ -304,7 +304,7 @@ describe('test getSdkRootFromUser', function() {
 
     mockery.registerMock('./adb', {});
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.androidHomeInGlobalEnv = false;
     const sdkRoot = await androidSetup.getSdkRootFromUser();
@@ -323,7 +323,7 @@ describe('test getSdkRootFromUser', function() {
 
 describe('test getConfigFromOptions', function() {
   test('with different arguments', () => {
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let configs = androidSetup.getConfigFromOptions({mode: 'emulator,real', browsers: 'chrome,firefox,something'});
@@ -388,7 +388,7 @@ describe('test getSetupConfigs', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let configs = await androidSetup.getSetupConfigs({mode: 'emulator,real', browsers: 'chrome,firefox,something'});
@@ -423,7 +423,7 @@ describe('test checkBinariesPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let missingBinaries = androidSetup.checkBinariesPresent(['adb', 'emulator', 'avdmanager']);
@@ -488,7 +488,7 @@ describe('test checkBinariesWorking', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let missingBinaries = androidSetup.checkBinariesWorking(['adb', 'emulator', 'avdmanager', 'sdkmanager']);
@@ -520,7 +520,7 @@ describe('test verifyAvdPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let avdPresent = androidSetup.verifyAvdPresent();
@@ -540,7 +540,7 @@ describe('test verifyAvdPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let avdPresent = androidSetup.verifyAvdPresent();
@@ -560,7 +560,7 @@ describe('test verifyAvdPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let avdPresent = androidSetup.verifyAvdPresent();
@@ -583,7 +583,7 @@ describe('test verifyAvdPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let avdPresent = androidSetup.verifyAvdPresent();
@@ -606,7 +606,7 @@ describe('test verifyAvdPresent', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     let avdPresent = androidSetup.verifyAvdPresent();
@@ -654,7 +654,7 @@ describe('test verifyAdbRunning', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
     androidSetup.verifyAdbRunning();
 
@@ -695,7 +695,7 @@ describe('test verifyAdbRunning', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
     androidSetup.verifyAdbRunning();
 
@@ -736,7 +736,7 @@ describe('test verifyAdbRunning', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
     androidSetup.verifyAdbRunning();
 
@@ -799,7 +799,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForPresent = [];
@@ -888,7 +888,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForPresent = [];
@@ -980,7 +980,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForPresent = [];
@@ -1071,7 +1071,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForPresent = [];
@@ -1165,7 +1165,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForPresent = [];
@@ -1259,7 +1259,7 @@ describe('test verifySetup', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForPresent = [];
@@ -1383,7 +1383,7 @@ describe('test setupAndroid', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
@@ -1484,7 +1484,7 @@ describe('test setupAndroid', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
@@ -1589,7 +1589,7 @@ describe('test setupAndroid', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForWorking = [];
@@ -1692,7 +1692,7 @@ describe('test setupAndroid', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup();
 
     const binariesCheckedForWorking = [];
@@ -1796,7 +1796,7 @@ describe('test setupAndroid', function() {
       }
     });
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({appium: true});
 
     const binariesCheckedForWorking = [];
