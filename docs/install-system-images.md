@@ -2,13 +2,13 @@
 
 ## Introduction
 
-This guide will demonstrate how to manage system images and other packages using the `sdkmanager` tool, which is a part of the Android SDK. This includes installing, uninstalling, updating, and listing available packages.
+This guide will demonstrate how to install, uninstall and update system images and other packages using the `sdkmanager` tool, which is a part of the Android SDK command line tools.
 
 ## Prerequisites
 
 - Setup Android SDK using [mobile-helper-tool](https://github.com/nightwatchjs/mobile-helper-tool): `npx @nightwatch/mobile-helper android`.
 
-### Android SDK command line tools
+### Check if `sdkmanager` is available and working
 
 `sdkmanager` is a part of the Android SDK command-line tools package. You can ensure that `sdkmanager` is working by running `sdkmanager --version`.
 
@@ -22,7 +22,7 @@ The `sdkmanager` binary will be present in the `cmdline-tools/latest/bin` sub-di
 
 ### Adding `sdkmanager` location to `PATH`
 
-Add the path of `cmdline-tools/latest/bin` directory to your `PATH` environment variable.
+Add the path of `cmdline-tools/latest/bin/` directory to your `PATH` environment variable.
 
 **Linux/Mac**:
 
@@ -60,7 +60,6 @@ A system image in the context of Android development is a file that represents t
 
 ```bash
 # The general representation of system image
-
 system-images;android-<API_LEVEL>;<IMAGE_TYPE>;<ARCHITECTURE>
 ```
 
@@ -90,7 +89,7 @@ system-images;android-<API_LEVEL>;<IMAGE_TYPE>;<ARCHITECTURE>
 **Example Representations**
 
 ```bash
-#Android 10 default system image for ARMv7-A architecture
+# Android 10 default system image for ARMv7-A architecture
 system-images;android-29;default;armeabi-v7a
 
 # Android 11 system image with Google APIs for x86 architecture
