@@ -38,6 +38,10 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       {
         name: 'wireless',
         description: 'Connect a real device wirelessly'
+      },
+      {
+        name: 'emulator',
+        description: 'Launch an Emulator Device'
       }
     ]
   }
