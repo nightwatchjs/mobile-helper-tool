@@ -3,6 +3,7 @@ import ADB from 'appium-adb';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
+import {symbols} from '../../../../utils';
 import {killEmulatorWithoutWait} from '../../adb';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
@@ -12,6 +13,14 @@ import {showConnectedRealDevices, showRunningAVDs} from '../common';
 export async function disconnect(options: Options, sdkRoot: string, platform: Platform) {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
+    if (adbLocation === '') {
+      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
+      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
+      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+
+      return false;
+    }
+
     const adb = await ADB.createADB({allowOfflineDevices: true});
     const devices = await adb.getConnectedDevices();
 
@@ -23,42 +32,42 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
 
     const devicesList = devices.map((device) => device.udid);
 
-    // Here, options.s represent the device id to disconnect.
+    // Here, options.deviceId represent the device id to disconnect.
     // If the provided device id is not found then prompt the user to select the device.
-    if (options.s && typeof options.s === 'string') {
-      if (!devicesList.includes(options.s)) {
+    if (options.deviceId && typeof options.deviceId === 'string') {
+      if (!devicesList.includes(options.deviceId)) {
         Logger.log(`${colors.yellow('Device with the provided ID was not found.')}\n`);
-        options.s = '';
+        options.deviceId = '';
       }
-    } else if (options.s === true) {
-      // If the --s flag is present without a value then assign it an empty string
+    } else if (options.deviceId === true) {
+      // If the --deviceId flag is present without a value then assign it an empty string
       // to follow the default flow.
-      options.s = '';
+      options.deviceId = '';
     }
 
     await showConnectedRealDevices();
     await showRunningAVDs();
 
-    if (!options.s) {
+    if (!options.deviceId) {
       const deviceAnswer = await inquirer.prompt({
         type: 'list',
         name: 'device',
         message: 'Select the device to disconnect:',
         choices: devicesList
       });
-      options.s = deviceAnswer.device;
+      options.deviceId = deviceAnswer.device;
 
       Logger.log();
     }
 
-    if ((options.s as string).includes('emulator')) {
-      killEmulatorWithoutWait(sdkRoot, platform, options.s as string);
+    if ((options.deviceId as string).includes('emulator')) {
+      killEmulatorWithoutWait(sdkRoot, platform, options.deviceId as string);
       Logger.log(colors.green('Successfully shut down the AVD.'));
 
       return true;
     }
 
-    const disconnectionStatus = execBinarySync(adbLocation, 'adb', platform, `disconnect ${options.s}`);
+    const disconnectionStatus = execBinarySync(adbLocation, 'adb', platform, `disconnect ${options.deviceId}`);
     if (disconnectionStatus?.includes('disconnected')) {
       Logger.log(colors.green('Successfully disconnected the device.'));
 
