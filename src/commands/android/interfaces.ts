@@ -15,11 +15,19 @@ export interface Options {
   [key: string]: string | string[] | boolean;
 }
 
+export interface ValuedOptions {
+  name: string,
+  alias: string[],
+  description: string,
+}
+
 export interface Subcommand {
   description: string;
+  valuedOptions?: ValuedOptions[];
   options: {
     name: string;
     description: string;
+    valuedOptions: ValuedOptions[];
   }[];
 }
 
