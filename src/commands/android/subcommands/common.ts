@@ -1,13 +1,26 @@
 import colors from 'ansi-colors';
-import ADB from 'appium-adb';
 
 import Logger from '../../../logger';
+import ADB from '../utils/appium-adb';
+
+const deviceStateWithColor = (state: string) => {
+  switch (state) {
+    case 'device':
+      return colors.green(state) + colors.gray(' (online)');
+    case 'offline':
+      return colors.red(state);
+    default:
+      return colors.gray(state);
+  }
+};
 
 export async function showConnectedRealDevices() {
   try {
     const adb = await ADB.createADB({allowOfflineDevices: true});
     const connectedDevices = await adb.getConnectedDevices();
-    const connectedRealDevices = connectedDevices.filter((device) => !device.udid.includes('emulator'));
+    const connectedRealDevices = connectedDevices.filter((device) => {
+      return !device.udid.includes('emulator') && !device.udid.includes('_adb-tls-connect');
+    });
 
     if (connectedRealDevices.length === 0) {
       return true;
@@ -15,39 +28,39 @@ export async function showConnectedRealDevices() {
 
     Logger.log(colors.bold('Connected Real Devices:'));
 
-    connectedRealDevices.forEach((device) => {
-      Logger.log(`  ${device.udid} - ${device.state}`);
+    connectedRealDevices.forEach((device, index) => {
+      Logger.log(`  ${index+1}. udid/deviceId: ${colors.green(device.udid)} / state: ${deviceStateWithColor(device.state)}`);
     });
     Logger.log();
 
     return true;
   } catch (error) {
-    Logger.log(colors.red('Error occured while showing connected real devices.'));
+    Logger.log(colors.red('Error occurred while showing connected real devices.'));
     console.error(error);
 
     return false;
   }
 }
 
-export async function showRunningAVDs() {
+export async function showConnectedEmulators() {
   try {
     const adb = await ADB.createADB({allowOfflineDevices: true});
-    const connectedAVDs = await adb.getConnectedEmulators();
+    const connectedEmulators = await adb.getConnectedEmulators();
 
-    if (connectedAVDs.length === 0) {
+    if (connectedEmulators.length === 0) {
       return true;
     }
 
-    Logger.log(colors.bold('Running AVDs:'));
+    Logger.log(colors.bold('Connected Emulators:'));
 
-    connectedAVDs.forEach((avd) => {
-      Logger.log(`  ${avd.udid} - ${avd.state}`);
+    connectedEmulators.forEach((emu, index) => {
+      Logger.log(`  ${index+1}. udid/deviceId: ${colors.green(emu.udid)} / state: ${deviceStateWithColor(emu.state)}`);
     });
     Logger.log();
 
     return true;
   } catch (error) {
-    Logger.log(colors.red('Error occured while showing running AVDs.'));
+    Logger.log(colors.red('Error occurred while showing connected emulators.'));
     console.error(error);
 
     return false;
