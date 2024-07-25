@@ -4,11 +4,10 @@ import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {symbols} from '../../../../utils';
-import {killEmulatorWithoutWait} from '../../adb';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
-import {showConnectedRealDevices, showRunningAVDs} from '../common';
+import {showConnectedRealDevices, showConnectedEmulators} from '../common';
 
 export async function disconnect(options: Options, sdkRoot: string, platform: Platform) {
   try {
@@ -30,12 +29,12 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
       return true;
     }
 
-    const devicesList = devices.map((device) => device.udid);
+    const deviceIdsList = devices.map((device) => device.udid);
 
     // Here, options.deviceId represent the device id to disconnect.
     // If the provided device id is not found then prompt the user to select the device.
     if (options.deviceId && typeof options.deviceId === 'string') {
-      if (!devicesList.includes(options.deviceId)) {
+      if (!deviceIdsList.includes(options.deviceId)) {
         Logger.log(`${colors.yellow('Device with the provided ID was not found.')}\n`);
         options.deviceId = '';
       }
@@ -46,23 +45,61 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
     }
 
     await showConnectedRealDevices();
-    await showRunningAVDs();
+    await showConnectedEmulators();
 
     if (!options.deviceId) {
       const deviceAnswer = await inquirer.prompt({
         type: 'list',
         name: 'device',
         message: 'Select the device to disconnect:',
-        choices: devicesList
+        choices: [...deviceIdsList, 'Disconnect all']
       });
       options.deviceId = deviceAnswer.device;
 
       Logger.log();
     }
 
-    if ((options.deviceId as string).includes('emulator')) {
-      killEmulatorWithoutWait(sdkRoot, platform, options.deviceId as string);
-      Logger.log(colors.green('Successfully shut down the AVD.'));
+    if ((options.deviceId as string).includes('emulator') || options.deviceId === 'Disconnect all') {
+      if (options.deviceId === 'Disconnect all') {
+        // kill adb server to disconnect all wirelessly connected real devices
+        adb.killServer();
+        const realDevices = deviceIdsList.filter(deviceId => !deviceId.includes('emulator'));
+        if (realDevices.length) {
+          Logger.log(colors.green('Successfully disconnected all real devices.\n'));
+        }
+      }
+
+      const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
+      if (avdmanagerLocation === '') {
+        Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('avdmanager')} binary not found.\n`);
+        Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
+        Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+
+        return false;
+      }
+      const stdout = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
+      const installedAvds = stdout?.split('\n').filter((avd) => avd !== '');
+
+      installedAvds?.forEach(avdName => {
+        adb.getRunningAVDWithRetry(avdName, 1000).then(runningAvd => {
+          if (runningAvd) {
+            if (options.deviceId !== 'Disconnect all' && runningAvd.udid !== options.deviceId) {
+              // If user has selected Disconnect all option then shut down all running avds.
+              // If not, then we will return until we encounter the selected avd.
+              return;
+            }
+            adb.killEmulator(avdName).then(avdShutDown => {
+              if (avdShutDown) {
+                Logger.log(`${colors.green('Successfully shut down: ')} ${runningAvd.udid}`);
+              } else {
+                Logger.log(`${colors.red('Failed shut down:')} ${runningAvd.udid}`);
+              }
+            });
+          }
+        }).catch(err => {
+          options.err = err;
+        });
+      });
 
       return true;
     }
