@@ -19,6 +19,7 @@ export interface ValuedOptions {
   name: string,
   alias: string[],
   description: string,
+  value: string,
 }
 
 export interface Subcommand {
@@ -27,7 +28,7 @@ export interface Subcommand {
   options: {
     name: string;
     description: string;
-    valuedOptions: ValuedOptions[];
+    valuedOptions?: ValuedOptions[];
   }[];
 }
 
