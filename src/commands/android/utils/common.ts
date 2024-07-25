@@ -9,10 +9,13 @@ import path from 'path';
 import untildify from 'untildify';
 import which from 'which';
 
-import {symbols} from '../../../utils';
-import {ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS} from '../constants';
-import {Platform, SdkBinary} from '../interfaces';
 import Logger from '../../../logger';
+import {symbols} from '../../../utils';
+import {
+  ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS,
+  DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS
+} from '../constants';
+import {Platform, SdkBinary, Subcommand} from '../interfaces';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -216,8 +219,6 @@ export const getSubcommandHelp = (): string => {
   output += '  The following subcommands are used for different operations on Android SDK:\n\n';
   output += `${colors.yellow('Subcommands and Subcommand-Options:')}\n`;
 
-  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
-
   Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
     const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
     const subcmdOptions = subcmd.options?.map(option => `[--${option.name}]`).join(' ') || '';
@@ -225,15 +226,25 @@ export const getSubcommandHelp = (): string => {
     output += `  ${colors.cyan(subcommand)} ${subcmdOptions}\n`;
     output += `  ${colors.gray(subcmd.description)}\n`;
 
-    if (subcmd.options && subcmd.options.length > 0) {
-      const optionLongest = longest(subcmd.options.map(option => `--${option.name}`));
-      subcmd.options.forEach(option => {
-        const optionStr = `--${option.name}`;
-        const optionPadding = new Array(Math.max(optionLongest - optionStr.length + 3, 0)).join('.');
-        output += `    ${optionStr} ${colors.grey(optionPadding)} ${colors.gray(option.description)}\n`;
-      });
-    }
+    output += getSubcommandOptionsHelp(subcmd);
   });
 
   return output;
 };
+
+export const getSubcommandOptionsHelp = (subcmd: Subcommand) => {
+  let output = '';
+  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
+
+  if (subcmd.options && subcmd.options.length > 0) {
+    const optionLongest = longest(subcmd.options.map(option => `--${option.name}`));
+    subcmd.options.forEach(option => {
+      const optionStr = `--${option.name}`;
+      const optionPadding = new Array(Math.max(optionLongest - optionStr.length + 3, 0)).join('.');
+      output += `    ${optionStr} ${colors.grey(optionPadding)} ${colors.gray(option.description)}\n`;
+    });
+  }
+
+  return output;
+};
+
