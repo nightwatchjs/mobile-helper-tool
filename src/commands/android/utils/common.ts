@@ -298,7 +298,7 @@ const generateValuedFlagsString = (valuedOptions: ValuedOptions[] | undefined) =
 
   let valuedFlagsStr = '';
   valuedOptions.forEach(valOption => {
-    valuedFlagsStr += `[--${valOption.name} ${valOption.value}] `;
+    valuedFlagsStr += `[--${valOption.name} <${valOption.name}>] `;
   });
 
   return valuedFlagsStr;
