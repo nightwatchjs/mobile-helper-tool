@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 import {AvailableOptions, AvailableSubcommands, SdkBinary} from './interfaces';
 
@@ -40,6 +40,10 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         description: 'Connect a real device wirelessly'
       }
     ]
+  },
+  disconnect: {
+    description: 'Disconnect a real device or emulator',
+    options: []
   }
 };
 
