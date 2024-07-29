@@ -2,7 +2,7 @@ import colors from 'ansi-colors';
 
 import Logger from '../../../logger';
 import {AVAILABLE_SUBCOMMANDS} from '../constants';
-import {Options} from '../interfaces';
+import {Options, verifyOptionsResult} from '../interfaces';
 import {getSubcommandOptionsHelp} from '../utils/common';
 
 export function showHelp(subcommand: string) {
@@ -15,60 +15,71 @@ export function showHelp(subcommand: string) {
   Logger.log(subcmdOptionsHelp);
 }
 
-export function verifyOptions(subcommand: string, options: Options): boolean {
+export function verifyOptions(subcommand: string, options: Options): false | verifyOptionsResult {
   const optionsPassed = Object.keys(options).filter(option => options[option] !== false);
   const availableOptions = AVAILABLE_SUBCOMMANDS[subcommand].options;
 
   const availableOptionsNames = availableOptions.map(option => option.name);
 
-  // Divide the optionsPassed array in two arrays: mainOptionsPassed and valuedOptionsPassed.
+  // Divide the optionsPassed array in two arrays: mainOptionsPassed and optionFlagsPassed.
   // mainOptionsPassed contains the main option that is available for the subcommand.
-  // valuedOptionsPassed contains the options with string values corresponding to the main option.
+  // optionFlagsPassed contains the options with string or boolean values corresponding to the main option.
 
   const mainOptionsPassed = optionsPassed.filter(option => availableOptionsNames.includes(option));
-  const valuedOptionsPassed = optionsPassed.filter(option => !availableOptionsNames.includes(option));
+  const optionFlagsPassed = optionsPassed.filter(option => !availableOptionsNames.includes(option));
 
   if (mainOptionsPassed.length > 1) {
     // A subcommand can only have one main option.
-    Logger.log(`${colors.red('Too many options passed:')} ${mainOptionsPassed.join(', ')}`);
+    Logger.log(`${colors.red(`Too many options passed for subcommand ${subcommand}:`)} ${mainOptionsPassed.join(', ')}`);
     showHelp(subcommand);
 
     return false;
-  } else if (mainOptionsPassed.length === 0) {
+  } else if (mainOptionsPassed.length === 0 && optionFlagsPassed.length) {
     // If the main option is not present, then any other options present are invalid.
-    Logger.log(`${colors.red('Unknown option(s) passed:')} ${valuedOptionsPassed.join(', ')}`);
+    Logger.log(`${colors.red(`Unknown option(s) passed for subcommand ${subcommand}:`)} ${optionFlagsPassed.join(', ')}`);
     showHelp(subcommand);
 
     return false;
+  } else if (mainOptionsPassed.length === 0 && optionFlagsPassed.length === 0) {
+    // If no options are passed, then we simply return and continue with the default subcommand flow.
+    return {
+      mainOption: '',
+      flags: []
+    };
   }
 
   const mainOption = mainOptionsPassed[0];
-  const availableValuedOptions = availableOptions.find(option => option.name === mainOption)?.valuedOptions;
+  const availableOptionFlags = availableOptions.find(option => option.name === mainOption)?.flags;
 
-  if (availableValuedOptions?.length) {
-    // If the main option has valued options, then check if the passed valued options are valid.
-    const valuedOptionsNames = availableValuedOptions.map(option => option.name);
-    const valuedOptionsAliases: string[] = [];
+  if (availableOptionFlags?.length) {
+    // If the main option has flags, then check if the passed flags are valid.
+    const flagsNames = availableOptionFlags.map(flag => flag.name);
+    const flagsAliases: string[] = [];
 
-    availableValuedOptions.forEach(option => valuedOptionsAliases.push(...option.alias));
-    valuedOptionsNames.push(...valuedOptionsAliases);
+    availableOptionFlags.forEach(option => flagsAliases.push(...option.alias));
+    flagsNames.push(...flagsAliases);
 
-    const unknownValuedOptions = valuedOptionsPassed.filter(option => !valuedOptionsNames.includes(option));
+    const unknownFlags = optionFlagsPassed.filter(option => !flagsNames.includes(option));
 
-    if (unknownValuedOptions.length) {
-      Logger.log(`${colors.red('Unknown option(s) passed:')} ${unknownValuedOptions.join(', ')}`);
+    if (unknownFlags.length) {
+      Logger.log(`${colors.red(`Unknown flag(s) passed for ${mainOption} option:`)} ${unknownFlags.join(', ')}`);
+      Logger.log(`(Allowed flags: ${(flagsNames.join(', '))})\n`);
       showHelp(subcommand);
 
       return false;
     }
-  } else if (!availableValuedOptions?.length && valuedOptionsPassed.length) {
-    // If the main option does not have valued options, then all the other options present are invalid.
-    Logger.log(`${colors.red('Unknown option(s) passed:')} ${valuedOptionsPassed.join(', ')}`);
+  } else if (!availableOptionFlags?.length && optionFlagsPassed.length) {
+    // If the main option does not have flags, then all the other options present are invalid.
+    Logger.log(`${colors.red(`Unknown flag(s) passed for ${mainOption} option:`)} ${optionFlagsPassed.join(', ')}`);
+    Logger.log('(none expected)\n');
     showHelp(subcommand);
 
     return false;
   }
 
-  return true;
+  return {
+    mainOption: mainOption,
+    flags: optionFlagsPassed
+  };
 }
 

@@ -37,8 +37,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     options: [
       {
         name: 'wireless',
-        description: 'Connect a real device wirelessly',
-        valuedOptions: []
+        description: 'Connect a real device wirelessly'
       }
     ]
   }
