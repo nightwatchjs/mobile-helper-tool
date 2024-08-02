@@ -2,11 +2,12 @@ import colors from 'ansi-colors';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
+import Logger from '../../../logger';
+import {getPlatformName} from '../../../utils';
+import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
 import {connect} from './connect';
-import {getPlatformName} from '../../../utils';
-import Logger from '../../../logger';
-import {Options, Platform} from '../interfaces';
+import {uninstall} from './uninstall';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -56,6 +57,8 @@ export class AndroidSubcommand {
   async executeSubcommand(): Promise<boolean> {
     if (this.subcommand === 'connect') {
       return await connect(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'uninstall') {
+      return await uninstall(this.options, this.sdkRoot, this.platform);
     }
 
     return false;
