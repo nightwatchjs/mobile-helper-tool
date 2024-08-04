@@ -2,11 +2,12 @@ import colors from 'ansi-colors';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
-import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
+import {checkJavaInstallation, getSdkRootFromEnv, getSubcommandHelp} from '../utils/common';
 import {connect} from './connect';
 import {getPlatformName} from '../../../utils';
 import Logger from '../../../logger';
 import {Options, Platform} from '../interfaces';
+import {AVAILABLE_SUBCOMMANDS} from '../constants';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -26,6 +27,16 @@ export class AndroidSubcommand {
   }
 
   async run(): Promise<boolean> {
+    if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand)) {
+      Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
+
+      const help = getSubcommandHelp();
+      Logger.log(help);
+      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}`);
+
+      return false;
+    }
+
     this.loadEnvFromDotEnv();
 
     const javaInstalled = checkJavaInstallation(this.rootDir);

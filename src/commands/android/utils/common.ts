@@ -212,7 +212,7 @@ export const checkJavaInstallation = (cwd: string): boolean => {
 export const getSubcommandHelp = (): string => {
   let output = '';
 
-  output += `Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [subcmd] [subcmd-options]')}\n`;
+  output += `Usage: ${colors.cyan('npx @nightwatch/mobile-helper android subcmd [subcmd-options]')}\n`;
   output += '  The following subcommands are used for different operations on Android SDK:\n\n';
   output += `${colors.yellow('Subcommands and Subcommand-Options:')}\n`;
 
