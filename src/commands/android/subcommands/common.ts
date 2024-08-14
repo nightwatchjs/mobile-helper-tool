@@ -1,6 +1,8 @@
 import colors from 'ansi-colors';
 
 import Logger from '../../../logger';
+import {symbols} from '../../../utils';
+import {SdkBinary} from '../interfaces';
 import ADB from '../utils/appium-adb';
 
 const deviceStateWithColor = (state: string) => {
@@ -66,3 +68,10 @@ export async function showConnectedEmulators() {
     return false;
   }
 }
+
+export function showMissingBinaryHelp(binaryName: SdkBinary) {
+  Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not found.\n`);
+  Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
+  Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+}
+

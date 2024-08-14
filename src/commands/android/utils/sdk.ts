@@ -192,7 +192,7 @@ export const execBinaryAsync = (
   binaryName: string,
   platform: Platform,
   args: string
-): Promise<string | null> => {
+): Promise<string> => {
   return new Promise((resolve, reject) => {
     let cmd: string;
     if (binaryLocation === 'PATH') {

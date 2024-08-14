@@ -1,23 +1,20 @@
 import colors from 'ansi-colors';
-import ADB from 'appium-adb';
 import {existsSync} from 'fs';
 import inquirer from 'inquirer';
-import {homedir} from 'os';
 import path from 'path';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Options, Platform} from '../../interfaces';
+import ADB from '../../utils/appium-adb';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function installApp(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
     if (!adbLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('adb');
 
       return false;
     }
@@ -30,17 +27,13 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
       Logger.log(`Use ${colors.cyan('npx @nightwatch/mobile-helper android connect')} to connect to a device.\n`);
 
       return true;
-    } else if (devices.length === 1) {
-      // if only one device is connected, then set that device's id to options.deviceId
-      options.deviceId = devices[0].udid;
     }
 
-    if (options.deviceId && devices.length > 1) {
-      // If device id is passed and there are multiple devices connected then
-      // check if the id is valid. If not then prompt user to select a device.
+    if (options.deviceId) {
+      // If device id is passed then check if the id is valid. If not then prompt user to select a device.
       const deviceConnected = devices.find(device => device.udid === options.deviceId);
       if (!deviceConnected) {
-        Logger.log(`${colors.yellow('Invalid device Id passed!')}\n`);
+        Logger.log(colors.yellow(`No connected device found with deviceId '${options.deviceId}'.\n`));
 
         options.deviceId = '';
       }
@@ -66,11 +59,11 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
         message: 'Enter the path to the APK file:'
       });
       options.path = apkPathAnswer.apkPath;
-      Logger.log();
     }
 
+    Logger.log();
 
-    options.path = path.resolve(homedir(), options.path as string);
+    options.path = path.resolve(process.cwd(), options.path as string);
     if (!existsSync(options.path)) {
       Logger.log(`${colors.red('APK file not found!')} Please provide a valid path to the APK file.\n`);
 
@@ -102,6 +95,7 @@ const handleError = (consoleOutput: any) => {
   let errorMessage = consoleOutput;
   if (consoleOutput.includes('INSTALL_FAILED_ALREADY_EXISTS')) {
     errorMessage = 'APK with the same package name already exists on the device.\n';
+    errorMessage += 'Please uninstall the app first to install again.\n';
   } else if (consoleOutput.includes('INSTALL_FAILED_OLDER_SDK')) {
     errorMessage = 'Target installation location (AVD/Real device) has older SDK version than the minimum requirement of the APK.\n';
   }
