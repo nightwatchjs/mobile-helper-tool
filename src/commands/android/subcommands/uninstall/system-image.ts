@@ -2,19 +2,16 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Platform} from '../../interfaces';
 import {execBinarySync} from '../../utils/sdk';
 import {getBinaryLocation} from '../../utils/common';
-import {getInstalledSystemImages} from '../common';
+import {getInstalledSystemImages, showMissingBinaryHelp} from '../common';
 
 export async function deleteSystemImage(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const sdkmanagerLocation = getBinaryLocation(sdkRoot, platform, 'sdkmanager', true);
     if (!sdkmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('sdkmanager');
 
       return false;
     }
@@ -65,18 +62,23 @@ async function deleteObsoleteAVDs(sdkRoot: string, platform: Platform) {
   const obsoleteAVDs = stdout.split('The following Android Virtual Devices could not be loaded:')[1];
   if (obsoleteAVDs) {
     const obsoleteAVDNames: string[] = [];
+
     obsoleteAVDs.split('\n').forEach(line => {
       if (line.includes('Name: ')) {
         const avdName = line.split(':')[1].trim();
         obsoleteAVDNames.push(avdName);
       }
     });
+
     Logger.log(colors.yellow('The following AVDs can no longer be used due to missing system image:\n'));
+
     obsoleteAVDNames.forEach((avdName, idx) => {
       Logger.log(`${idx+1}. ${avdName}`);
     });
+
     Logger.log();
     Logger.log('Deleting obsolete AVDs...\n');
+
     obsoleteAVDNames.forEach(avdName => {
       const deleteStatus = execBinarySync(avdmanagerLocation, 'avdmanager', platform, `delete avd --name ${avdName}`);
       if (deleteStatus?.includes('deleted')) {
