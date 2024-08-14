@@ -1,20 +1,18 @@
 import colors from 'ansi-colors';
-import ADB from 'appium-adb';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Options, Platform} from '../../interfaces';
+import ADB from '../../utils/appium-adb';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync, execBinarySync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function uninstallApp(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
     if (!adbLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('adb');
 
       return false;
     }
@@ -26,17 +24,13 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
       Logger.log(`${colors.red('No device found running.')} Please connect the device to uninstall the APK.\n`);
 
       return true;
-    } else if (devices.length === 1) {
-    // if only one device is connected, then set that device's id to options.deviceId
-      options.deviceId = devices[0].udid;
     }
 
-    if (options.deviceId && devices.length > 1) {
-    // If device id is passed and there are multiple devices connected then
-    // check if the id is valid. If not then prompt user to select a device.
-      const device = devices.find(device => device.udid === options.deviceId);
-      if (!device) {
-        Logger.log(`${colors.yellow('Invalid device Id!')} Please select a valid running device.\n`);
+    if (options.deviceId) {
+    // If device id is passed then check if the id is valid. If not then prompt user to select a device.
+      const deviceConnected = devices.find(device => device.udid === options.deviceId);
+      if (!deviceConnected) {
+        Logger.log(colors.yellow(`No connected device found with deviceId '${options.deviceId}'.\n`));
 
         options.deviceId = '';
       }
