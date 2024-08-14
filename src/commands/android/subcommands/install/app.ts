@@ -4,17 +4,19 @@ import inquirer from 'inquirer';
 import path from 'path';
 
 import Logger from '../../../../logger';
+import {symbols} from '../../../../utils';
 import {Options, Platform} from '../../interfaces';
 import ADB from '../../utils/appium-adb';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync} from '../../utils/sdk';
-import {showMissingBinaryHelp} from '../common';
+import {showMissingRequirementsHelp} from '../common';
 
 export async function installApp(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
     if (!adbLocation) {
-      showMissingBinaryHelp('adb');
+      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
+      showMissingRequirementsHelp();
 
       return false;
     }
@@ -65,7 +67,7 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
 
     options.path = path.resolve(process.cwd(), options.path as string);
     if (!existsSync(options.path)) {
-      Logger.log(`${colors.red('APK file not found!')} Please provide a valid path to the APK file.\n`);
+      Logger.log(`${colors.red('No APK file found at: ' + options.path)}\nPlease provide a valid path to the APK file.\n`);
 
       return false;
     }
@@ -90,16 +92,16 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
 }
 
 const handleError = (consoleOutput: any) => {
-  Logger.log(colors.red('Error occured while installing APK'));
+  Logger.log(colors.red('\nError while installing APK:'));
 
   let errorMessage = consoleOutput;
   if (consoleOutput.includes('INSTALL_FAILED_ALREADY_EXISTS')) {
     errorMessage = 'APK with the same package name already exists on the device.\n';
-    errorMessage += 'Please uninstall the app first to install again.\n';
+    errorMessage += colors.reset(`\nPlease uninstall the app first from the device and then install again.\n`);
+    errorMessage += colors.reset(`To uninstall, use: ${colors.cyan('npx @nightwatch/mobile-helper android uninstall --app')}\n`);
   } else if (consoleOutput.includes('INSTALL_FAILED_OLDER_SDK')) {
     errorMessage = 'Target installation location (AVD/Real device) has older SDK version than the minimum requirement of the APK.\n';
   }
 
-  Logger.log(errorMessage);
+  Logger.log(colors.red(errorMessage));
 };
-
