@@ -2,19 +2,17 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {APILevelNames} from '../../constants';
 import {AvailableSystemImages, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function installSystemImage(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const sdkmanagerLocation = getBinaryLocation(sdkRoot, platform, 'sdkmanager', true);
     if (!sdkmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('sdkmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('sdkmanager');
 
       return false;
     }
