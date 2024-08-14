@@ -2,11 +2,10 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync, execBinarySync} from '../../utils/sdk';
-import {getInstalledSystemImages} from '../common';
+import {getInstalledSystemImages, showMissingBinaryHelp} from '../common';
 
 type DeviceType = 'Nexus' | 'Pixel' | 'Wear OS' | 'Android TV' | 'Desktop' | 'Others';
 
@@ -23,18 +22,14 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
   try {
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (!avdmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('avdmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('avdmanager');
 
       return false;
     }
 
     const sdkmanagerLocation = getBinaryLocation(sdkRoot, platform, 'sdkmanager', true);
     if (!sdkmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('sdkmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('sdkmanager');
 
       return false;
     }
