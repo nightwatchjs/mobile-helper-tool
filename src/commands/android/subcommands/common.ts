@@ -66,3 +66,8 @@ export async function showConnectedEmulators() {
     return false;
   }
 }
+
+export function showMissingRequirementsHelp() {
+  Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
+  Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+}
