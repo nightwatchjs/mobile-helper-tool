@@ -2,18 +2,16 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync, execBinaryAsync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function deleteAvd(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (!avdmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('avdmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('avdmanager');
 
       return false;
     }
