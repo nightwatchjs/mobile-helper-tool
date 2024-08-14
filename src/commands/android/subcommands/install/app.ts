@@ -4,19 +4,17 @@ import inquirer from 'inquirer';
 import path from 'path';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Options, Platform} from '../../interfaces';
 import ADB from '../../utils/appium-adb';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync} from '../../utils/sdk';
-import {showMissingRequirementsHelp} from '../common';
+import {showMissingBinaryHelp} from '../common';
 
 export async function installApp(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
     if (!adbLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
-      showMissingRequirementsHelp();
+      showMissingBinaryHelp('adb');
 
       return false;
     }
