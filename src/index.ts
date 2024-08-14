@@ -4,7 +4,7 @@ import minimist from 'minimist';
 import {AndroidSetup} from './commands/android/androidSetup';
 import {AVAILABLE_COMMANDS} from './constants';
 import {IosSetup} from './commands/ios';
-import {runAndroidCommand} from './commands/android';
+import {handleAndroidCommand} from './commands/android';
 
 export const run = () => {
   try {
@@ -26,12 +26,12 @@ export const run = () => {
       }
       showHelp();
     } else if (args[0] === 'android') {
-      runAndroidCommand(args, options);
+      handleAndroidCommand(args, options);
     } else if (args[0] === 'ios') {
       if (args.length > 1) {
         // ios command does not accept subcommands.
-        console.log(`${colors.red(`Too many arguments passed for ios command: ${args.slice(1).join(', ')}`)}\n`);
-        console.log(`Run ${colors.cyan('npx @nightwatch/mobile-helper ios --help')} to know more about the ios command.`);
+        console.log(`${colors.red(`Too many arguments passed for 'ios' command: ${args.slice(1).join(', ')}`)}\n`);
+        console.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper ios --help')} to get help for 'ios' command.`);
       } else {
         const iOSSetup = new IosSetup(options);
         iOSSetup.run();

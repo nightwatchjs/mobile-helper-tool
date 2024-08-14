@@ -5,7 +5,7 @@ import {Options} from './interfaces';
 import {AndroidSubcommand} from './subcommands';
 import {getSubcommandHelp} from './utils/common';
 
-export function runAndroidCommand(args: string[], options: Options): void {
+export function handleAndroidCommand(args: string[], options: Options): void {
   if (args.length === 1) {
     const androidSetup = new AndroidSetup(options);
     androidSetup.run();
@@ -15,9 +15,9 @@ export function runAndroidCommand(args: string[], options: Options): void {
     androidSubcommand.run();
   } else {
     // android command doesn't accept more than one argument.
-    console.log(`${colors.red(`Too many arguments passed for android command: ${args.slice(1).join(', ')}`)}\n`);
-    const help = getSubcommandHelp();
-    console.log(help);
+    console.log(`${colors.red(`Too many arguments passed for 'android' command: ${args.slice(1).join(', ')}`)}\n`);
+
+    console.log(getSubcommandHelp());
   }
 }
 
