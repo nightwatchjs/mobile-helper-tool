@@ -2,18 +2,16 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function update(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const sdkmanagerLocation = getBinaryLocation(sdkRoot, platform, 'sdkmanager', true);
     if (!sdkmanagerLocation) {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('sdkmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('sdkmanager');
 
       return false;
     }
@@ -31,6 +29,7 @@ export async function update(sdkRoot: string, platform: Platform): Promise<boole
     }
 
     const availableUpdates = stdout.split('Available Updates:')[1].trimEnd();
+
     Logger.log(colors.bold('Available Updates:'));
     Logger.log(availableUpdates);
 
@@ -61,6 +60,7 @@ export async function update(sdkRoot: string, platform: Platform): Promise<boole
         return false;
       }
       Logger.log(colors.green('All packages updated successfully!'));
+
     } else {
       Logger.log();
       Logger.log(`Updating ${colors.cyan(packageName)}... \n`);
