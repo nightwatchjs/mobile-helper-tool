@@ -76,7 +76,7 @@ export async function getInstalledSystemImages(sdkmanagerLocation: string, platf
 }> {
   const stdout = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, '--list');
   if (!stdout) {
-    Logger.log(`${colors.red('Failed to fetch system images!')} Please try again.`);
+    Logger.log(`\n${colors.red('Failed to fetch system images!')} Please try again.`);
 
     return {
       result: false,
