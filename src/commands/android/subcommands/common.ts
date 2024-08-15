@@ -69,12 +69,18 @@ export async function showConnectedEmulators() {
   }
 }
 
-export async function getInstalledSystemImages(sdkmanagerLocation: string, platform: Platform): Promise<string[]> {
+export async function getInstalledSystemImages(sdkmanagerLocation: string, platform: Platform): Promise<{
+  result: boolean,
+  systemImages: string[]
+}> {
   const stdout = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, '--list');
   if (!stdout) {
     Logger.log(`${colors.red('Failed to fetch system images!')} Please try again.`);
 
-    return [];
+    return {
+      result: false,
+      systemImages: []
+    };
   }
   const lines = stdout.split('\n');
   const installedImages: string[] = [];
@@ -88,6 +94,9 @@ export async function getInstalledSystemImages(sdkmanagerLocation: string, platf
     }
   }
 
-  return installedImages;
+  return {
+    result: true,
+    systemImages: installedImages
+  };
 }
 

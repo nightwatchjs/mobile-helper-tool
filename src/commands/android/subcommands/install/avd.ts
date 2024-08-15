@@ -41,8 +41,13 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
     });
     const avdName = avdNameAnswer.avdName;
 
-    const installedSystemImages: string[] = await getInstalledSystemImages(sdkmanagerLocation, platform);
-    if (!installedSystemImages.length) {
+    const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
+    if (!installedSystemImages.result) {
+      return false;
+    } else if (!installedSystemImages.systemImages.length) {
+      Logger.log(colors.red('No system image is installed!'));
+      Logger.log(`Run ${colors.cyan('npx @nightwatch/mobile-helper android install --system-image')} to install system images.`);
+
       return false;
     }
 
@@ -50,7 +55,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       type: 'list',
       name: 'systemImage',
       message: 'Select the system image to use for AVD:',
-      choices: installedSystemImages
+      choices: installedSystemImages.systemImages
     });
     const systemImage = systemImageAnswer.systemImage;
 
