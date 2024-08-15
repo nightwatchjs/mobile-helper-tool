@@ -1,7 +1,8 @@
 import colors from 'ansi-colors';
 
 import Logger from '../../../logger';
-import {Platform} from '../interfaces';
+import {symbols} from '../../../utils';
+import {Platform, SdkBinary} from '../interfaces';
 import ADB from '../utils/appium-adb';
 import {execBinarySync} from '../utils/sdk';
 
@@ -100,3 +101,8 @@ export async function getInstalledSystemImages(sdkmanagerLocation: string, platf
   };
 }
 
+export function showMissingBinaryHelp(binaryName: SdkBinary) {
+  Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan(binaryName)} binary not found.\n`);
+  Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
+  Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+}
