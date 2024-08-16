@@ -39,7 +39,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       name: 'avdName',
       message: 'Enter a name for the AVD:'
     });
-    const avdName = avdNameAnswer.avdName;
+    const avdName = avdNameAnswer.avdName ? avdNameAnswer.avdName : 'my_avd';
 
     const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
     if (!installedSystemImages.result) {
@@ -60,76 +60,86 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
     });
     const systemImage = systemImageAnswer.systemImage;
 
-    const deviceTypes: DeviceType[] = ['Nexus', 'Pixel', 'Wear OS', 'Android TV', 'Desktop', 'Others'];
     const deviceTypeAnswer = await inquirer.prompt({
       type: 'list',
       name: 'deviceType',
       message: 'Select the device type for AVD:',
-      choices: deviceTypes
+      choices: Object.keys(deviceTypesToGrepCommand)
     });
     const deviceType = deviceTypeAnswer.deviceType;
 
     let cmd = `list devices -c | grep ${deviceTypesToGrepCommand[deviceType as DeviceType]}`;
-    const availableDevices = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
+    const availableDeviceProfiles = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
 
-    if (!availableDevices) {
-      Logger.log(`${colors.red('No devices found!')} Please try again.`);
+    if (!availableDeviceProfiles) {
+      Logger.log(`${colors.red(`No potential device profile found for device type ${deviceType}.`)} Please try again.`);
 
       return false;
     }
-    const availableDevicesList = availableDevices.split('\n').filter(device => device !== '');
+    const availableDeviceProfilesList = availableDeviceProfiles.split('\n').filter(deviceProfile => deviceProfile !== '');
     const deviceAnswer = await inquirer.prompt({
       type: 'list',
-      name: 'device',
+      name: 'deviceProfile',
       message: 'Select the device profile for AVD:',
-      choices: availableDevicesList
+      choices: availableDeviceProfilesList
     });
-    const device = deviceAnswer.device;
+    const deviceProfile = deviceAnswer.deviceProfile;
 
     Logger.log();
-    Logger.log('Creating AVD...');
+    Logger.log('Creating AVD...\n');
 
-    cmd = `create avd -n '${avdName}' -k '${systemImage}' -d '${device}'`;
+    cmd = `create avd -n '${avdName}' -k '${systemImage}' -d '${deviceProfile}'`;
+    let createAVDStatus = false;
+
     try {
-      const output = await execBinaryAsync(avdmanagerLocation, 'avdmanager', platform, cmd);
-      if (output?.includes('100% Fetch remote repository')) {
-        Logger.log();
-        Logger.log(`${colors.green('AVD created successfully!')}`);
-
-        return true;
-      }
+      createAVDStatus = await createAVD(cmd, avdmanagerLocation, platform, avdName);
     } catch (err) {
-      if (typeof err === 'string') {
-        if (err.includes('already exists')) {
-          // AVD with the same name already exists. Ask user if they want to overwrite it.
-          Logger.log();
-          Logger.log(`${colors.yellow('AVD with the same name already exists!')}\n`);
-          const overwriteAnswer = await inquirer.prompt({
-            type: 'confirm',
-            name: 'overwrite',
-            message: 'Overwrite the existing AVD?'
-          });
-          Logger.log();
+      if (typeof err === 'string' && err.includes('already exists')) {
+        // AVD with the same name already exists. Ask user if they want to overwrite it.
+        Logger.log(`${colors.yellow('AVD with the same name already exists!')}\n`);
+        const overwriteAnswer = await inquirer.prompt({
+          type: 'confirm',
+          name: 'overwrite',
+          message: 'Overwrite the existing AVD?'
+        });
+        Logger.log();
 
-          if (overwriteAnswer.overwrite) {
-            cmd += ' --force';
-            const output = await execBinaryAsync(avdmanagerLocation, 'avdmanager', platform, cmd);
-            if (output?.includes('100% Fetch remote repository')) {
-              Logger.log(`${colors.green('AVD created successfully!')}`);
-
-              return true;
-            }
-          }
+        if (overwriteAnswer.overwrite) {
+          cmd += ' --force';
+          createAVDStatus = await createAVD(cmd, avdmanagerLocation, platform, avdName);
         }
+      } else {
+        handleError(err);
       }
     }
 
-    return true;
-  } catch (error) {
-    Logger.log(colors.red('Error occured while creating AVD.'));
-    console.error(error);
+    return createAVDStatus;
+  } catch (err) {
+    handleError(err);
 
     return false;
   }
+}
+
+async function createAVD(cmd: string, avdmanagerLocation: string, platform: Platform, avdName: string): Promise<boolean> {
+  const output = await execBinaryAsync(avdmanagerLocation, 'avdmanager', platform, cmd);
+
+  if (output?.includes('100% Fetch remote repository')) {
+    Logger.log(colors.green('AVD created successfully!\n'));
+    Logger.log(`Run ${colors.cyan(`npx @nightwatch/mobile-helper android connect --emulator --avd ${avdName}`)} to launch the AVD.\n`);
+
+    return true;
+  }
+
+  Logger.log(colors.red('Something went wrong while creating AVD!'));
+  Logger.log(`Please run ${colors.cyan(`npx @nightwatch/mobile-helper android connect --emulator --avd ${avdName}`)} to verify AVD creation.`);
+  Logger.log('If AVD does not launch, please try creating the AVD again.\n');
+
+  return false;
+}
+
+function handleError(err: any) {
+  Logger.log(colors.red('Error occured while creating AVD!\n'));
+  console.error(err);
 }
 
