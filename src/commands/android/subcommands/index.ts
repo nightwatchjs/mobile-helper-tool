@@ -8,6 +8,7 @@ import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
 import {showHelp} from './common';
 import {connect} from './connect';
+import {install} from './install';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -62,6 +63,8 @@ export class AndroidSubcommand {
   async executeSubcommand(): Promise<boolean> {
     if (this.subcommand === 'connect') {
       return await connect(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'install') {
+      return await install(this.options, this.sdkRoot, this.platform);
     }
 
     return false;

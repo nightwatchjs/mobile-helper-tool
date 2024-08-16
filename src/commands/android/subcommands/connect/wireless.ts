@@ -1,11 +1,11 @@
-import inquirer from 'inquirer';
 import colors from 'ansi-colors';
+import inquirer from 'inquirer';
 
+import Logger from '../../../../logger';
+import {symbols} from '../../../../utils';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
-import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 
 export async function connectWirelessAdb(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -52,6 +52,16 @@ export async function connectWirelessAdb(sdkRoot: string, platform: Platform): P
     });
     const port = portAnswer.port;
 
+    // Run the connect command using ip address and port number provided. If the device is previously
+    // paired, then connection will succeed and we don't require to pair again. If not, then prompt
+    // user for pairing details. Pair the device and then proceed to connect.
+    let connectionStatus = execBinarySync(adbLocation, 'adb', platform, `connect ${deviceIP}:${port}`);
+    if (connectionStatus?.includes('connected')) {
+      Logger.log('\n' + colors.green('Connected successfully!\n'));
+
+      return true;
+    }
+
     Logger.log();
     Logger.log('  5. Now, find your device\'s pairing code and pairing port number by going to:');
     Logger.log(`     ${colors.cyan('Wireless debugging > Pair device with pairing code')}`);
@@ -85,7 +95,7 @@ export async function connectWirelessAdb(sdkRoot: string, platform: Platform): P
       return false;
     }
 
-    const connectionStatus = execBinarySync(adbLocation, 'adb', platform, `connect ${deviceIP}:${port}`);
+    connectionStatus = execBinarySync(adbLocation, 'adb', platform, `connect ${deviceIP}:${port}`);
     if (!connectionStatus?.includes('connected')) {
       if (connectionStatus) {
         Logger.log(colors.red(`  ${symbols().fail} Failed to connect: ${connectionStatus}`), 'Please try again.\n');
@@ -106,3 +116,4 @@ export async function connectWirelessAdb(sdkRoot: string, platform: Platform): P
     return false;
   }
 }
+

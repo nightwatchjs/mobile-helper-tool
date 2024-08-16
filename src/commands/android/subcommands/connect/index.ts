@@ -1,5 +1,5 @@
 import {Options, Platform} from '../../interfaces';
-import {verifyOptions} from '../common';
+import {verifyOptions, showConnectedRealDevices} from '../common';
 import {connectWirelessAdb} from './wireless';
 
 export async function connect(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
@@ -9,6 +9,8 @@ export async function connect(options: Options, sdkRoot: string, platform: Platf
   }
 
   if (options.wireless) {
+    await showConnectedRealDevices();
+
     return await connectWirelessAdb(sdkRoot, platform);
   }
 
