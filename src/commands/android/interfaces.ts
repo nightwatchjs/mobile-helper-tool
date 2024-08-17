@@ -15,32 +15,6 @@ export interface Options {
   [key: string]: string | string[] | boolean;
 }
 
-export interface Flag {
-  name: string,
-  alias: string[],
-  description: string,
-  value: string,
-}
-
-export interface Subcommand {
-  description: string;
-  flags?: Flag[];
-  options: {
-    name: string;
-    description: string;
-    flags?: Flag[];
-  }[];
-}
-
-export interface AvailableSubcommands {
-  [key: string]: Subcommand;
-}
-
-export interface verifyOptionsResult {
-  mainOption: string;
-  flags: string[];
-}
-
 export type Platform = 'windows' | 'linux' | 'mac';
 
 export interface OtherInfo {

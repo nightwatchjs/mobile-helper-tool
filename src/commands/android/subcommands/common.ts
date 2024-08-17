@@ -3,9 +3,9 @@ import colors from 'ansi-colors';
 import Logger from '../../../logger';
 import {symbols} from '../../../utils';
 import {AVAILABLE_SUBCOMMANDS} from '../constants';
-import {Options, SdkBinary, verifyOptionsResult} from '../interfaces';
+import {Options, SdkBinary} from '../interfaces';
 import ADB from '../utils/appium-adb';
-import {getSubcommandOptionsHelp} from '../utils/common';
+import {CliConfig, Subcommand, SubcommandOptionsVerificationResult} from './interfaces';
 
 const deviceStateWithColor = (state: string) => {
   switch (state) {
@@ -80,77 +80,134 @@ export function showMissingBinaryHelp(binaryName: SdkBinary) {
 export function showHelp(subcommand: string) {
   const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
 
-  Logger.log(`Usage: ${colors.cyan(`npx @nightwatch/mobile-helper android ${subcommand} [options]`)}\n`);
-  Logger.log(colors.yellow('Options:'));
+  const subcmdFlagUsage = subcmd.flags?.length ? ' [flag]' : '';
+  Logger.log(`Usage: ${colors.cyan(`npx @nightwatch/mobile-helper android ${subcommand}${subcmdFlagUsage} [configs]`)}\n`);
 
-  const subcmdOptionsHelp = getSubcommandOptionsHelp(subcmd);
-  Logger.log(subcmdOptionsHelp);
+  const subcmdFlagsHelp = getSubcommandFlagsHelp(subcmd);
+  if (subcmdFlagsHelp) {
+    Logger.log(colors.yellow('Available flags:'));
+    Logger.log(subcmdFlagsHelp);
+  }
 }
 
-export function verifyOptions(subcommand: string, options: Options): false | verifyOptionsResult {
-  const optionsPassed = Object.keys(options).filter(option => options[option] !== false);
-  const availableOptions = AVAILABLE_SUBCOMMANDS[subcommand].options;
+export const getSubcommandFlagsHelp = (subcmd: Subcommand) => {
+  let output = '';
+  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
 
-  const availableOptionsNames = availableOptions.map(option => option.name);
-
-  // Divide the optionsPassed array in two arrays: mainOptionsPassed and optionFlagsPassed.
-  // mainOptionsPassed contains the main option that is available for the subcommand.
-  // optionFlagsPassed contains the options with string or boolean values corresponding to the main option.
-
-  const mainOptionsPassed = optionsPassed.filter(option => availableOptionsNames.includes(option));
-  const optionFlagsPassed = optionsPassed.filter(option => !availableOptionsNames.includes(option));
-
-  if (mainOptionsPassed.length > 1) {
-    // A subcommand can only have one main option.
-    Logger.log(`${colors.red(`Too many options passed for subcommand ${subcommand}:`)} ${mainOptionsPassed.join(', ')}`);
-    showHelp(subcommand);
-
-    return false;
-  } else if (mainOptionsPassed.length === 0 && optionFlagsPassed.length) {
-    // If the main option is not present, then any other options present are invalid.
-    Logger.log(`${colors.red(`Unknown option(s) passed for subcommand ${subcommand}:`)} ${optionFlagsPassed.join(', ')}`);
-    showHelp(subcommand);
-
-    return false;
-  } else if (mainOptionsPassed.length === 0 && optionFlagsPassed.length === 0) {
-    // If no options are passed, then we simply return and continue with the default subcommand flow.
-    return {
-      mainOption: '',
-      flags: []
-    };
+  if (subcmd.flags && subcmd.flags.length > 0) {
+    const optionLongest = longest(subcmd.flags.map(flag => `--${flag.name}`));
+    subcmd.flags.forEach(flag => {
+      const flagStr = `--${flag.name}`;
+      const optionPadding = new Array(Math.max(optionLongest - flagStr.length + 3, 0)).join('.');
+      output += `    ${flagStr} ${colors.grey(optionPadding)} ${colors.gray(flag.description)}\n`;
+    });
   }
 
-  const mainOption = mainOptionsPassed[0];
-  const availableOptionFlags = availableOptions.find(option => option.name === mainOption)?.flags;
+  return output;
+};
 
-  if (availableOptionFlags?.length) {
-    // If the main option has flags, then check if the passed flags are valid.
-    const flagsNames = availableOptionFlags.map(flag => flag.name);
-    const flagsAliases: string[] = [];
+export function verifyOptions(subcommand: string, options: Options): SubcommandOptionsVerificationResult | false {
+  const optionsPassed = Object.keys(options).filter(option => options[option] !== false);
 
-    availableOptionFlags.forEach(option => flagsAliases.push(...option.alias));
-    flagsNames.push(...flagsAliases);
+  const allowedFlags = AVAILABLE_SUBCOMMANDS[subcommand].flags;
+  const allowedFlagNames = allowedFlags.map(flag => flag.name);
 
-    const unknownFlags = optionFlagsPassed.filter(option => !flagsNames.includes(option));
+  // Divide the optionsPassed array in two arrays: flagsPassed and configsPassed.
+  // flagsPassed contains the flags that are available for the subcommand.
+  // configsPassed contains the config options with string or boolean values corresponding to the flag.
+  const flagsPassed = optionsPassed.filter(option => allowedFlagNames.includes(option));
+  const configsPassed = optionsPassed.filter(option => !allowedFlagNames.includes(option));
 
-    if (unknownFlags.length) {
-      Logger.log(`${colors.red(`Unknown flag(s) passed for ${mainOption} option:`)} ${unknownFlags.join(', ')}`);
-      Logger.log(`(Allowed flags: ${(flagsNames.join(', '))})\n`);
+  // CHECK THE VALIDITY OF FLAG(s) PASSED
+
+  if (flagsPassed.length > 1) {
+    // A subcommand can only take one flag at a time.
+    Logger.log(`${colors.red(`Too many flags passed for '${subcommand}' subcommand:`)} ${flagsPassed.join(', ')} ${colors.gray('(only one expected)')}`);
+    showHelp(subcommand);
+
+    return false;
+  }
+
+  if (allowedFlags.length && flagsPassed.length === 0) {
+    // If the subcommand expects a flag but it is not passed:
+    // - if instead some other options are passed, throw error (we don't know if the options passed are configs and for which flag).
+    // - if no other options are passed, then we can prompt them for the flag and related configs.
+    if (configsPassed.length > 0) {
+      Logger.log(`${colors.red(`Unknown flag(s) passed for '${subcommand}' subcommand:`)} ${configsPassed.join(', ')}`);
       showHelp(subcommand);
 
       return false;
     }
-  } else if (!availableOptionFlags?.length && optionFlagsPassed.length) {
-    // If the main option does not have flags, then all the other options present are invalid.
-    Logger.log(`${colors.red(`Unknown flag(s) passed for ${mainOption} option:`)} ${optionFlagsPassed.join(', ')}`);
-    Logger.log('(none expected)\n');
+
+    return {
+      subcommandFlag: '',
+      configs: []
+    };
+  }
+
+  // CHECK THE VALIDITY OF CONFIGS PASSED
+
+  const subcommandFlag = flagsPassed[0] || ''; // '' if no flag is allowed for the subcommand.
+
+  if (configsPassed.length === 0) {
+    // If no configs are passed, then we simply return and continue with the default subcommand flow.
+    return {
+      subcommandFlag,
+      configs: []
+    };
+  }
+
+  let allowedConfigs: CliConfig[] = [];
+  let configsFor = '';
+  if (!allowedFlags.length) {
+    allowedConfigs = AVAILABLE_SUBCOMMANDS[subcommand].cliConfigs || [];
+    configsFor = ` for '${subcommand}' subcommand`;
+  } else {
+    allowedConfigs = allowedFlags.find(flag => flag.name === subcommandFlag)?.cliConfigs || [];
+    configsFor = ` for '--${subcommandFlag}' flag`;
+  }
+
+  if (allowedConfigs.length) {
+    // Check if the passed configs are valid.
+    const configNames: string[] = allowedConfigs.map(config => config.name);
+
+    const configAliases: string[] = [];
+    allowedConfigs.forEach(config => configAliases.push(...config.alias));
+    configNames.push(...configAliases);
+
+    const unknownConfigs = configsPassed.filter(option => !configNames.includes(option));
+    if (unknownConfigs.length) {
+      Logger.log(`${colors.red(`Unknown config(s) passed${configsFor}:`)} ${unknownConfigs.join(', ')}`);
+      showHelp(subcommand);
+
+      return false;
+    }
+
+    // set main config in `options` if config aliases are passed.
+    const aliasToMainConfig: {[key: string]: string} = {};
+    allowedConfigs.forEach(config => {
+      config.alias.forEach(alias => {
+        aliasToMainConfig[alias] = config.name;
+      });
+    });
+
+    configsPassed.forEach((configName) => {
+      if (aliasToMainConfig[configName]) {
+        // `configName` is an alias
+        const mainConfig = aliasToMainConfig[configName];
+        options[mainConfig] = options[configName];
+      }
+    });
+  } else {
+    // if no configs are allowed for the flag but still some options are passed, then throw error.
+    Logger.log(`${colors.red(`Unknown config(s) passed${configsFor}:`)} ${configsPassed.join(', ')} ${colors.gray('(none expected)')}`);
     showHelp(subcommand);
 
     return false;
   }
 
   return {
-    mainOption: mainOption,
-    flags: optionFlagsPassed
+    subcommandFlag,
+    configs: configsPassed
   };
 }
