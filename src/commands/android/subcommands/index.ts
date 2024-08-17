@@ -6,7 +6,7 @@ import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
 import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
-import {showHelp} from './common';
+import {showHelp} from './help';
 import {connect} from './connect';
 import {install} from './install';
 

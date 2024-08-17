@@ -5,7 +5,8 @@ import {symbols} from '../../../utils';
 import {AVAILABLE_SUBCOMMANDS} from '../constants';
 import {Options, SdkBinary} from '../interfaces';
 import ADB from '../utils/appium-adb';
-import {CliConfig, Subcommand, SubcommandOptionsVerificationResult} from './interfaces';
+import {CliConfig, SubcommandOptionsVerificationResult} from './interfaces';
+import {showHelp} from './help';
 
 const deviceStateWithColor = (state: string) => {
   switch (state) {
@@ -76,35 +77,6 @@ export function showMissingBinaryHelp(binaryName: SdkBinary) {
   Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
   Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
 }
-
-export function showHelp(subcommand: string) {
-  const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
-
-  const subcmdFlagUsage = subcmd.flags?.length ? ' [flag]' : '';
-  Logger.log(`Usage: ${colors.cyan(`npx @nightwatch/mobile-helper android ${subcommand}${subcmdFlagUsage} [configs]`)}\n`);
-
-  const subcmdFlagsHelp = getSubcommandFlagsHelp(subcmd);
-  if (subcmdFlagsHelp) {
-    Logger.log(colors.yellow('Available flags:'));
-    Logger.log(subcmdFlagsHelp);
-  }
-}
-
-export const getSubcommandFlagsHelp = (subcmd: Subcommand) => {
-  let output = '';
-  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
-
-  if (subcmd.flags && subcmd.flags.length > 0) {
-    const optionLongest = longest(subcmd.flags.map(flag => `--${flag.name}`));
-    subcmd.flags.forEach(flag => {
-      const flagStr = `--${flag.name}`;
-      const optionPadding = new Array(Math.max(optionLongest - flagStr.length + 3, 0)).join('.');
-      output += `    ${flagStr} ${colors.grey(optionPadding)} ${colors.gray(flag.description)}\n`;
-    });
-  }
-
-  return output;
-};
 
 export function verifyOptions(subcommand: string, options: Options): SubcommandOptionsVerificationResult | false {
   const optionsPassed = Object.keys(options).filter(option => options[option] !== false);

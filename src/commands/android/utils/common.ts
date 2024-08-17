@@ -16,7 +16,7 @@ import {
   DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS
 } from '../constants';
 import {Platform, SdkBinary} from '../interfaces';
-import {getSubcommandFlagsHelp} from '../subcommands/common';
+import {getSubcommandFlagsHelp} from '../subcommands/help';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
