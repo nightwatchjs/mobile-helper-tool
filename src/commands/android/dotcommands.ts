@@ -1,5 +1,5 @@
 import colors from 'ansi-colors';
-import {spawn} from 'child_process';
+import {spawnSync} from 'child_process';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
@@ -34,6 +34,7 @@ export class AndroidDotCommand {
       Logger.log(colors.cyan('npx @nightwatch/mobile-helper <DOTCMD> [options|args]\n'));
 
       Logger.log(`Available Dot Commands: ${colors.magenta(ANDROID_DOTCOMMANDS.join(', '))}\n`);
+      Logger.log('Example command: npx @nightwatch/mobile-helper android.emulator @nightwatch-android-11\n');
 
       return false;
     }
@@ -55,25 +56,12 @@ export class AndroidDotCommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    return await this.executeDotCommand();
+    return this.executeDotCommand();
   }
 
   loadEnvFromDotEnv(): void {
     this.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
     dotenv.config({path: path.join(this.rootDir, '.env')});
-  }
-
-  async executeDotCommand(): Promise<boolean> {
-    try {
-      const cmd = this.buildCommand();
-      await this.runCommandStream(cmd);
-
-      return true;
-    } catch (err) {
-      console.error(err);
-
-      return false;
-    }
   }
 
   buildCommand(): string {
@@ -93,27 +81,17 @@ export class AndroidDotCommand {
     return cmd;
   }
 
-  async runCommandStream(cmd: string) {
-    return new Promise((resolve, reject) => {
-      const stream = spawn(cmd, this.args);
+  executeDotCommand(): boolean {
+    const cmd = this.buildCommand();
+    const result = spawnSync(cmd, this.args, {stdio: 'inherit'});
 
-      stream.stdout.on('data', (data) => {
-        process.stdout.write(data.toString());
-      });
+    if (result.error) {
+      console.error(result.error);
 
-      stream.stderr.on('data', (data) => {
-        process.stderr.write(data.toString());
-      });
+      return false;
+    }
 
-      stream.on('close', (code) => {
-        resolve(code);
-      });
-
-      stream.on('error', (err) => {
-        console.error(err);
-        reject(err);
-      });
-    });
+    return result.status === 0;
   }
 }
 
