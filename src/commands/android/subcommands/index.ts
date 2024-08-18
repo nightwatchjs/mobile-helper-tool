@@ -6,6 +6,7 @@ import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
 import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
+import {showHelp} from './help';
 import {connect} from './connect';
 import {install} from './install';
 
@@ -27,6 +28,11 @@ export class AndroidSubcommand {
   }
 
   async run(): Promise<boolean> {
+    if (this.options.help) {
+      showHelp(this.subcommand);
+
+      return true;
+    }
     this.loadEnvFromDotEnv();
 
     const javaInstalled = checkJavaInstallation(this.rootDir);
