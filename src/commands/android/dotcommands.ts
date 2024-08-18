@@ -7,7 +7,7 @@ import Logger from '../../logger';
 import {getPlatformName} from '../../utils';
 import {Platform, SdkBinary} from './interfaces';
 import {checkJavaInstallation, getBinaryLocation, getSdkRootFromEnv} from './utils/common';
-import {execBinarySync} from './utils/sdk';
+import {execBinaryAsync} from './utils/sdk';
 
 export class AndroidDotCommand {
   dotcmd: string;
@@ -17,9 +17,9 @@ export class AndroidDotCommand {
   platform: Platform;
   androidHomeInGlobalEnv: boolean;
 
-  constructor(dotcmd: string, cmdArgs: string[], rootDir = process.cwd()) {
+  constructor(dotcmd: string, argv: string[], rootDir = process.cwd()) {
     this.dotcmd = dotcmd;
-    this.command = cmdArgs.slice(1).join(' ');
+    this.command = this.buildCommand(argv);
     this.sdkRoot = '';
     this.rootDir = rootDir;
     this.platform = getPlatformName();
@@ -50,9 +50,13 @@ export class AndroidDotCommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    this.executeDotCommand();
+    return await this.executeDotCommand();
+  }
 
-    return false;
+  buildCommand(argv: string[]): string {
+    const cmdArgs = argv.slice(1);
+
+    return cmdArgs.map(arg => `"${arg}"`).join(' ');
   }
 
   loadEnvFromDotEnv(): void {
@@ -60,17 +64,20 @@ export class AndroidDotCommand {
     dotenv.config({path: path.join(this.rootDir, '.env')});
   }
 
-  executeDotCommand(): boolean {
-    const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
+  async executeDotCommand(): Promise<boolean> {
+    try {
+      const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
+      const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
+      const commandOutput = await execBinaryAsync(binaryLocation, binaryName, this.platform, this.command);
 
-    Logger.log(`Running: ${colors.cyan(binaryName)} ${colors.gray(this.command)}\n`);
+      console.log(commandOutput);
 
-    const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
-    const commandOutput = execBinarySync(binaryLocation, binaryName, this.platform, this.command);
+      return true;
+    } catch (err) {
+      console.error(err);
 
-    console.log(commandOutput);
-
-    return true;
+      return false;
+    }
   }
 }
 
