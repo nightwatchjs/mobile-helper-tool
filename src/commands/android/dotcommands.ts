@@ -1,4 +1,5 @@
 import colors from 'ansi-colors';
+import {spawn} from 'child_process';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
@@ -6,12 +7,11 @@ import {ANDROID_DOTCOMMANDS} from '../../constants';
 import Logger from '../../logger';
 import {getPlatformName} from '../../utils';
 import {Platform, SdkBinary} from './interfaces';
-import {checkJavaInstallation, getBinaryLocation, getSdkRootFromEnv} from './utils/common';
-import {execBinaryAsync} from './utils/sdk';
+import {checkJavaInstallation, getBinaryLocation, getBinaryNameForOS, getSdkRootFromEnv} from './utils/common';
 
 export class AndroidDotCommand {
   dotcmd: string;
-  command: string;
+  args: string[];
   sdkRoot: string;
   rootDir: string;
   platform: Platform;
@@ -19,7 +19,7 @@ export class AndroidDotCommand {
 
   constructor(dotcmd: string, argv: string[], rootDir = process.cwd()) {
     this.dotcmd = dotcmd;
-    this.command = this.buildCommand(argv);
+    this.args = argv.slice(1);
     this.sdkRoot = '';
     this.rootDir = rootDir;
     this.platform = getPlatformName();
@@ -29,6 +29,11 @@ export class AndroidDotCommand {
   async run(): Promise<boolean> {
     if (!ANDROID_DOTCOMMANDS.includes(this.dotcmd)) {
       Logger.log(colors.red(`Unknown dot command passed: ${this.dotcmd}\n`));
+
+      Logger.log('Run Android SDK command line tools using the following command:');
+      Logger.log(colors.cyan('npx @nightwatch/mobile-helper <DOTCMD> [options|args]\n'));
+
+      Logger.log(`Available Dot Commands: ${colors.magenta(ANDROID_DOTCOMMANDS.join(', '))}\n`);
 
       return false;
     }
@@ -53,12 +58,6 @@ export class AndroidDotCommand {
     return await this.executeDotCommand();
   }
 
-  buildCommand(argv: string[]): string {
-    const cmdArgs = argv.slice(1);
-
-    return cmdArgs.map(arg => `"${arg}"`).join(' ');
-  }
-
   loadEnvFromDotEnv(): void {
     this.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
     dotenv.config({path: path.join(this.rootDir, '.env')});
@@ -66,11 +65,8 @@ export class AndroidDotCommand {
 
   async executeDotCommand(): Promise<boolean> {
     try {
-      const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
-      const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
-      const commandOutput = await execBinaryAsync(binaryLocation, binaryName, this.platform, this.command);
-
-      console.log(commandOutput);
+      const cmd = this.buildCommand();
+      await this.runCommandStream(cmd);
 
       return true;
     } catch (err) {
@@ -78,6 +74,51 @@ export class AndroidDotCommand {
 
       return false;
     }
+  }
+
+  buildCommand(): string {
+    const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
+    const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
+
+    let cmd: string;
+    if (binaryLocation === 'PATH') {
+      const binaryFullName = getBinaryNameForOS(this.platform, binaryName);
+      cmd = `${binaryFullName}`;
+    } else {
+      const binaryFullName = path.basename(binaryLocation);
+      const binaryDirPath = path.dirname(binaryLocation);
+
+      if (this.platform === 'windows') {
+        cmd = path.join(binaryDirPath, binaryFullName);
+      } else {
+        cmd = path.join(binaryDirPath, binaryFullName);
+      }
+    }
+
+    return cmd;
+  }
+
+  async runCommandStream(cmd: string) {
+    return new Promise((resolve, reject) => {
+      const stream = spawn(cmd, this.args);
+
+      stream.stdout.on('data', (data) => {
+        process.stdout.write(data.toString());
+      });
+
+      stream.stderr.on('data', (data) => {
+        process.stderr.write(data.toString());
+      });
+
+      stream.on('close', (code) => {
+        resolve(code);
+      });
+
+      stream.on('error', (err) => {
+        console.error(err);
+        reject(err);
+      });
+    });
   }
 }
 
