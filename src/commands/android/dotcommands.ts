@@ -87,12 +87,7 @@ export class AndroidDotCommand {
     } else {
       const binaryFullName = path.basename(binaryLocation);
       const binaryDirPath = path.dirname(binaryLocation);
-
-      if (this.platform === 'windows') {
-        cmd = path.join(binaryDirPath, binaryFullName);
-      } else {
-        cmd = path.join(binaryDirPath, binaryFullName);
-      }
+      cmd = path.join(binaryDirPath, binaryFullName);
     }
 
     return cmd;
