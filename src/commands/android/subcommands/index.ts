@@ -28,8 +28,10 @@ export class AndroidSubcommand {
   }
 
   async run(): Promise<boolean> {
-    if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand)) {
-      Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
+    if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand) || this.options.help) {
+      if (!this.options.help) {
+        Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
+      }
 
       Logger.log(getSubcommandHelp());
       Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}\n`);
