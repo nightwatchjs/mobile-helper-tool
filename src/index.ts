@@ -25,8 +25,8 @@ export const run = () => {
         console.log(`${colors.red('No command passed.')}\n`);
       }
       showHelp();
-    } else if (args[0] === 'android') {
-      handleAndroidCommand(args, options);
+    } else if (args[0].split('.')[0] === 'android') {
+      handleAndroidCommand(args, options, argv);
     } else if (args[0] === 'ios') {
       if (args.length > 1) {
         // ios command does not accept subcommands.
