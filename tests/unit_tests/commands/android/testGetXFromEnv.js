@@ -45,7 +45,7 @@ describe('test loadEnvFromDotEnv', function() {
     const rootDir = path.join(__dirname, 'fixtures');
     fs.writeFileSync(path.join(rootDir, '.env'), '\nANDROID_HOME=path/to/random/sdk');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
 
@@ -62,7 +62,7 @@ describe('test loadEnvFromDotEnv', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.options.appium = true;
     androidSetup.loadEnvFromDotEnv();
@@ -90,7 +90,7 @@ describe('test loadEnvFromDotEnv', function() {
 
     fs.writeFileSync(path.join(rootDir, '.env'), '\nANDROID_HOME=path/to/android/sdk\nJAVA_HOME=path/to/java');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
 
@@ -156,7 +156,7 @@ describe('test isJavaHomeEnvSet', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.javaHomeInGlobalEnv = true;
     const result = androidSetup.isJavaHomeEnvSet();
@@ -217,7 +217,7 @@ describe('test isJavaHomeEnvSet', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.javaHomeInGlobalEnv = true;
     const result = androidSetup.isJavaHomeEnvSet();
@@ -274,7 +274,7 @@ describe('test isJavaHomeEnvSet', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.otherInfo.javaHomeInGlobalEnv = true;
     const result = androidSetup.isJavaHomeEnvSet();
@@ -325,7 +325,7 @@ describe('test isJavaHomeEnvSet', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const androidSetup = new AndroidSetup({}, rootDir);
     const result = androidSetup.isJavaHomeEnvSet();
 
@@ -385,7 +385,7 @@ describe('test getSdkRootFromEnv', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -441,7 +441,7 @@ describe('test getSdkRootFromEnv', function() {
     const androidHome = path.join('~', 'android_sdk_tilde');
     process.env.ANDROID_HOME = androidHome;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -499,7 +499,7 @@ describe('test getSdkRootFromEnv', function() {
     const androidHome = 'android_sdk_relative';
     process.env.ANDROID_HOME = androidHome;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -559,7 +559,7 @@ describe('test getSdkRootFromEnv', function() {
     const androidHome = '';
     process.env.ANDROID_HOME = androidHome;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -599,7 +599,7 @@ describe('test getSdkRootFromEnv', function() {
 
     const rootDir = path.join(__dirname, 'fixtures');
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -654,7 +654,7 @@ describe('test getSdkRootFromEnv', function() {
     // set ANDROID_HOME to undefined in process.env
     delete process.env.ANDROID_HOME;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -709,7 +709,7 @@ describe('test getSdkRootFromEnv', function() {
     // set ANDROID_HOME to undefined in process.env
     delete process.env.ANDROID_HOME;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
@@ -766,7 +766,7 @@ describe('test getSdkRootFromEnv', function() {
     // set ANDROID_HOME to undefined in process.env
     delete process.env.ANDROID_HOME;
 
-    const {AndroidSetup} = require('../../../../src/commands/android/index');
+    const {AndroidSetup} = require('../../../../src/commands/android/androidSetup');
     const {getSdkRootFromEnv} = require('../../../../src/commands/android/utils/common');
     const androidSetup = new AndroidSetup({}, rootDir);
     androidSetup.loadEnvFromDotEnv();
