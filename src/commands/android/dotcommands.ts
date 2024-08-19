@@ -33,21 +33,20 @@ export class AndroidDotCommand {
       Logger.log('Run Android SDK command line tools using the following command:');
       Logger.log(colors.cyan('npx @nightwatch/mobile-helper <DOTCMD> [options|args]\n'));
 
-      Logger.log(`Available Dot Commands: ${colors.magenta(ANDROID_DOTCOMMANDS.join(', '))}\n`);
-      Logger.log('Example command: npx @nightwatch/mobile-helper android.emulator @nightwatch-android-11\n');
+      Logger.log(`Available Dot Commands: ${colors.magenta(ANDROID_DOTCOMMANDS.join(', '))}`);
+      Logger.log(`(Example command: ${colors.gray('npx @nightwatch/mobile-helper android.emulator @nightwatch-android-11')})\n`);
 
       return false;
     }
 
     const javaInstalled = checkJavaInstallation(this.rootDir);
-
     if (!javaInstalled) {
       return false;
     }
 
     this.loadEnvFromDotEnv();
-    const sdkRootEnv = getSdkRootFromEnv(this.rootDir, this.androidHomeInGlobalEnv);
 
+    const sdkRootEnv = getSdkRootFromEnv(this.rootDir, this.androidHomeInGlobalEnv);
     if (!sdkRootEnv) {
       Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to fix this issue.`);
       Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if using the tool for testing.)\n`);
