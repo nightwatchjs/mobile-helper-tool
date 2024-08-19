@@ -3,7 +3,7 @@ import colors from 'ansi-colors';
 import {AndroidSetup} from './androidSetup';
 import {Options} from './interfaces';
 import {AndroidSubcommand} from './subcommands';
-import {getSubcommandHelp} from './utils/common';
+import {getSubcommandHelp} from './subcommands/help';
 
 export function handleAndroidCommand(args: string[], options: Options): void {
   if (args.length === 1) {

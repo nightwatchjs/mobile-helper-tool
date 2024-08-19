@@ -41,6 +41,29 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         description: 'Connect a real device wirelessly'
       }
     ]
+  },
+  install: {
+    description: 'Install system images for Android Virtual Device',
+    flags: [
+      {
+        name: 'app',
+        description: 'Install an APK on the device',
+        cliConfigs: [
+          {
+            name: 'path',
+            alias: ['p'],
+            description: 'Path to the APK file',
+            usageHelp: 'path_to_apk'
+          },
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to install the APK if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
+      }
+    ]
   }
 };
 

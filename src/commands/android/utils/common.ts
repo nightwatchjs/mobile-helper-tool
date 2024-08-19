@@ -12,12 +12,9 @@ import which from 'which';
 import Logger from '../../../logger';
 import {symbols} from '../../../utils';
 import {
-  ABI, AVAILABLE_OPTIONS, AVAILABLE_SUBCOMMANDS,
-  DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS
+  ABI, AVAILABLE_OPTIONS, DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS
 } from '../constants';
-import {Platform, SdkBinary, Subcommand, Flag} from '../interfaces';
 import {Platform, SdkBinary} from '../interfaces';
-import {getSubcommandFlagsHelp} from '../subcommands/help';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -212,114 +209,5 @@ export const checkJavaInstallation = (cwd: string): boolean => {
 
     return false;
   }
-};
-
-export const getSubcommandHelp = (): string => {
-  let output = '';
-
-  output += `Usage: ${colors.cyan('npx @nightwatch/mobile-helper android subcmd [subcmd-options]')}\n`;
-  output += '  The following subcommands are used for different operations on Android SDK:\n\n';
-  output += `${colors.yellow('Subcommands and Subcommand-Options:')}\n`;
-
-  Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
-    const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
-    const subcmdFlags = generateFlagsString(subcmd.flags);
-    const subcmdOptions = subcmd.flags?.map(flag => `[--${flag.name}]`).join(' ') || '';
-
-    // A subcommand will have main options to facilitate multiple workflows.
-    // If a subcommand has single workflow, then it won't have main options but might
-    // have flags with string values.
-
-    // Display the subcommand name along with main options or flags in the format:
-    // subcommand [--option1] [--option2] ...
-    // OR
-    // subcommand [--flag1 <flag1_value>] [--flag2 <flag2_value>] ...
-    output += `  ${colors.cyan(subcommand)} ${subcmdOptions} ${subcmdFlags}\n`;
-    output += `  ${colors.gray(subcmd.description)}\n`;
-
-    // Display list of flags for the subcommand along with description
-    if (subcmd.flags) {
-      // Generate a list of flags with their aliases in the format:
-      // --flag | -f1 | -f2 ...
-      const subcmdFlagsWithAlias = getFlagsWithAlias(subcmd.flags);
-
-      subcmd.flags.forEach((valOption, idx) => {
-        const optionPadding = generatePadding(subcmdFlagsWithAlias, subcmdFlagsWithAlias[idx].length);
-        output += `    ${subcmdFlagsWithAlias[idx]} ${colors.grey(optionPadding)} ${colors.gray(valOption.description)}\n`;
-      });
-    }
-
-    // Display the list of main options for the subcommand along with description
-    output += getSubcommandOptionsHelp(subcmd);
-    output += '\n';
-  });
-
-  return output;
-};
-
-export const getSubcommandOptionsHelp = (subcmd: Subcommand): string => {
-  let output = '';
-
-  if (subcmd.options && subcmd.options.length > 0) {
-    // Generate a list of options along with their flags in the format:
-    // --option [--flag1 <flag1_value>] [--flag2 <flag2_value>] ...
-    const optionsWithFlags = subcmd.options.map((option) => {
-      const flags = generateFlagsString(option.flags);
-
-      return option.name + ' ' + flags;
-    });
-
-    subcmd.options.forEach((option, idx) => {
-      const optionStr = `--${optionsWithFlags[idx]}`;
-      const optionPadding = generatePadding(optionsWithFlags, optionStr.length);
-
-      output += `    ${optionStr} ${colors.grey(optionPadding)} ${colors.gray(option.description)}\n`;
-
-      if (option.flags) {
-        // Generate a list of flags with their aliases in the format:
-        // --flag | -f1 | -f2 ...
-        const flagsWithAlias = getFlagsWithAlias(option.flags);
-
-        option.flags.forEach((valOption, idx) => {
-          const optionPadding = generatePadding(flagsWithAlias, flagsWithAlias[idx].length);
-          output += `        ${flagsWithAlias[idx]} ${colors.grey(optionPadding)} ${colors.gray(valOption.description)}\n`;
-        });
-      }
-    });
-  }
-
-  return output;
-};
-
-const generateFlagsString = (flags: Flag[] | undefined) => {
-  // Generate a string of flags in the format:
-  // [--flag1 <flag1_value>] [--flag2 <flag2_value>] ...
-  if (!flags) {
-    return '';
-  }
-
-  let flagsStr = '';
-  flags.forEach(valOption => {
-    flagsStr += `[--${valOption.name} <${valOption.name}>] `;
-  });
-
-  return flagsStr;
-};
-
-const generatePadding = (array: string[], length: number): string => {
-  const longest = (xs: string[]) => Math.max.apply(null, xs.map(x => x.length));
-  const padding = new Array(Math.max(longest(array) - length + 3, 0)).join('.');
-
-  return padding;
-};
-
-const getFlagsWithAlias = (flags: Flag[]): string[] => {
-  const flagsWithAlias = flags.map(valOption => {
-    const optionAlias = valOption.alias.map(alias => `-${alias}`).join(' |');
-
-    return `--${valOption.name}` + (optionAlias ? ` | ${optionAlias}` : '');
-  });
-
-  return flagsWithAlias;
 };
 
