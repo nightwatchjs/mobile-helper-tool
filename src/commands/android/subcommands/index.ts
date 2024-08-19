@@ -31,9 +31,8 @@ export class AndroidSubcommand {
     if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand)) {
       Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
 
-      const help = getSubcommandHelp();
-      Logger.log(help);
-      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}`);
+      Logger.log(getSubcommandHelp());
+      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}\n`);
 
       return false;
     }
