@@ -16,6 +16,8 @@ import {
   DEFAULT_CHROME_VERSIONS, DEFAULT_FIREFOX_VERSION, SDK_BINARY_LOCATIONS
 } from '../constants';
 import {Platform, SdkBinary, Subcommand, Flag} from '../interfaces';
+import {Platform, SdkBinary} from '../interfaces';
+import {getSubcommandFlagsHelp} from '../subcommands/help';
 
 export const getAllAvailableOptions = () => {
   const mainOptions = Object.keys(AVAILABLE_OPTIONS);
@@ -221,8 +223,8 @@ export const getSubcommandHelp = (): string => {
 
   Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
     const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
-    const subcmdOptions = subcmd.options?.map(option => `[--${option.name}]`).join(' ') || '';
     const subcmdFlags = generateFlagsString(subcmd.flags);
+    const subcmdOptions = subcmd.flags?.map(flag => `[--${flag.name}]`).join(' ') || '';
 
     // A subcommand will have main options to facilitate multiple workflows.
     // If a subcommand has single workflow, then it won't have main options but might
