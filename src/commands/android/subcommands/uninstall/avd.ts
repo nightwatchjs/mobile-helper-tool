@@ -48,6 +48,10 @@ export async function deleteAvd(sdkRoot: string, platform: Platform): Promise<bo
     Logger.log(`Please run ${colors.cyan('npx @nightwatch/mobile-helper android list -avd')} to check if the AVD was deleted.`);
     Logger.log('If the AVD is still present, please try deleting the AVD again.\n');
 
+    Logger.log('Error message:');
+    Logger.log(deleteStatus);
+    Logger.log();
+
     return false;
   } catch (error) {
     Logger.log(colors.red('Error occured while deleting AVD.'));
