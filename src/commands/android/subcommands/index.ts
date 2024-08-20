@@ -6,9 +6,10 @@ import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
 import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
-import {showHelp} from './help';
 import {connect} from './connect';
+import {showHelp} from './help';
 import {install} from './install';
+import {list} from './list';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -65,6 +66,8 @@ export class AndroidSubcommand {
       return await connect(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'install') {
       return await install(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'list') {
+      return await list(this.options, this.sdkRoot, this.platform);
     }
 
     return false;

@@ -41,6 +41,17 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         description: 'Connect a real device wirelessly'
       }
     ]
+  },
+  list: {
+    description: 'List connected devices or installed AVDs',
+    flags: [{
+      name: 'device',
+      description: 'List connected devices (real devices and AVDs)'
+    },
+    {
+      name: 'avd',
+      description: 'List installed AVDs'
+    }]
   }
 };
 
