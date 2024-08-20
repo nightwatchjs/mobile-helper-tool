@@ -2,7 +2,8 @@ import inquirer from 'inquirer';
 import path from 'path';
 import os from 'os';
 
-import {AvailableOptions, AvailableSubcommands, SdkBinary} from './interfaces';
+import {AvailableOptions, SdkBinary} from './interfaces';
+import {AvailableSubcommands} from './subcommands/interfaces';
 
 export const AVAILABLE_OPTIONS: AvailableOptions = {
   help: {
@@ -34,7 +35,7 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
 export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
   connect: {
     description: 'Connect to a device',
-    options: [
+    flags: [
       {
         name: 'wireless',
         description: 'Connect a real device wirelessly'

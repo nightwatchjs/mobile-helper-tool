@@ -4,9 +4,14 @@ import {AndroidSetup} from './androidSetup';
 import {Options} from './interfaces';
 import {AndroidSubcommand} from './subcommands';
 import {getSubcommandHelp} from './utils/common';
+import {AndroidDotCommand} from './dotcommands';
 
-export function handleAndroidCommand(args: string[], options: Options): void {
-  if (args.length === 1) {
+export function handleAndroidCommand(args: string[], options: Options, argv: string[]): void {
+  if (args[0].includes('.')) {
+    // Here args[0] represents the android dot command
+    const androidDotCommand = new AndroidDotCommand(args[0], argv, process.cwd());
+    androidDotCommand.run();
+  } else if (args.length === 1) {
     const androidSetup = new AndroidSetup(options);
     androidSetup.run();
   } else if (args.length === 2) {
