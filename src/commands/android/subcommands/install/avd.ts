@@ -39,7 +39,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       name: 'avdName',
       message: 'Enter a name for the AVD:'
     });
-    const avdName = avdNameAnswer.avdName ? avdNameAnswer.avdName : 'my_avd';
+    const avdName = avdNameAnswer.avdName || 'my_avd';
 
     const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
     if (!installedSystemImages.result) {
@@ -92,11 +92,11 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
     let createAVDStatus = false;
 
     try {
-      createAVDStatus = await createAVD(cmd, avdmanagerLocation, platform, avdName);
+      createAVDStatus = await executeCreateAvdCommand(cmd, avdmanagerLocation, platform, avdName);
     } catch (err) {
       if (typeof err === 'string' && err.includes('already exists')) {
         // AVD with the same name already exists. Ask user if they want to overwrite it.
-        Logger.log(`${colors.yellow('AVD with the same name already exists!')}\n`);
+        Logger.log(`\n${colors.yellow('AVD with the same name already exists!')}\n`);
         const overwriteAnswer = await inquirer.prompt({
           type: 'confirm',
           name: 'overwrite',
@@ -106,7 +106,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
 
         if (overwriteAnswer.overwrite) {
           cmd += ' --force';
-          createAVDStatus = await createAVD(cmd, avdmanagerLocation, platform, avdName);
+          createAVDStatus = await executeCreateAvdCommand(cmd, avdmanagerLocation, platform, avdName);
         }
       } else {
         handleError(err);
@@ -121,7 +121,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
   }
 }
 
-async function createAVD(cmd: string, avdmanagerLocation: string, platform: Platform, avdName: string): Promise<boolean> {
+async function executeCreateAvdCommand(cmd: string, avdmanagerLocation: string, platform: Platform, avdName: string): Promise<boolean> {
   const output = await execBinaryAsync(avdmanagerLocation, 'avdmanager', platform, cmd);
 
   if (output?.includes('100% Fetch remote repository')) {
@@ -139,7 +139,7 @@ async function createAVD(cmd: string, avdmanagerLocation: string, platform: Plat
 }
 
 function handleError(err: any) {
-  Logger.log(colors.red('Error occured while creating AVD!\n'));
+  Logger.log(colors.red('\nError occurred while creating AVD!'));
   console.error(err);
 }
 
