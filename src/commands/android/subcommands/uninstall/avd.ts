@@ -18,7 +18,9 @@ export async function deleteAvd(sdkRoot: string, platform: Platform): Promise<bo
 
     const installedAvds = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
     if (!installedAvds) {
-      Logger.log(`${colors.yellow('Failed to fetch installed AVDs.')} Please try again.`);
+      Logger.log(`${colors.yellow('Failed to fetch installed AVDs.')} Please try again.\n`);
+      Logger.log('Alternatively, to see the list of installed AVDs, run the following command:');
+      Logger.log(colors.cyan('  npx @nightwatch/mobile-helper android list --avd\n'));
 
       return false;
     }
@@ -37,10 +39,14 @@ export async function deleteAvd(sdkRoot: string, platform: Platform): Promise<bo
     const deleteStatus = await execBinaryAsync(avdmanagerLocation, 'avdmanager', platform, `delete avd --name '${avdName}'`);
 
     if (deleteStatus?.includes('deleted')) {
-      Logger.log(`${colors.green('AVD deleted successfully!')}`);
+      Logger.log(colors.green('AVD deleted successfully!\n'));
 
       return true;
     }
+
+    Logger.log(`${colors.red('Something went wrong while deleting AVD.')}`);
+    Logger.log(`Please run ${colors.cyan('npx @nightwatch/mobile-helper android list -avd')} to check if the AVD was deleted.`);
+    Logger.log('If the AVD is still present, please try deleting the AVD again.\n');
 
     return false;
   } catch (error) {

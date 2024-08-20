@@ -9,6 +9,7 @@ import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
 import {showHelp} from './help';
 import {connect} from './connect';
 import {install} from './install';
+import {uninstall} from './uninstall';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -49,9 +50,7 @@ export class AndroidSubcommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    this.executeSubcommand();
-
-    return false;
+    return await this.executeSubcommand();
   }
 
   loadEnvFromDotEnv(): void {
@@ -65,6 +64,8 @@ export class AndroidSubcommand {
       return await connect(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'install') {
       return await install(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'uninstall') {
+      return await uninstall(this.options, this.sdkRoot, this.platform);
     }
 
     return false;
