@@ -12,34 +12,34 @@ export async function install(options: Options, sdkRoot: string, platform: Platf
     return false;
   }
 
-  const subcommandFlag = optionsVerified.subcommandFlag;
+  let subcommandFlag = optionsVerified.subcommandFlag;
   if (subcommandFlag === '') {
-    await flagsPrompt(options);
+    subcommandFlag = await promptForFlag();
   }
 
-  if (options.app) {
+  if (subcommandFlag === 'app') {
     return await installApp(options, sdkRoot, platform);
-  } else if (options.avd) {
+  } else if (subcommandFlag === 'avd') {
     return await createAvd(sdkRoot, platform);
   }
 
   return false;
 }
 
-async function flagsPrompt(options: Options) {
+async function promptForFlag(): Promise<string> {
   const flagAnswer = await inquirer.prompt({
     type: 'list',
     name: 'flag',
     message: 'Select what do you want to install:',
     choices: ['APK', 'AVD']
   });
+  Logger.log();
 
   const flag = flagAnswer.flag;
   if (flag === 'APK') {
-    options.app = true;
-  } else if (flag === 'AVD') {
-    options.avd = true;
+    return 'app';
   }
-  Logger.log();
+
+  return 'avd';
 }
 
