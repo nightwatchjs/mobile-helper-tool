@@ -4,8 +4,9 @@ import path from 'path';
 
 import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
+import {AVAILABLE_SUBCOMMANDS} from '../constants';
 import {Options, Platform} from '../interfaces';
-import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
+import {checkJavaInstallation, getSdkRootFromEnv, getSubcommandHelp} from '../utils/common';
 import {connect} from './connect';
 import {showHelp} from './help';
 import {install} from './install';
@@ -29,11 +30,21 @@ export class AndroidSubcommand {
   }
 
   async run(): Promise<boolean> {
+    if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand)) {
+      Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
+      Logger.log(getSubcommandHelp());
+      Logger.log(`For individual subcommand help, run: ${colors.cyan('npx @nightwatch/mobile-helper android SUBCOMMAND --help')}`);
+      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}\n`);
+
+      return false;
+    }
+
     if (this.options.help) {
       showHelp(this.subcommand);
 
       return true;
     }
+
     this.loadEnvFromDotEnv();
 
     const javaInstalled = checkJavaInstallation(this.rootDir);

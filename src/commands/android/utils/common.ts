@@ -216,9 +216,9 @@ export const checkJavaInstallation = (cwd: string): boolean => {
 export const getSubcommandHelp = (): string => {
   let output = '';
 
-  output += `Usage: ${colors.cyan('npx @nightwatch/mobile-helper android [subcmd] [subcmd-options]')}\n`;
-  output += '  The following subcommands are used for different operations on Android SDK:\n\n';
-  output += `${colors.yellow('Subcommands and Subcommand-Options:')}\n`;
+  output += `Usage: ${colors.cyan('npx @nightwatch/mobile-helper android SUBCOMMAND [flag] [configs]')}\n`;
+  output += '  Perform common Android SDK operations using subcommands.\n\n';
+  output += `${colors.yellow('Subcommands (with available flags and configs):')}\n`;
 
   Object.keys(AVAILABLE_SUBCOMMANDS).forEach(subcommand => {
     const subcmd = AVAILABLE_SUBCOMMANDS[subcommand];
