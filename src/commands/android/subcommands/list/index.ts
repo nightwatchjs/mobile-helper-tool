@@ -2,9 +2,9 @@ import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {Options, Platform} from '../../interfaces';
+import {verifyOptions} from '../common';
 import {listInstalledAVDs} from './avd';
 import {listConnectedDevices} from './device';
-import {verifyOptions} from '../common';
 
 export async function list(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   const optionsVerified = verifyOptions('list', options);
@@ -12,34 +12,33 @@ export async function list(options: Options, sdkRoot: string, platform: Platform
     return false;
   }
 
-  const subcommandFlag = optionsVerified.subcommandFlag;
+  let subcommandFlag = optionsVerified.subcommandFlag;
   if (subcommandFlag === '') {
-    await flagsPrompt(options);
+    subcommandFlag = await promptForFlag();
   }
 
-  if (options.avd) {
+  if (subcommandFlag === 'avd') {
     return await listInstalledAVDs(sdkRoot, platform);
-  } else if (options.device) {
+  } else if (subcommandFlag === 'device') {
     return await listConnectedDevices(sdkRoot, platform);
   }
 
   return false;
 }
 
-async function flagsPrompt(options: Options) {
+async function promptForFlag(): Promise<string> {
   const flagAnswer = await inquirer.prompt({
     type: 'list',
     name: 'flag',
     message: 'Select what do you want to list:',
     choices: ['Connected devices', 'Installed AVDs']
   });
+  Logger.log();
 
   const flag = flagAnswer.flag;
   if (flag === 'Connected devices') {
-    options.device = true;
-  } else if (flag === 'Installed AVDs') {
-    options.avd = true;
+    return 'device';
   }
-  Logger.log();
-}
 
+  return 'avd';
+}

@@ -22,14 +22,17 @@ export async function listInstalledAVDs(sdkRoot: string, platform: Platform): Pr
       return false;
     }
 
-    Logger.log(installedAVDs);
+    if (installedAVDs.split('\n').length < 3) {
+      Logger.log(colors.red('No installed AVDs found!'));
+    } else {
+      Logger.log(installedAVDs);
+    }
 
     return true;
   } catch (err) {
-    Logger.log(colors.red('Error occured while listing installed AVDs.'));
+    Logger.log(colors.red('Error occurred while listing installed AVDs.'));
     console.error(err);
 
     return false;
   }
 }
-

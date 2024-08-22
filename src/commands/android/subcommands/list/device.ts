@@ -28,4 +28,3 @@ export async function listConnectedDevices(sdkRoot: string, platform: Platform):
 
   return true;
 }
-
