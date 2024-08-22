@@ -42,6 +42,17 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       }
     ]
   },
+  list: {
+    description: 'List connected devices or installed AVDs',
+    flags: [{
+      name: 'device',
+      description: 'List connected devices (real devices and AVDs)'
+    },
+    {
+      name: 'avd',
+      description: 'List installed AVDs'
+    }]
+  },
   install: {
     description: 'Install APK or AVD on a device',
     flags: [
