@@ -11,6 +11,7 @@ import {connect} from './connect';
 import {showHelp} from './help';
 import {install} from './install';
 import {list} from './list';
+import {uninstall} from './uninstall';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -61,9 +62,7 @@ export class AndroidSubcommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    this.executeSubcommand();
-
-    return false;
+    return await this.executeSubcommand();
   }
 
   loadEnvFromDotEnv(): void {
@@ -79,6 +78,8 @@ export class AndroidSubcommand {
       return await install(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'list') {
       return await list(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'uninstall') {
+      return await uninstall(this.options, this.sdkRoot, this.platform);
     }
 
     return false;
