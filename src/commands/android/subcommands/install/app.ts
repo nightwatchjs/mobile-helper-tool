@@ -95,7 +95,7 @@ const handleError = (consoleOutput: any) => {
   let errorMessage = consoleOutput;
   if (consoleOutput.includes('INSTALL_FAILED_ALREADY_EXISTS')) {
     errorMessage = 'APK with the same package name already exists on the device.\n';
-    errorMessage += colors.reset(`\nPlease uninstall the app first from the device and then install again.\n`);
+    errorMessage += colors.reset('\nPlease uninstall the app first from the device and then install again.\n');
     errorMessage += colors.reset(`To uninstall, use: ${colors.cyan('npx @nightwatch/mobile-helper android uninstall --app')}\n`);
   } else if (consoleOutput.includes('INSTALL_FAILED_OLDER_SDK')) {
     errorMessage = 'Target installation location (AVD/Real device) has older SDK version than the minimum requirement of the APK.\n';
