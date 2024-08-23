@@ -79,6 +79,12 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         ]
       }
     ]
+  },
+  uninstall: {
+    description: 'todo item',
+    flags: [
+      {name: 'avd', description: 'todo item'},
+    ]
   }
 };
 
