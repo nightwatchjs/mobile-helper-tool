@@ -2,35 +2,37 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {launchAVD} from '../../adb';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
+import {showMissingBinaryHelp} from '../common';
 
 export async function connectAVD(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (avdmanagerLocation === '') {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('avdmanager')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('avdmanager');
 
       return false;
     }
 
-    const availableAVDs = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
-    if (!availableAVDs) {
-      Logger.log(`${colors.red('No AVD installed!')}`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --mode emulator --standalone')} to setup emulator.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+    const installedAvds = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
+    if (installedAvds === null) {
+      Logger.log(`${colors.red('\nFailed to fetch installed AVDs.')} Please try again.\n`);
+
+      return false;
+    } else if (installedAvds === '') {
+      Logger.log(`${colors.yellow('No installed AVD found.')}\n`);
+      Logger.log('To see the list of installed AVDs, run the following command:');
+      Logger.log(colors.cyan('  npx @nightwatch/mobile-helper android list --avd\n'));
 
       return false;
     }
 
-    const availableAVDsList = availableAVDs.split('\n').filter(avd => avd !== '');
+    const installedAVDList = installedAvds.split('\n').filter(avd => avd !== '');
 
-    if (options.avd && !availableAVDsList.includes(options.avd as string)) {
+    if (options.avd && !installedAVDList.includes(options.avd as string)) {
       Logger.log(colors.yellow('Provided AVD not found!\n'));
       options.avd = '';
     }
@@ -40,16 +42,14 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
         type: 'list',
         name: 'avdName',
         message: 'Select the AVD to connect:',
-        choices: availableAVDsList
+        choices: installedAVDList
       });
       options.avd = avdAnswer.avdName;
     }
 
     Logger.log();
-    Logger.log(`Launching ${options.avd}...`);
 
     const connectionStatus = await launchAVD(sdkRoot, platform, options.avd as string);
-
     if (!connectionStatus) {
       return false;
     }
@@ -62,3 +62,4 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
     return false;
   }
 }
+
