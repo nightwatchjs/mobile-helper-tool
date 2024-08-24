@@ -21,7 +21,7 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
     const devices = await adb.getConnectedDevices();
 
     if (!devices.length) {
-      Logger.log(`${colors.red('No device found running.')} Please connect the device to uninstall the APK.\n`);
+      Logger.log(`${colors.red('No device found running.')} Please connect the device to uninstall app.\n`);
 
       return true;
     }
@@ -51,13 +51,14 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
     const appNameAnswer = await inquirer.prompt({
       type: 'input',
       name: 'appName',
-      message: 'Enter the name of the App to uninstall:'
+      message: 'Enter the name of the app to uninstall:'
     });
+    const appName = appNameAnswer.appName;
 
-    const packageNames = execBinarySync(adbLocation, 'adb', platform, `-s ${options.deviceId} shell pm list packages '${appNameAnswer.appName}'`);
+    const packageNames = execBinarySync(adbLocation, 'adb', platform, `-s ${options.deviceId} shell pm list packages '${appName}'`);
     if (!packageNames) {
       Logger.log();
-      Logger.log(`${colors.red('App not found!')} Please try again.\n`);
+      Logger.log(`${colors.red(`No package found with name '${appName}'!`)} Please try again.\n`);
 
       return false;
     }
@@ -71,7 +72,6 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
     });
 
     let packageName = packagesList[0];
-
     if (packagesList.length > 1) {
       const packageNameAnswer = await inquirer.prompt({
         type: 'list',
@@ -106,9 +106,14 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
       return true;
     }
 
+    Logger.log(colors.red('Something went wrong while uninstalling app.'));
+    Logger.log('Command output:', uninstallationStatus);
+    Logger.log('Please check if the app has been uninstalled from the device.');
+    Logger.log('If the app is still present, try uninstalling it again.\n');
+
     return false;
   } catch (error) {
-    Logger.log(colors.red('Error occured while uninstalling App.'));
+    Logger.log(colors.red('Error occured while uninstalling app.'));
     console.error(error);
 
     return false;
