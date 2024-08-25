@@ -42,6 +42,16 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       }
     ]
   },
+  disconnect: {
+    description: 'Disconnect a real device or emulator',
+    cliConfigs: [{
+      name: 'deviceId',
+      alias: ['s'],
+      description: 'Id of the device to disconnect',
+      usageHelp: 'device_id'
+    }],
+    flags: []
+  },
   list: {
     description: 'List connected devices or installed AVDs',
     flags: [{

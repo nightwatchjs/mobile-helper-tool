@@ -3,19 +3,25 @@ import ADB from 'appium-adb';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {symbols} from '../../../../utils';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
-import {showConnectedRealDevices, showConnectedEmulators} from '../common';
+import {showConnectedRealDevices, showConnectedEmulators, verifyOptions, showMissingBinaryHelp} from '../common';
 
 export async function disconnect(options: Options, sdkRoot: string, platform: Platform) {
+  const optionsVerified = verifyOptions('disconnect', options);
+  if (!optionsVerified) {
+    return false;
+  }
+
+  return await disconnectDevice(options, sdkRoot, platform);
+}
+
+async function disconnectDevice(options: Options, sdkRoot: string, platform: Platform) {
   try {
     const adbLocation = getBinaryLocation(sdkRoot, platform, 'adb', true);
     if (adbLocation === '') {
-      Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('adb')} binary not found.\n`);
-      Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-      Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+      showMissingBinaryHelp('adb');
 
       return false;
     }
@@ -35,7 +41,7 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
     // If the provided device id is not found then prompt the user to select the device.
     if (options.deviceId && typeof options.deviceId === 'string') {
       if (!deviceIdsList.includes(options.deviceId)) {
-        Logger.log(`${colors.yellow('Device with the provided ID was not found.')}\n`);
+        Logger.log(`${colors.yellow('Device with the provided id was not found.')}\n`);
         options.deviceId = '';
       }
     } else if (options.deviceId === true) {
@@ -62,25 +68,28 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
     if ((options.deviceId as string).includes('emulator') || options.deviceId === 'Disconnect all') {
       if (options.deviceId === 'Disconnect all') {
         // kill adb server to disconnect all wirelessly connected real devices
-        adb.killServer();
         const realDevices = deviceIdsList.filter(deviceId => !deviceId.includes('emulator'));
         if (realDevices.length) {
+          adb.killServer();
           Logger.log(colors.green('Successfully disconnected all real devices.\n'));
         }
       }
 
       const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
       if (avdmanagerLocation === '') {
-        Logger.log(`  ${colors.red(symbols().fail)} ${colors.cyan('avdmanager')} binary not found.\n`);
-        Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android --standalone')} to setup missing requirements.`);
-        Logger.log(`(Remove the ${colors.gray('--standalone')} flag from the above command if setting up for testing.)\n`);
+        showMissingBinaryHelp('avdmanager');
 
         return false;
       }
       const stdout = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd -c');
-      const installedAvds = stdout?.split('\n').filter((avd) => avd !== '');
+      if (stdout === null) {
+        Logger.log(`${colors.red('Something went wrong when trying to shut down AVD.')} Please try again.`);
 
-      installedAvds?.forEach(avdName => {
+        return false;
+      }
+      const installedAvds = stdout.split('\n').filter((avd) => avd !== '');
+
+      installedAvds.forEach(avdName => {
         adb.getRunningAVDWithRetry(avdName, 1000).then(runningAvd => {
           if (runningAvd) {
             if (options.deviceId !== 'Disconnect all' && runningAvd.udid !== options.deviceId) {
@@ -96,8 +105,10 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
               }
             });
           }
-        }).catch(err => {
-          options.err = err;
+        }).catch(_err => {
+          // Error is caught to prevent unhandled rejection, but not used.
+          // This error is not revelant to users.
+          void _err;
         });
       });
 
@@ -106,11 +117,11 @@ export async function disconnect(options: Options, sdkRoot: string, platform: Pl
 
     const disconnectionStatus = execBinarySync(adbLocation, 'adb', platform, `disconnect ${options.deviceId}`);
     if (disconnectionStatus?.includes('disconnected')) {
-      Logger.log(colors.green('Successfully disconnected the device.'));
+      Logger.log(`${colors.green('Successfully disconnected: ')} ${options.deviceId}\n`);
 
       return true;
     } else {
-      Logger.log(`${colors.red('Failed to disconnect the device.')} Please try again.`);
+      Logger.log(`${colors.red('Failed to disconnect the device.')} Please try again.\n`);
     }
 
     return false;
