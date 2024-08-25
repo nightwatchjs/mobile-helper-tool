@@ -3,10 +3,11 @@ import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {APILevelNames} from '../../constants';
-import {AvailableSystemImages, Platform} from '../../interfaces';
+import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
-import {execBinarySync} from '../../utils/sdk';
+import {execBinarySync, spawnCommandSync} from '../../utils/sdk';
 import {showMissingBinaryHelp} from '../common';
+import {AvailableSystemImages} from '../interfaces';
 
 export async function installSystemImage(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -92,26 +93,24 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
       type: 'list',
       name: 'systemImageArch',
       message: 'Select the architecture for the system image:',
-      choices: availableSystemImages[apiLevel].find(image => image.type === systemImageTypeAnswer.systemImageType)?.archs
+      choices: availableSystemImages[apiLevel].find(image => image.type === type)?.archs
     });
     const arch = systemImageArchAnswer.systemImageArch;
 
     const systemImageName = `system-images;${apiLevel};${type};${arch}`;
 
     Logger.log();
-    Logger.log(`Downloading ${colors.cyan(systemImageName)}...\n`);
 
-    const downloadStatus = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, `'${systemImageName}'`);
-
-    if (downloadStatus?.includes('100% Unzipping')) {
-      Logger.log(`${colors.green('System image downloaded successfully!')}\n`);
-
-      return true;
-    } else if (downloadStatus?.includes('100% Computing updates')) {
-      Logger.log(`${colors.green('System image already downloaded!')}\n`);
+    const installationStatus = spawnCommandSync(sdkmanagerLocation, 'sdkmanager', platform, [systemImageName]);
+    if (installationStatus) {
+      Logger.log(colors.green('System image installed successfully!\n'));
 
       return true;
     }
+
+    Logger.log(colors.red('Something went wrong while installing system image'));
+    Logger.log(`Please run ${colors.cyan('npx @nightwatch/mobile-helper android.sdkmanager --list')} to verify if the system image was installed.`);
+    Logger.log('If the system image was not installed, please try installing again.\n');
 
     return false;
   } catch (error) {

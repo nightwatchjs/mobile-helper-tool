@@ -5,6 +5,7 @@ import {Options, Platform} from '../../interfaces';
 import {verifyOptions} from '../common';
 import {installApp} from './app';
 import {createAvd} from './avd';
+import {installSystemImage} from './system-image';
 
 export async function install(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   const optionsVerified = verifyOptions('install', options);
@@ -19,6 +20,8 @@ export async function install(options: Options, sdkRoot: string, platform: Platf
 
   if (subcommandFlag === 'app') {
     return await installApp(options, sdkRoot, platform);
+  } else if (subcommandFlag === 'system-image') {
+    return await installSystemImage(sdkRoot, platform);
   } else if (subcommandFlag === 'avd') {
     return await createAvd(sdkRoot, platform);
   }
@@ -31,13 +34,15 @@ async function promptForFlag(): Promise<string> {
     type: 'list',
     name: 'flag',
     message: 'Select what do you want to install:',
-    choices: ['APK', 'AVD']
+    choices: ['APK', 'AVD', 'System image']
   });
   Logger.log();
 
   const flag = flagAnswer.flag;
   if (flag === 'APK') {
     return 'app';
+  } else if (flag === 'System image') {
+    return 'system-image';
   }
 
   return 'avd';

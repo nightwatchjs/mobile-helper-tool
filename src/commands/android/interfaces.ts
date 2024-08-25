@@ -29,13 +29,6 @@ export interface SetupConfigs {
 
 export type SdkBinary = 'sdkmanager' | 'adb' | 'emulator' | 'avdmanager';
 
-export interface AvailableSystemImages {
-  [apiLevel: string]: {
-      type: string;
-      archs: string[];
-  }[]
-}
-
 export interface ApiLevelNames {
   [apiLevel: string]: string
 }

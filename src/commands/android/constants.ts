@@ -54,7 +54,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     }]
   },
   install: {
-    description: 'Install APK or AVD on a device',
+    description: 'Install APK, AVD or system image',
     flags: [
       {
         name: 'avd',
@@ -77,13 +77,17 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
             usageHelp: 'device_id'
           }
         ]
+      },
+      {
+        name: 'system-image',
+        description: 'Install a system image'
       }
     ]
   },
   uninstall: {
     description: 'todo item',
     flags: [
-      {name: 'avd', description: 'todo item'},
+      {name: 'avd', description: 'todo item'}
     ]
   }
 };

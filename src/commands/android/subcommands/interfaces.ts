@@ -24,3 +24,10 @@ export interface SubcommandOptionsVerificationResult {
   subcommandFlag: string;
   configs: string[];
 }
+
+export interface AvailableSystemImages {
+  [apiLevel: string]: {
+      type: string;
+      archs: string[];
+  }[]
+}
