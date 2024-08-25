@@ -15,16 +15,6 @@ export interface Options {
   [key: string]: string | string[] | boolean;
 }
 
-export interface AvailableSubcommands {
-  [key: string]: {
-    description: string;
-    options: {
-      name: string;
-      description: string;
-    }[];
-  }
-}
-
 export type Platform = 'windows' | 'linux' | 'mac';
 
 export interface OtherInfo {
