@@ -8,6 +8,7 @@ import {AVAILABLE_SUBCOMMANDS} from '../constants';
 import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv, getSubcommandHelp} from '../utils/common';
 import {connect} from './connect';
+import {disconnect} from './disconnect';
 import {showHelp} from './help';
 import {install} from './install';
 import {list} from './list';
@@ -74,6 +75,8 @@ export class AndroidSubcommand {
   async executeSubcommand(): Promise<boolean> {
     if (this.subcommand === 'connect') {
       return await connect(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'disconnect') {
+      return await disconnect(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'install') {
       return await install(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'list') {

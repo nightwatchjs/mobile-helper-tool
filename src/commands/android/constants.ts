@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 import {AvailableOptions, SdkBinary} from './interfaces';
 import {AvailableSubcommands} from './subcommands/interfaces';
@@ -41,6 +41,16 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         description: 'Connect a real device wirelessly'
       }
     ]
+  },
+  disconnect: {
+    description: 'Disconnect a real device or emulator',
+    cliConfigs: [{
+      name: 'deviceId',
+      alias: ['s'],
+      description: 'Id of the device to disconnect',
+      usageHelp: 'device_id'
+    }],
+    flags: []
   },
   list: {
     description: 'List connected devices or installed AVDs',
@@ -83,7 +93,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
   uninstall: {
     description: 'todo item',
     flags: [
-      {name: 'avd', description: 'todo item'},
+      {name: 'avd', description: 'todo item'}
     ]
   }
 };
