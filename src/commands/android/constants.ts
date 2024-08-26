@@ -84,6 +84,18 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     description: 'todo item',
     flags: [
       {name: 'avd', description: 'todo item'},
+      {
+        name: 'app',
+        description: 'Uninstall an APK from a device',
+        cliConfigs: [
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to uninstall the APK from if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
+      }
     ]
   }
 };
