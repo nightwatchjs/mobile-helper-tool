@@ -91,7 +91,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
           {
             name: 'deviceId',
             alias: ['s'],
-            description: 'Id of the device to uninstall the APK if multiple devices are connected',
+            description: 'Id of the device to uninstall the APK from if multiple devices are connected',
             usageHelp: 'device_id'
           }
         ]

@@ -21,28 +21,30 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
     const devices = await adb.getConnectedDevices();
 
     if (!devices.length) {
-      Logger.log(`${colors.red('No device found running.')} Please connect the device to uninstall app.\n`);
+      Logger.log(`${colors.red('No device found running.')} Please connect the device to uninstall the app from.\n`);
 
       return true;
     }
 
     if (options.deviceId) {
-    // If device id is passed then check if the id is valid. If not then prompt user to select a device.
+      // If device id is passed then check if the id is valid. If not then prompt user to select a device.
       const deviceConnected = devices.find(device => device.udid === options.deviceId);
       if (!deviceConnected) {
         Logger.log(colors.yellow(`No connected device found with deviceId '${options.deviceId}'.\n`));
 
         options.deviceId = '';
       }
+    } else if (devices.length === 1) {
+      options.deviceId = devices[0].udid;
     }
 
     if (!options.deviceId) {
-    // if device id not found, or invalid device id is found, then prompt the user
-    // to select a device from the list of running devices.
+      // if device id not found, or invalid device id is found, then prompt the user
+      // to select a device from the list of running devices.
       const deviceAnswer = await inquirer.prompt({
         type: 'list',
         name: 'device',
-        message: 'Select the device to uninstall the APK:',
+        message: 'Select the device to uninstall the APK from:',
         choices: devices.map(device => device.udid)
       });
       options.deviceId = deviceAnswer.device;
@@ -51,7 +53,7 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
     const appNameAnswer = await inquirer.prompt({
       type: 'input',
       name: 'appName',
-      message: 'Enter the name of the app to uninstall:'
+      message: `Name of the app to uninstall from device '${options.deviceId}':`
     });
     const appName = appNameAnswer.appName;
 
@@ -79,11 +81,10 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
         message: 'Select the package you want to uninstall:',
         choices: packagesList
       });
-
       packageName = packageNameAnswer.packageName;
     }
 
-    const UninstallationAnswer = await inquirer.prompt({
+    const uninstallationConfirmation = await inquirer.prompt({
       type: 'confirm',
       name: 'confirm',
       message: `Are you sure you want to uninstall ${colors.cyan(packageName)}`
@@ -91,7 +92,7 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
 
     Logger.log();
 
-    if (!UninstallationAnswer.confirm) {
+    if (!uninstallationConfirmation.confirm) {
       Logger.log('Uninstallation cancelled.\n');
 
       return false;
@@ -108,12 +109,11 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
 
     Logger.log(colors.red('Something went wrong while uninstalling app.'));
     Logger.log('Command output:', uninstallationStatus);
-    Logger.log('Please check if the app has been uninstalled from the device.');
-    Logger.log('If the app is still present, try uninstalling it again.\n');
+    Logger.log('Please check the output above and try again.');
 
     return false;
   } catch (error) {
-    Logger.log(colors.red('Error occured while uninstalling app.'));
+    Logger.log(colors.red('Error occurred while uninstalling app.'));
     console.error(error);
 
     return false;
