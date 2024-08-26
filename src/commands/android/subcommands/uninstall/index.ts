@@ -30,13 +30,13 @@ async function promptForFlag(): Promise<string> {
   const flagAnswer = await inquirer.prompt({
     type: 'list',
     name: 'flag',
-    message: 'Select what do you want to uninstall:',
-    choices: ['App', 'AVD']
+    message: 'Select what you want to uninstall:',
+    choices: ['Android App', 'Android Virtual Device (AVD)']
   });
   Logger.log();
 
   const flag = flagAnswer.flag;
-  if (flag === 'App') {
+  if (flag === 'Android App') {
     return 'app';
   }
 
