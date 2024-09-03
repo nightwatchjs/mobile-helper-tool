@@ -42,9 +42,24 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       }
     ]
   },
+  list: {
+    description: 'List connected devices or installed AVDs',
+    flags: [{
+      name: 'device',
+      description: 'List connected devices (real devices and AVDs)'
+    },
+    {
+      name: 'avd',
+      description: 'List installed AVDs'
+    }]
+  },
   install: {
-    description: 'Install system images for Android Virtual Device',
+    description: 'Install APK or AVD on a device',
     flags: [
+      {
+        name: 'avd',
+        description: 'Create an Android Virtual Device'
+      },
       {
         name: 'app',
         description: 'Install an APK on the device',
@@ -58,7 +73,25 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
           {
             name: 'deviceId',
             alias: ['s'],
-            description: 'Id of the device to install the APK if multiple devices are connected',
+            description: 'Id of the device to install the APK to if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
+      }
+    ]
+  },
+  uninstall: {
+    description: 'todo item',
+    flags: [
+      {name: 'avd', description: 'todo item'},
+      {
+        name: 'app',
+        description: 'Uninstall an APK from a device',
+        cliConfigs: [
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to uninstall the APK from if multiple devices are connected',
             usageHelp: 'device_id'
           }
         ]

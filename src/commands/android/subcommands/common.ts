@@ -3,8 +3,9 @@ import colors from 'ansi-colors';
 import Logger from '../../../logger';
 import {symbols} from '../../../utils';
 import {AVAILABLE_SUBCOMMANDS} from '../constants';
-import {Options, SdkBinary} from '../interfaces';
+import {Platform, Options, SdkBinary} from '../interfaces';
 import ADB from '../utils/appium-adb';
+import {execBinarySync} from '../utils/sdk';
 import {CliConfig, SubcommandOptionsVerificationResult} from './interfaces';
 import {showHelp} from './help';
 
@@ -70,6 +71,37 @@ export async function showConnectedEmulators() {
 
     return false;
   }
+}
+
+export async function getInstalledSystemImages(sdkmanagerLocation: string, platform: Platform): Promise<{
+  result: boolean,
+  systemImages: string[]
+}> {
+  const stdout = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, '--list');
+  if (!stdout) {
+    Logger.log(`\n${colors.red('Failed to fetch system images!')} Please try again.`);
+
+    return {
+      result: false,
+      systemImages: []
+    };
+  }
+  const lines = stdout.split('\n');
+  const installedImages: string[] = [];
+
+  for (const line of lines) {
+    if (line.includes('Available Packages:')) {
+      break;
+    }
+    if (line.includes('system-images')) {
+      installedImages.push(line.split('|')[0].trim());
+    }
+  }
+
+  return {
+    result: true,
+    systemImages: installedImages
+  };
 }
 
 export function showMissingBinaryHelp(binaryName: SdkBinary) {

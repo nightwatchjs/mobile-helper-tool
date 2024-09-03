@@ -210,4 +210,3 @@ export const checkJavaInstallation = (cwd: string): boolean => {
     return false;
   }
 };
-

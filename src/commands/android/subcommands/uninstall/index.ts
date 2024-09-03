@@ -3,11 +3,11 @@ import inquirer from 'inquirer';
 import Logger from '../../../../logger';
 import {Options, Platform} from '../../interfaces';
 import {verifyOptions} from '../common';
-import {installApp} from './app';
-import {createAvd} from './avd';
+import {uninstallApp} from './app';
+import {deleteAvd} from './avd';
 
-export async function install(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
-  const optionsVerified = verifyOptions('install', options);
+export async function uninstall(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
+  const optionsVerified = verifyOptions('uninstall', options);
   if (!optionsVerified) {
     return false;
   }
@@ -18,9 +18,9 @@ export async function install(options: Options, sdkRoot: string, platform: Platf
   }
 
   if (subcommandFlag === 'app') {
-    return await installApp(options, sdkRoot, platform);
+    return await uninstallApp(options, sdkRoot, platform);
   } else if (subcommandFlag === 'avd') {
-    return await createAvd(sdkRoot, platform);
+    return await deleteAvd(sdkRoot, platform);
   }
 
   return false;
@@ -30,13 +30,13 @@ async function promptForFlag(): Promise<string> {
   const flagAnswer = await inquirer.prompt({
     type: 'list',
     name: 'flag',
-    message: 'Select what do you want to install:',
-    choices: ['APK', 'AVD']
+    message: 'Select what you want to uninstall:',
+    choices: ['Android App', 'Android Virtual Device (AVD)']
   });
   Logger.log();
 
   const flag = flagAnswer.flag;
-  if (flag === 'APK') {
+  if (flag === 'Android App') {
     return 'app';
   }
 
