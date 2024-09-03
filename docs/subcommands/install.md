@@ -8,9 +8,12 @@ npx @nightwatch/mobile-helper android install [flags|cliConfigs]
 ### 1. Install an APK
 
 Run the below command to install an APK on a real device or an AVD:
+
 ```sh
-npx @nightwatch/mobile-helper android install --app [cliConfigs]
-```
+npx @nightwatch/mobile-helper android install --app
+
+# with configs
+npx @nightwatch/mobile-helper android install --app [--deviceId <device_id>] [--path <path_to_apk>]
 
 **Configs**
 
