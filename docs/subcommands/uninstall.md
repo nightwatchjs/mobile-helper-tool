@@ -2,7 +2,7 @@
 
 **Syntax**
 ```sh
-npx @nightwatch/mobile-helper android uninstall [flags|cliConfigs]
+npx @nightwatch/mobile-helper android uninstall FLAG [configs]
 ```
 
 ### 1. Delete an Android Virtual Device
