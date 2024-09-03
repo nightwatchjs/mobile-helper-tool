@@ -2,7 +2,7 @@
 
 **Syntax**
 ```sh
-npx @nightwatch/mobile-helper android install [flags|cliConfigs]
+npx @nightwatch/mobile-helper android install FLAG [configs]
 ```
 
 ### 1. Install an APK
@@ -14,17 +14,19 @@ npx @nightwatch/mobile-helper android install --app
 
 # with configs
 npx @nightwatch/mobile-helper android install --app [--deviceId <device_id>] [--path <path_to_apk>]
+```
 
 **Configs**
 
 | Config                         | Description                                                    |
 | ------------------------------ | -------------------------------------------------------------- |
-| --deviceId \| -s <device_id>   | Id of the device to install the APK                            |
+| --deviceId \| -s <device_id>   | Id of the device to install the APK to                         |
 | --path \| -p <path_to_apk>     | Path to the APK file relative to the current working directory |
 
 ### 2. Create a new Android Virtual Device
 
 Run the below command to create a new AVD:
+
 ```sh
 npx @nightwatch/mobile-helper android install --avd
 ```
