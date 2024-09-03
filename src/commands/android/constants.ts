@@ -54,7 +54,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     }]
   },
   install: {
-    description: 'Install APK or AVD on a device',
+    description: 'Install system images, AVDs, or APKs on a device',
     flags: [
       {
         name: 'avd',
