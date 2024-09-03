@@ -612,11 +612,7 @@ Easily run Android SDK binaries without needing to locate them manually by using
 npx @nightwatch/mobile-helper android.<binary_name> [args]
 ```
 
-**Currenty supported binaries:**
-- adb
-- avdmanager
-- sdkmanager
-- emulator
+Currenty supported binaries: `adb`, `avdmanager`, `sdkmanager` and `emulator`.
 
-Check the [docs](./docs/) to know more about using the above binaries.
-
+Check the following docs to know more about usage of the above binaries: 
+- [Using emulator from CLI](./docs/use-emulator-from-command-line.md)
