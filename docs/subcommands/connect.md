@@ -2,7 +2,7 @@
 
 **Syntax**
 ```sh
-npx @nightwatch/mobile-helper android connect [flags|cliConfigs]
+npx @nightwatch/mobile-helper android connect FLAG [configs]
 ```
 
 ### 1. Connect a real device wirelessly
