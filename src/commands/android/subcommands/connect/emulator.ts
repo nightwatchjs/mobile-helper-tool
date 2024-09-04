@@ -1,8 +1,8 @@
 import colors from 'ansi-colors';
+import {spawnSync} from 'child_process';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {launchAVD} from '../../adb';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync} from '../../utils/sdk';
@@ -13,6 +13,13 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (avdmanagerLocation === '') {
       showMissingBinaryHelp('avdmanager');
+
+      return false;
+    }
+
+    const emulatorLocation = getBinaryLocation(sdkRoot, platform, 'emulator', true);
+    if (emulatorLocation === '') {
+      showMissingBinaryHelp('emulator');
 
       return false;
     }
@@ -48,13 +55,17 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
     }
 
     Logger.log();
+    Logger.log(`Connecting to AVD: ${colors.cyan(options.avd as string)}\n`);
 
-    const connectionStatus = await launchAVD(sdkRoot, platform, options.avd as string);
-    if (!connectionStatus) {
+    const launchStatus = spawnSync(emulatorLocation, [`@${options.avd}`], {stdio: 'inherit'});
+
+    if (launchStatus.error) {
+      console.error(launchStatus.error);
+
       return false;
     }
 
-    return true;
+    return launchStatus.status === 0;
   } catch (error) {
     Logger.log(colors.red('Error occured while launching AVD.'));
     console.error(error);
