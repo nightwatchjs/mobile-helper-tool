@@ -64,7 +64,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     }]
   },
   install: {
-    description: 'Install APK or AVD on a device',
+    description: 'Install system images, AVDs, or APKs on a device',
     flags: [
       {
         name: 'avd',
@@ -83,7 +83,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
           {
             name: 'deviceId',
             alias: ['s'],
-            description: 'Id of the device to install the APK',
+            description: 'Id of the device to install the APK to if multiple devices are connected',
             usageHelp: 'device_id'
           }
         ]
@@ -94,6 +94,18 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     description: 'todo item',
     flags: [
       {name: 'avd', description: 'todo item'},
+      {
+        name: 'app',
+        description: 'Uninstall an APK from a device',
+        cliConfigs: [
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to uninstall the APK from if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
+      }
     ]
   }
 };
