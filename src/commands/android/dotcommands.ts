@@ -6,6 +6,7 @@ import {ANDROID_DOTCOMMANDS} from '../../constants';
 import Logger from '../../logger';
 import {getPlatformName} from '../../utils';
 import {Platform, SdkBinary} from './interfaces';
+import {showMissingBinaryHelp} from './subcommands/common';
 import {checkJavaInstallation, getBinaryLocation, getSdkRootFromEnv} from './utils/common';
 import {spawnCommandSync} from './utils/sdk';
 
@@ -57,6 +58,11 @@ export class AndroidDotCommand {
 
     const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
     const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
+    if (!binaryLocation) {
+      showMissingBinaryHelp(binaryName);
+
+      return false;
+    }
 
     return spawnCommandSync(binaryLocation, binaryName, this.platform, this.args);
   }
@@ -66,4 +72,3 @@ export class AndroidDotCommand {
     dotenv.config({path: path.join(this.rootDir, '.env')});
   }
 }
-

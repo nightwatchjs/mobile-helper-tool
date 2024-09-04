@@ -34,17 +34,13 @@ async function promptForFlag(): Promise<string> {
     type: 'list',
     name: 'flag',
     message: 'Select what do you want to install:',
-    choices: ['APK', 'AVD', 'System image']
+    choices: [
+      {name: 'Android app (APK)', value: 'app'},
+      {name: 'Android Virtual Device (AVD)', value: 'avd'},
+      {name: 'System image', value: 'system-image'}
+    ]
   });
   Logger.log();
 
-  const flag = flagAnswer.flag;
-  if (flag === 'APK') {
-    return 'app';
-  } else if (flag === 'System image') {
-    return 'system-image';
-  }
-
-  return 'avd';
+  return flagAnswer.flag;
 }
-

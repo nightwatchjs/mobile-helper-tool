@@ -113,7 +113,7 @@ export async function uninstallApp(options: Options, sdkRoot: string, platform: 
 
     return false;
   } catch (error) {
-    Logger.log(colors.red('Error occurred while uninstalling app.'));
+    Logger.log(colors.red('\nError occurred while uninstalling app.'));
     console.error(error);
 
     return false;
