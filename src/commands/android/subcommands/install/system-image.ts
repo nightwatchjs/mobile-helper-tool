@@ -2,12 +2,12 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {APILevelNames} from '../../constants';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync, spawnCommandSync} from '../../utils/sdk';
+import apiLevelNames from '../apiLevelNames.json';
 import {showMissingBinaryHelp} from '../common';
-import {AvailableSystemImages} from '../interfaces';
+import {ApiLevelNames, AvailableSystemImages} from '../interfaces';
 
 export async function installSystemImage(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -18,9 +18,9 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
       return false;
     }
 
-    const stdout = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, '--list | grep "system-images;"');
+    const stdout = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, '--list');
     if (!stdout) {
-      Logger.log(`${colors.red('Failed to fetch system images!')} Please try again.`);
+      Logger.log(`${colors.red('Failed to fetch available system images!')} Please try again.`);
 
       return false;
     }
@@ -33,6 +33,9 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
     const lines = stdout.split('\n').sort();
 
     lines.forEach(line => {
+      if (!line.includes('system-images;')) {
+        return;
+      }
       const image = line.split('|')[0].trim();
       images.add(image);
     });
@@ -66,11 +69,12 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
     });
 
     const apiLevelsWithNames = Object.keys(availableSystemImages).map(apiLevel => {
-      if (APILevelNames[apiLevel]) {
-        return `${apiLevel}: ${APILevelNames[apiLevel]}`;
+      let name = apiLevel;
+      if ((apiLevelNames as ApiLevelNames)[apiLevel]) {
+        name = `${apiLevel}: ${(apiLevelNames as ApiLevelNames)[apiLevel]}`;
       }
 
-      return apiLevel;
+      return {name, value: apiLevel};
     });
 
     const androidVersionAnswer = await inquirer.prompt({
@@ -79,7 +83,7 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
       message: 'Select the API level for system image:',
       choices: apiLevelsWithNames
     });
-    const apiLevel = androidVersionAnswer.androidVersion.split(':')[0];
+    const apiLevel = androidVersionAnswer.androidVersion;
 
     const systemImageTypeAnswer = await inquirer.prompt({
       type: 'list',
@@ -100,6 +104,7 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
     const systemImageName = `system-images;${apiLevel};${type};${arch}`;
 
     Logger.log();
+    Logger.log(`Installing system image: ${colors.cyan(systemImageName)}\n`);
 
     const installationStatus = spawnCommandSync(sdkmanagerLocation, 'sdkmanager', platform, [systemImageName]);
     if (installationStatus) {
@@ -108,8 +113,8 @@ export async function installSystemImage(sdkRoot: string, platform: Platform): P
       return true;
     }
 
-    Logger.log(colors.red('Something went wrong while installing system image'));
-    Logger.log(`Please run ${colors.cyan('npx @nightwatch/mobile-helper android.sdkmanager --list')} to verify if the system image was installed.`);
+    Logger.log(colors.red('Something went wrong while installing system image.'));
+    Logger.log(`Please run ${colors.cyan('npx @nightwatch/mobile-helper android.sdkmanager --list_installed')} to verify if the system image was installed.`);
     Logger.log('If the system image was not installed, please try installing again.\n');
 
     return false;

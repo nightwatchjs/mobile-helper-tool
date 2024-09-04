@@ -2,7 +2,7 @@ import inquirer from 'inquirer';
 import os from 'os';
 import path from 'path';
 
-import {ApiLevelNames, AvailableOptions, SdkBinary} from './interfaces';
+import {AvailableOptions, SdkBinary} from './interfaces';
 import {AvailableSubcommands} from './subcommands/interfaces';
 
 export const AVAILABLE_OPTIONS: AvailableOptions = {
@@ -85,9 +85,12 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
     ]
   },
   uninstall: {
-    description: 'todo item',
+    description: 'Uninstall system images, AVDs, or apps from a device',
     flags: [
-      {name: 'avd', description: 'todo item'},
+      {
+        name: 'avd',
+        description: 'Delete an Android Virtual Device'
+      },
       {
         name: 'app',
         description: 'Uninstall an APK from a device',
@@ -165,34 +168,5 @@ export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary | typeof NIGHTWATCH_AVD, s
   adb: 'platform-tools',
   emulator: 'emulator',
   [NIGHTWATCH_AVD]: `system-images;android-30;google_apis;${ABI}`
-};
-
-export const APILevelNames: ApiLevelNames = {
-  'android-10': 'Gingerbread (v2.3.3)',
-  'android-11': 'Honeycomb (v3.0)',
-  'android-12': 'Honeycomb (v3.1)',
-  'android-13': 'Honeycomb (v3.2)',
-  'android-14': 'Ice Cream Sandwich (v4.0)',
-  'android-15': 'Ice Cream Sandwich (v4.0.3)',
-  'android-16': 'Jelly Bean (v4.1)',
-  'android-17': 'Jelly Bean (v4.2)',
-  'android-18': 'Jelly Bean (v4.3)',
-  'android-19': 'KitKat (v4.4)',
-  'android-20': 'KitKat Watch (v4.4W)',
-  'android-21': 'Lollipop (v5.0)',
-  'android-22': 'Lollipop (v5.1)',
-  'android-23': 'Marshmallow (v6.0)',
-  'android-24': 'Nougat (v7.0)',
-  'android-25': 'Nougat (v7.1)',
-  'android-26': 'Oreo (v8.0)',
-  'android-27': 'Oreo (v8.1)',
-  'android-28': 'Pie (v9.0)',
-  'android-29': 'Android 10',
-  'android-30': 'Android 11',
-  'android-31': 'Android 12',
-  'android-32': 'Android 12L',
-  'android-33': 'Android 13',
-  'android-34': 'Android 14',
-  'android-35': 'Android 15'
 };
 

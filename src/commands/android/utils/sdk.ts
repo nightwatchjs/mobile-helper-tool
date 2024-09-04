@@ -230,9 +230,7 @@ export const spawnCommandSync = (binaryLocation: string, binaryName: string, pla
     const binaryFullName = getBinaryNameForOS(platform, binaryName);
     cmd = `${binaryFullName}`;
   } else {
-    const binaryFullName = path.basename(binaryLocation);
-    const binaryDirPath = path.dirname(binaryLocation);
-    cmd = path.join(binaryDirPath, binaryFullName);
+    cmd = binaryLocation;
   }
 
   const result = spawnSync(cmd, args, {stdio: 'inherit'});

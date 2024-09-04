@@ -31,3 +31,8 @@ export interface AvailableSystemImages {
       archs: string[];
   }[]
 }
+
+export interface ApiLevelNames {
+  [apiLevel: string]: string
+}
+

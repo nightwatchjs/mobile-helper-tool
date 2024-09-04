@@ -28,8 +28,3 @@ export interface SetupConfigs {
 }
 
 export type SdkBinary = 'sdkmanager' | 'adb' | 'emulator' | 'avdmanager';
-
-export interface ApiLevelNames {
-  [apiLevel: string]: string
-}
-
