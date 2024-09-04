@@ -2,7 +2,8 @@ import inquirer from 'inquirer';
 import path from 'path';
 import os from 'os';
 
-import {AvailableOptions, AvailableSubcommands, SdkBinary} from './interfaces';
+import {AvailableOptions, SdkBinary} from './interfaces';
+import {AvailableSubcommands} from './subcommands/interfaces';
 
 export const AVAILABLE_OPTIONS: AvailableOptions = {
   help: {
@@ -34,10 +35,66 @@ export const AVAILABLE_OPTIONS: AvailableOptions = {
 export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
   connect: {
     description: 'Connect to a device',
-    options: [
+    flags: [
       {
         name: 'wireless',
         description: 'Connect a real device wirelessly'
+      }
+    ]
+  },
+  list: {
+    description: 'List connected devices or installed AVDs',
+    flags: [{
+      name: 'device',
+      description: 'List connected devices (real devices and AVDs)'
+    },
+    {
+      name: 'avd',
+      description: 'List installed AVDs'
+    }]
+  },
+  install: {
+    description: 'Install system images, AVDs, or APKs on a device',
+    flags: [
+      {
+        name: 'avd',
+        description: 'Create an Android Virtual Device'
+      },
+      {
+        name: 'app',
+        description: 'Install an APK on the device',
+        cliConfigs: [
+          {
+            name: 'path',
+            alias: ['p'],
+            description: 'Path to the APK file',
+            usageHelp: 'path_to_apk'
+          },
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to install the APK to if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
+      }
+    ]
+  },
+  uninstall: {
+    description: 'todo item',
+    flags: [
+      {name: 'avd', description: 'todo item'},
+      {
+        name: 'app',
+        description: 'Uninstall an APK from a device',
+        cliConfigs: [
+          {
+            name: 'deviceId',
+            alias: ['s'],
+            description: 'Id of the device to uninstall the APK from if multiple devices are connected',
+            usageHelp: 'device_id'
+          }
+        ]
       }
     ]
   }

@@ -4,9 +4,15 @@ import path from 'path';
 
 import Logger from '../../../logger';
 import {getPlatformName} from '../../../utils';
+import {AVAILABLE_SUBCOMMANDS} from '../constants';
 import {Options, Platform} from '../interfaces';
 import {checkJavaInstallation, getSdkRootFromEnv} from '../utils/common';
+import {getSubcommandHelp} from './help';
 import {connect} from './connect';
+import {showHelp} from './help';
+import {install} from './install';
+import {list} from './list';
+import {uninstall} from './uninstall';
 import {update} from './update';
 
 export class AndroidSubcommand {
@@ -27,6 +33,21 @@ export class AndroidSubcommand {
   }
 
   async run(): Promise<boolean> {
+    if (!Object.keys(AVAILABLE_SUBCOMMANDS).includes(this.subcommand)) {
+      Logger.log(`${colors.red(`unknown subcommand passed: ${this.subcommand}`)}\n`);
+      Logger.log(getSubcommandHelp());
+      Logger.log(`For individual subcommand help, run: ${colors.cyan('npx @nightwatch/mobile-helper android SUBCOMMAND --help')}`);
+      Logger.log(`For complete Android help, run: ${colors.cyan('npx @nightwatch/mobile-helper android --help')}\n`);
+
+      return false;
+    }
+
+    if (this.options.help) {
+      showHelp(this.subcommand);
+
+      return true;
+    }
+
     this.loadEnvFromDotEnv();
 
     const javaInstalled = checkJavaInstallation(this.rootDir);
@@ -43,9 +64,7 @@ export class AndroidSubcommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    this.executeSubcommand();
-
-    return false;
+    return await this.executeSubcommand();
   }
 
   loadEnvFromDotEnv(): void {
@@ -57,6 +76,12 @@ export class AndroidSubcommand {
   async executeSubcommand(): Promise<boolean> {
     if (this.subcommand === 'connect') {
       return await connect(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'install') {
+      return await install(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'list') {
+      return await list(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'uninstall') {
+      return await uninstall(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'update') {
       return await update(this.sdkRoot, this.platform);
     }
