@@ -2,9 +2,9 @@ import colors from 'ansi-colors';
 import minimist from 'minimist';
 
 import {AndroidSetup} from './commands/android/androidSetup';
-import {AndroidSubcommand} from './commands/android/subcommands';
 import {AVAILABLE_COMMANDS} from './constants';
 import {IosSetup} from './commands/ios';
+import {handleAndroidCommand} from './commands/android';
 
 export const run = () => {
   try {
@@ -25,28 +25,20 @@ export const run = () => {
         console.log(`${colors.red('No command passed.')}\n`);
       }
       showHelp();
-    } else if (!AVAILABLE_COMMANDS.includes(args[0])) {
+    } else if (args[0].split('.')[0] === 'android') {
+      handleAndroidCommand(args, options, argv);
+    } else if (args[0] === 'ios') {
+      if (args.length > 1) {
+        // ios command does not accept subcommands.
+        console.log(`${colors.red(`Too many arguments passed for 'ios' command: ${args.slice(1).join(', ')}`)}\n`);
+        console.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper ios --help')} to get help for 'ios' command.`);
+      } else {
+        const iOSSetup = new IosSetup(options);
+        iOSSetup.run();
+      }
+    } else {
       console.log(`${colors.red(`Unknown command passed: ${args[0]}`)}\n`);
       showHelp();
-    } else if (args.length > 2 || (args[0] === 'ios' && args.length > 1)) {
-      // android command can accept only one subcommand.
-      // ios command does not accept subcommands.
-      console.log(`${colors.red(`Too many arguments passed: ${args.slice(1).join(', ')}`)}\n`);
-      showHelp();
-    } else if (args[0] === 'android') {
-      if (args[1]) {
-        // args[1] represents the android subcommand.
-        // If subcommand is present then proceed to run the subcommand.
-        const androidSubcommand = new AndroidSubcommand(args[1], options);
-        androidSubcommand.run();
-      } else {
-        // If no subcommand is present then proceed to run the main android setup.
-        const androidSetup = new AndroidSetup(options);
-        androidSetup.run();
-      }
-    } else if (args[0] === 'ios') {
-      const iOSSetup = new IosSetup(options);
-      iOSSetup.run();
     }
   } catch (err) {
     console.error(err as string);

@@ -1,13 +1,13 @@
 import colors from 'ansi-colors';
+import {exec, execSync, spawnSync} from 'child_process';
 import fs from 'fs';
-import path from 'path';
 import {homedir} from 'os';
-import {execSync} from 'child_process';
+import path from 'path';
 
 import {copySync, rmDirSync, symbols} from '../../../utils';
-import {downloadWithProgressBar, getBinaryNameForOS} from './common';
-import {Platform} from '../interfaces';
 import DOWNLOADS from '../downloads.json';
+import {Platform} from '../interfaces';
+import {downloadWithProgressBar, getBinaryNameForOS} from './common';
 
 
 export const getDefaultAndroidSdkRoot = (platform: Platform) => {
@@ -185,6 +185,63 @@ export const execBinarySync = (
 
     return null;
   }
+};
+
+export const execBinaryAsync = (
+  binaryLocation: string,
+  binaryName: string,
+  platform: Platform,
+  args: string
+): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    let cmd: string;
+    if (binaryLocation === 'PATH') {
+      const binaryFullName = getBinaryNameForOS(platform, binaryName);
+      cmd = `${binaryFullName} ${args}`;
+    } else {
+      const binaryFullName = path.basename(binaryLocation);
+      const binaryDirPath = path.dirname(binaryLocation);
+
+      if (platform === 'windows') {
+        cmd = `${binaryFullName} ${args}`;
+      } else {
+        cmd = `./${binaryFullName} ${args}`;
+      }
+
+      cmd = `cd ${binaryDirPath} && ${cmd}`;
+    }
+
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        console.log(
+          `  ${colors.red(symbols().fail)} Failed to run ${colors.cyan(cmd)}`
+        );
+        reject(stderr);
+      } else {
+        resolve(stdout.toString());
+      }
+    });
+  });
+};
+
+export const spawnCommandSync = (binaryLocation: string, binaryName: string, platform: Platform, args: string[]) => {
+  let cmd: string;
+  if (binaryLocation === 'PATH') {
+    const binaryFullName = getBinaryNameForOS(platform, binaryName);
+    cmd = `${binaryFullName}`;
+  } else {
+    cmd = binaryLocation;
+  }
+
+  const result = spawnSync(cmd, args, {stdio: 'inherit'});
+
+  if (result.error) {
+    console.error(result.error);
+
+    return false;
+  }
+
+  return result.status === 0;
 };
 
 export const getBuildToolsAvailableVersions = (buildToolsPath: string): string[] => {

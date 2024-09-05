@@ -1,4 +1,5 @@
 import colors from 'ansi-colors';
+import boxen from 'boxen';
 import {execSync} from 'child_process';
 import * as dotenv from 'dotenv';
 import fs from 'fs';
@@ -6,7 +7,6 @@ import os from 'os';
 import path from 'path';
 import untildify from 'untildify';
 import {prompt} from 'inquirer';
-import boxen from 'boxen';
 
 import Logger from '../../logger';
 import {getPlatformName, symbols} from '../../utils';
@@ -15,18 +15,19 @@ import {
   ABI, AVAILABLE_OPTIONS, BINARY_TO_PACKAGE_NAME, DEFAULT_CHROME_VERSIONS,
   DEFAULT_FIREFOX_VERSION, NIGHTWATCH_AVD, SETUP_CONFIG_QUES
 } from './constants';
+import DOWNLOADS from './downloads.json';
 import {AndroidSetupResult, Options, OtherInfo, Platform, SdkBinary, SetupConfigs} from './interfaces';
+import {getSubcommandHelp} from './subcommands/help';
 import {
   checkJavaInstallation, downloadFirefoxAndroid, downloadWithProgressBar,
   getAllAvailableOptions, getBinaryLocation, getBinaryNameForOS,
-  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv, getSubcommandHelp
+  getFirefoxApkName, getLatestVersion, getSdkRootFromEnv
 } from './utils/common';
 import {
   downloadAndSetupAndroidSdk, downloadSdkBuildTools, execBinarySync,
   getBuildToolsAvailableVersions, getDefaultAndroidSdkRoot, installPackagesUsingSdkManager
 } from './utils/sdk';
 
-import DOWNLOADS from './downloads.json';
 
 
 export class AndroidSetup {
