@@ -1,11 +1,10 @@
 import colors from 'ansi-colors';
-import {spawnSync} from 'child_process';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {Options, Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
-import {execBinarySync} from '../../utils/sdk';
+import {execBinarySync, spawnCommandSync} from '../../utils/sdk';
 import {showMissingBinaryHelp} from '../common';
 
 export async function connectAVD(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
@@ -57,15 +56,12 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
     Logger.log();
     Logger.log(`Connecting to AVD: ${colors.cyan(options.avd as string)}\n`);
 
-    const launchStatus = spawnSync(emulatorLocation, [`@${options.avd}`], {stdio: 'inherit'});
-
-    if (launchStatus.error) {
-      console.error(launchStatus.error);
-
+    const launchStatus = spawnCommandSync(emulatorLocation, 'emulator', platform, [`@${options.avd}`]);
+    if (!launchStatus) {
       return false;
     }
 
-    return launchStatus.status === 0;
+    return true;
   } catch (error) {
     Logger.log(colors.red('Error occured while launching AVD.'));
     console.error(error);

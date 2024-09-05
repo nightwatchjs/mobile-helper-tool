@@ -38,14 +38,12 @@ async function promptForFlag(): Promise<string> {
     type: 'list',
     name: 'flag',
     message: 'Select the device to connect to:',
-    choices: ['Real device', 'Emulator']
+    choices: [
+      {name: 'Real device', value: 'wireless'},
+      {name: 'Emulator', value: 'emulator'}
+    ]
   });
   Logger.log();
 
-  const flag = flagAnswer.flag;
-  if (flag === 'Real device') {
-    return 'wireless';
-  }
-
-  return 'emulator';
+  return flagAnswer.flag;
 }
