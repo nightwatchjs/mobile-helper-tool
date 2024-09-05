@@ -1,5 +1,4 @@
 import colors from 'ansi-colors';
-import {spawnSync} from 'child_process';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
@@ -7,7 +6,9 @@ import {ANDROID_DOTCOMMANDS} from '../../constants';
 import Logger from '../../logger';
 import {getPlatformName} from '../../utils';
 import {Platform, SdkBinary} from './interfaces';
-import {checkJavaInstallation, getBinaryLocation, getBinaryNameForOS, getSdkRootFromEnv} from './utils/common';
+import {showMissingBinaryHelp} from './subcommands/common';
+import {checkJavaInstallation, getBinaryLocation, getSdkRootFromEnv} from './utils/common';
+import {spawnCommandSync} from './utils/sdk';
 
 export class AndroidDotCommand {
   dotcmd: string;
@@ -55,42 +56,19 @@ export class AndroidDotCommand {
     }
     this.sdkRoot = sdkRootEnv;
 
-    return this.executeDotCommand();
+    const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
+    const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
+    if (!binaryLocation) {
+      showMissingBinaryHelp(binaryName);
+
+      return false;
+    }
+
+    return spawnCommandSync(binaryLocation, binaryName, this.platform, this.args);
   }
 
   loadEnvFromDotEnv(): void {
     this.androidHomeInGlobalEnv = 'ANDROID_HOME' in process.env;
     dotenv.config({path: path.join(this.rootDir, '.env')});
   }
-
-  buildCommand(): string {
-    const binaryName = this.dotcmd.split('.')[1] as SdkBinary;
-    const binaryLocation = getBinaryLocation(this.sdkRoot, this.platform, binaryName, true);
-
-    let cmd: string;
-    if (binaryLocation === 'PATH') {
-      const binaryFullName = getBinaryNameForOS(this.platform, binaryName);
-      cmd = `${binaryFullName}`;
-    } else {
-      const binaryFullName = path.basename(binaryLocation);
-      const binaryDirPath = path.dirname(binaryLocation);
-      cmd = path.join(binaryDirPath, binaryFullName);
-    }
-
-    return cmd;
-  }
-
-  executeDotCommand(): boolean {
-    const cmd = this.buildCommand();
-    const result = spawnSync(cmd, this.args, {stdio: 'inherit'});
-
-    if (result.error) {
-      console.error(result.error);
-
-      return false;
-    }
-
-    return result.status === 0;
-  }
 }
-

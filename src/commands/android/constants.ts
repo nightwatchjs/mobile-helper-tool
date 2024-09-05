@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
-import path from 'path';
 import os from 'os';
+import path from 'path';
 
 import {AvailableOptions, SdkBinary} from './interfaces';
 import {AvailableSubcommands} from './subcommands/interfaces';
@@ -77,13 +77,20 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
             usageHelp: 'device_id'
           }
         ]
+      },
+      {
+        name: 'system-image',
+        description: 'Install a system image'
       }
     ]
   },
   uninstall: {
-    description: 'todo item',
+    description: 'Uninstall system images, AVDs, or apps from a device',
     flags: [
-      {name: 'avd', description: 'todo item'},
+      {
+        name: 'avd',
+        description: 'Delete an Android Virtual Device'
+      },
       {
         name: 'app',
         description: 'Uninstall an APK from a device',
@@ -166,3 +173,4 @@ export const BINARY_TO_PACKAGE_NAME: Record<SdkBinary | typeof NIGHTWATCH_AVD, s
   emulator: 'emulator',
   [NIGHTWATCH_AVD]: `system-images;android-30;google_apis;${ABI}`
 };
+
