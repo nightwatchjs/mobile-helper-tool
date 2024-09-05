@@ -41,7 +41,9 @@ export const getBinaryNameForOS = (platform: Platform, binaryName: string) => {
   return binaryName;
 };
 
-export const getBinaryLocation = (sdkRoot: string, platform: Platform, binaryName: SdkBinary, suppressOutput = false) => {
+export const getBinaryLocation = (
+  sdkRoot: string, platform: Platform, binaryName: SdkBinary, suppressOutput = false
+): string => {
   const failLocations: string[] = [];
 
   const binaryFullName = getBinaryNameForOS(platform, binaryName);

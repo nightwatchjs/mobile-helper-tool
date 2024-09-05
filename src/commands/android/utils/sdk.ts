@@ -1,5 +1,5 @@
 import colors from 'ansi-colors';
-import {exec, execSync} from 'child_process';
+import {exec, execSync, spawnSync} from 'child_process';
 import fs from 'fs';
 import {homedir} from 'os';
 import path from 'path';
@@ -222,6 +222,26 @@ export const execBinaryAsync = (
       }
     });
   });
+};
+
+export const spawnCommandSync = (binaryLocation: string, binaryName: string, platform: Platform, args: string[]) => {
+  let cmd: string;
+  if (binaryLocation === 'PATH') {
+    const binaryFullName = getBinaryNameForOS(platform, binaryName);
+    cmd = `${binaryFullName}`;
+  } else {
+    cmd = binaryLocation;
+  }
+
+  const result = spawnSync(cmd, args, {stdio: 'inherit'});
+
+  if (result.error) {
+    console.error(result.error);
+
+    return false;
+  }
+
+  return result.status === 0;
 };
 
 export const getBuildToolsAvailableVersions = (buildToolsPath: string): string[] => {
