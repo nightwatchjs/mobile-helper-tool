@@ -1,11 +1,10 @@
 import colors from 'ansi-colors';
-import {spawnSync} from 'child_process';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
-import {execBinarySync} from '../../utils/sdk';
+import {execBinarySync, spawnCommandSync} from '../../utils/sdk';
 import {showMissingBinaryHelp} from '../common';
 
 export async function update(sdkRoot: string, platform: Platform): Promise<boolean> {
@@ -53,15 +52,31 @@ export async function update(sdkRoot: string, platform: Platform): Promise<boole
 
     Logger.log();
 
+    const commandArgs: string[] = [];
     if (packageName === 'Update all') {
       Logger.log('Updating all packages... \n');
-
-      return runUpdateCommand(sdkmanagerLocation, ['--update']);
+      commandArgs.push('--update');
+    } else {
+      Logger.log(`Updating ${colors.cyan(packageName)}... \n`);
+      commandArgs.push(packageName);
     }
 
-    Logger.log(`Updating ${colors.cyan(packageName)}... \n`);
+    const updateStatus = spawnCommandSync(sdkmanagerLocation, 'sdkmanager', platform, commandArgs);
+    if (updateStatus) {
+      if (packageName === 'Update all') {
+        Logger.log(colors.green('Packages updated successfully!\n'));
+      } else {
+        Logger.log(colors.green(`${packageName} updated successfully!\n`));
+      }
 
-    return runUpdateCommand(sdkmanagerLocation, [packageName]);
+      return true;
+    }
+
+    Logger.log(colors.red('Something went wrong.\n'));
+    Logger.log('To verify if the package was updated, run: npx @nightwatch/mobile-helper android.sdkmanager --list');
+    Logger.log('If the package is found listed in \'Available Updates\' section, please try updating again.\n');
+
+    return false;
   } catch (err) {
     Logger.log(colors.red('Error occured while updating the package.'));
     console.error(err);
@@ -70,14 +85,3 @@ export async function update(sdkRoot: string, platform: Platform): Promise<boole
   }
 }
 
-function runUpdateCommand(sdkmanagerLocation: string, args: string[]) {
-  const result = spawnSync(sdkmanagerLocation, args, {stdio: 'inherit'});
-
-  if (result.error) {
-    console.error(result.error);
-
-    return false;
-  }
-
-  return result.status === 0;
-}
