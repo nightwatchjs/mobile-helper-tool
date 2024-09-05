@@ -3,8 +3,8 @@ import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
 import {Platform} from '../../interfaces';
-import {execBinarySync} from '../../utils/sdk';
 import {getBinaryLocation} from '../../utils/common';
+import {execBinarySync} from '../../utils/sdk';
 import {getInstalledSystemImages, showMissingBinaryHelp} from '../common';
 
 export async function deleteSystemImage(sdkRoot: string, platform: Platform): Promise<boolean> {
@@ -15,8 +15,13 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
 
       return false;
     }
-    const installedImages: string[] = await getInstalledSystemImages(sdkmanagerLocation, platform);
-    if (!installedImages.length) {
+    const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
+    if (!installedSystemImages.result) {
+      return false;
+    }
+    if (!installedSystemImages.systemImages.length) {
+      Logger.log(colors.yellow('No installed system images were found!\n'));
+
       return false;
     }
 
@@ -24,7 +29,7 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
       type: 'list',
       name: 'systemImage',
       message: 'Select the system image to uninstall:',
-      choices: installedImages
+      choices: installedSystemImages.systemImages
     });
     const systemImage = systemImageAnswer.systemImage;
 
@@ -32,16 +37,19 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
     Logger.log(`Uninstalling ${colors.cyan(systemImageAnswer.systemImage)}...\n`);
 
     const deleteStatus = execBinarySync(sdkmanagerLocation, 'sdkmanager', platform, `--uninstall '${systemImage}'`);
-    if (!deleteStatus?.includes('100% Fetch remote repository')) {
-      Logger.log(`${colors.red('Failed to uninstall system image!')} Please try again.`);
+    if (deleteStatus?.includes('100% Fetch remote repository')) {
+      Logger.log(colors.green('System image uninstalled successfully!\n'));
 
-      return false;
+      deleteObsoleteAVDs(sdkRoot, platform);
+
+      return true;
     }
-    Logger.log(colors.green('System image uninstalled successfully!\n'));
 
-    deleteObsoleteAVDs(sdkRoot, platform);
+    Logger.log(colors.red('\nSomething went wrong while uninstalling system image.\n'));
+    Logger.log(`To verify if the system image was uninstalled, run: ${colors.cyan('npx @nightwatch/mobile-helper android.sdkmanager --list_installed')}`);
+    Logger.log('If the system image is found listed, please try uninstalling again.\n');
 
-    return true;
+    return false;
   } catch (error) {
     Logger.log(colors.red('Error occured while uninstalling system image.'));
     console.error(error);
@@ -75,6 +83,17 @@ async function deleteObsoleteAVDs(sdkRoot: string, platform: Platform) {
     obsoleteAVDNames.forEach((avdName, idx) => {
       Logger.log(`${idx+1}. ${avdName}`);
     });
+    Logger.log();
+
+    const deleteAnswer = await inquirer.prompt({
+      type: 'confirm',
+      name: 'delete',
+      message: 'Do you want to delete these AVDs?'
+    });
+
+    if (!deleteAnswer.delete) {
+      return;
+    }
 
     Logger.log();
     Logger.log('Deleting obsolete AVDs...\n');

@@ -102,6 +102,10 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
             usageHelp: 'device_id'
           }
         ]
+      },
+      {
+        name: 'system-image',
+        description: 'Uninstall a system image'
       }
     ]
   }
