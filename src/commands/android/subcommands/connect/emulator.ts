@@ -2,12 +2,13 @@ import colors from 'ansi-colors';
 import inquirer from 'inquirer';
 
 import Logger from '../../../../logger';
-import {Options, Platform} from '../../interfaces';
+import {Platform} from '../../interfaces';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinarySync, spawnCommandSync} from '../../utils/sdk';
 import {showMissingBinaryHelp} from '../common';
+import {ConfigOptions} from '../interfaces';
 
-export async function connectAVD(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
+export async function connectAVD(options: ConfigOptions, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
     const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
     if (avdmanagerLocation === '') {
@@ -38,35 +39,36 @@ export async function connectAVD(options: Options, sdkRoot: string, platform: Pl
 
     const installedAVDList = installedAvds.split('\n').filter(avd => avd !== '');
 
-    if (options.avd && !installedAVDList.includes(options.avd as string)) {
-      Logger.log(colors.yellow('Provided AVD not found!\n'));
-      options.avd = '';
+    let userSuppliedAVD = '';
+    if (typeof options.avd === 'string') {
+      userSuppliedAVD = options.avd;
+
+      if (!installedAVDList.includes(userSuppliedAVD)) {
+        Logger.log(colors.yellow(`AVD '${userSuppliedAVD}' not found!\n`));
+        userSuppliedAVD = '';
+      }
+    } else if (Array.isArray(options.avd)) {
+      Logger.log(colors.yellow('Only one AVD can be connected at a time.\n'));
     }
 
-    if (!options.avd) {
+    if (!userSuppliedAVD) {
       const avdAnswer = await inquirer.prompt({
         type: 'list',
         name: 'avdName',
         message: 'Select the AVD to connect:',
         choices: installedAVDList
       });
-      options.avd = avdAnswer.avdName;
+      userSuppliedAVD = avdAnswer.avdName;
     }
 
     Logger.log();
-    Logger.log(`Connecting to AVD: ${colors.cyan(options.avd as string)}\n`);
+    Logger.log(`Connecting to AVD: ${colors.cyan(userSuppliedAVD)}\n`);
 
-    const launchStatus = spawnCommandSync(emulatorLocation, 'emulator', platform, [`@${options.avd}`]);
-    if (!launchStatus) {
-      return false;
-    }
-
-    return true;
+    return spawnCommandSync(emulatorLocation, 'emulator', platform, [`@${userSuppliedAVD}`]);
   } catch (error) {
-    Logger.log(colors.red('Error occured while launching AVD.'));
+    Logger.log(colors.red('\nError occurred while launching AVD.'));
     console.error(error);
 
     return false;
   }
 }
-

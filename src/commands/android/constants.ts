@@ -42,7 +42,7 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       },
       {
         name: 'emulator',
-        description: 'Launch an Emulator Device',
+        description: 'Launch an Android Virtual Device (AVD) inside the Emulator',
         cliConfigs: [{
           name: 'avd',
           alias: [],

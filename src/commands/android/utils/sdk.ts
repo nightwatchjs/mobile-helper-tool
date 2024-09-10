@@ -224,7 +224,7 @@ export const execBinaryAsync = (
   });
 };
 
-export const spawnCommandSync = (binaryLocation: string, binaryName: string, platform: Platform, args: string[]) => {
+export const spawnCommandSync = (binaryLocation: string, binaryName: string, platform: Platform, args: string[]): boolean => {
   let cmd: string;
   if (binaryLocation === 'PATH') {
     const binaryFullName = getBinaryNameForOS(platform, binaryName);

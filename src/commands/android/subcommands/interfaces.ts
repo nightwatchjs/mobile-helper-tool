@@ -20,6 +20,10 @@ export interface AvailableSubcommands {
   [key: string]: Subcommand;
 }
 
+export interface ConfigOptions {
+  [key: string]: string | string[] | boolean | undefined;
+}
+
 export interface SubcommandOptionsVerificationResult {
   subcommandFlag: string;
   configs: string[];
@@ -35,4 +39,3 @@ export interface AvailableSystemImages {
 export interface ApiLevelNames {
   [apiLevel: string]: string
 }
-
