@@ -39,6 +39,16 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
       {
         name: 'wireless',
         description: 'Connect a real device wirelessly'
+      },
+      {
+        name: 'emulator',
+        description: 'Launch an Android Virtual Device (AVD) inside the Emulator',
+        cliConfigs: [{
+          name: 'avd',
+          alias: [],
+          description: 'Name of the avd to launch',
+          usageHelp: 'avd_name'
+        }]
       }
     ]
   },
