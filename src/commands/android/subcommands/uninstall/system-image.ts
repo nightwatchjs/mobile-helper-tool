@@ -16,10 +16,10 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
       return false;
     }
     const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
-    if (!installedSystemImages.result) {
+    if (!installedSystemImages) {
       return false;
     }
-    if (!installedSystemImages.systemImages.length) {
+    if (!installedSystemImages.length) {
       Logger.log(colors.yellow('No installed system images were found!\n'));
 
       return false;
@@ -29,7 +29,7 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
       type: 'list',
       name: 'systemImage',
       message: 'Select the system image to uninstall:',
-      choices: installedSystemImages.systemImages
+      choices: installedSystemImages
     });
     const systemImage = systemImageAnswer.systemImage;
 
@@ -45,41 +45,58 @@ export async function deleteSystemImage(sdkRoot: string, platform: Platform): Pr
       return true;
     }
 
-    Logger.log(colors.red('\nSomething went wrong while uninstalling system image.\n'));
+    Logger.log(colors.red('\nSomething went wrong while uninstalling the system image.\n'));
     Logger.log(`To verify if the system image was uninstalled, run: ${colors.cyan('npx @nightwatch/mobile-helper android.sdkmanager --list_installed')}`);
     Logger.log('If the system image is found listed, please try uninstalling again.\n');
 
     return false;
   } catch (error) {
-    Logger.log(colors.red('Error occured while uninstalling system image.'));
+    Logger.log(colors.red('\nError occurred while uninstalling system image.'));
     console.error(error);
 
     return false;
   }
 }
 
+/**
+* Delete AVDs that can no longer be used due to missing system image.
+*
+* We don't throw an error if the AVD deletion fails, as the main aim of this subcommand
+* is to uninstall system-image, which is already completed.
+*/
 async function deleteObsoleteAVDs(sdkRoot: string, platform: Platform) {
   const avdmanagerLocation = getBinaryLocation(sdkRoot, platform, 'avdmanager', true);
   if (!avdmanagerLocation) {
     return;
   }
-  const stdout = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd');
-  if (!stdout) {
+
+  const avdList = execBinarySync(avdmanagerLocation, 'avdmanager', platform, 'list avd');
+  if (!avdList) {
     return;
   }
-  const obsoleteAVDs = stdout.split('The following Android Virtual Devices could not be loaded:')[1];
+
+  const obsoleteAVDs = avdList.split('The following Android Virtual Devices could not be loaded:')[1];
   if (obsoleteAVDs) {
     const obsoleteAVDNames: string[] = [];
+    let avdMissingImageErrorCount = 0;
 
     obsoleteAVDs.split('\n').forEach(line => {
       if (line.includes('Name: ')) {
         const avdName = line.split(':')[1].trim();
         obsoleteAVDNames.push(avdName);
       }
+      if (line.includes('Error: Missing system image')) {
+        avdMissingImageErrorCount++;
+      }
     });
 
-    Logger.log(colors.yellow('The following AVDs can no longer be used due to missing system image:\n'));
+    if (!obsoleteAVDNames.length || obsoleteAVDNames.length !== avdMissingImageErrorCount) {
+      Logger.log(colors.red('Note: Failed to fetch obsolete AVDs after deleting the system image.'));
 
+      return;
+    }
+
+    Logger.log(colors.yellow('The following AVDs can no longer be used due to missing system image:'));
     obsoleteAVDNames.forEach((avdName, idx) => {
       Logger.log(`${idx+1}. ${avdName}`);
     });
@@ -110,4 +127,3 @@ async function deleteObsoleteAVDs(sdkRoot: string, platform: Platform) {
     Logger.log();
   }
 }
-

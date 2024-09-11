@@ -42,10 +42,10 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
     const avdName = avdNameAnswer.avdName || 'my_avd';
 
     const installedSystemImages = await getInstalledSystemImages(sdkmanagerLocation, platform);
-    if (!installedSystemImages.result) {
+    if (!installedSystemImages) {
       return false;
     }
-    if (!installedSystemImages.systemImages.length) {
+    if (!installedSystemImages.length) {
       Logger.log(colors.red('\nNo installed system images were found!'));
       Logger.log(`Run: ${colors.cyan('npx @nightwatch/mobile-helper android install --system-image')} to install a new system image.`);
 
@@ -56,7 +56,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       type: 'list',
       name: 'systemImage',
       message: 'Select the system image to use for AVD:',
-      choices: installedSystemImages.systemImages
+      choices: installedSystemImages
     });
     const systemImage = systemImageAnswer.systemImage;
 
@@ -132,6 +132,7 @@ async function executeCreateAvdCommand(cmd: string, avdmanagerLocation: string, 
   }
 
   Logger.log(colors.red('Something went wrong while creating AVD!'));
+  Logger.log('Command output:', output);
   Logger.log(`Please run ${colors.cyan(`npx @nightwatch/mobile-helper android connect --emulator --avd ${avdName}`)} to verify AVD creation.`);
   Logger.log('If AVD does not launch, please try creating the AVD again.\n');
 
