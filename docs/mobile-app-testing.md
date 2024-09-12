@@ -1,16 +1,29 @@
-## Mobile app testing
+# Mobile app testing
 
-- [On Android](#mobile-app-testing---android)
-- [On iOS](#mobile-app-testing---ios)
+Nightwatch.js now supports testing of native mobile applications via Appium, on both Android and iOS devices. For more details, follow this [guide](https://nightwatchjs.org/guide/mobile-app-testing/introduction.html).
 
-### Mobile app testing - Android
+If you're setting up Nightwatch.js for the first time in your project, the setup is pretty straightforward. To setup Nightwatch.js in your new/existing project with support for mobile app testing out-of-the-box, go to your project root directory, run the Nightwatch init command and answer the questions that follow.
 
-#### Setup Android SDK requirements
+```sh
+cd path/to/project/root
+npm init nightwatch@latest .
+```
+
+For existing Nightwatch.js project, the setup for mobile app testing can be done by following the steps below:
+
+* [Setup for Android](#android)
+* [Setup for iOS](#ios)
+
+## Android
+
+### Setup Android SDK requirements
 
 1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
+
    ```sh
    npx @nightwatch/mobile-helper android --appium
    ```
+
 2. Answer a few questions related to your requirements:
 
    <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
@@ -22,18 +35,23 @@
 
 5. And done! :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 
-#### Setup mobile app testing and run first sample test
+### Setup mobile app testing and run first sample test
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
+
    ```sh
    npm i appium@next --save-dev
    ```
+
 2. Install Appium UiAutomator2 driver for Android:
+
    ```sh
    npx appium driver install uiautomator2
    ```
+
 3. Download the [sample wikipedia app](https://raw.githubusercontent.com/priyansh3133/wikipedia/main/wikipedia.apk) and save it in your project's root directory (alongside `nightwatch.conf.js` file).
 4. Add the following env configuration to your `nightwatch.conf.js` file:
+
    ```js
    "test_settings": {
     // other envs above this line
@@ -44,14 +62,15 @@
         use_appium: true,
         host: 'localhost',
         port: 4723,
-        server_path: '',
         // args to pass when starting the Appium server
         cli_args: [
           // automatically download the required chromedriver
           // '--allow-insecure=chromedriver_autodownload'
         ],
         // Remove below line if using Appium v1
-        default_path_prefix: ''
+        default_path_prefix: '',
+        // Uncomment below line if Appium is installed globally
+        // server_path: 'appium'
       },
       webdriver: {
         timeout_options: {
@@ -123,7 +142,9 @@
     },
    }
    ```
+
 5. Add the following sample test to your test-suite (`test/wikipedia-android.js`):
+
    ```js
    describe('Wikipedia Android app test', function() {
      before(function(app) {
@@ -146,18 +167,24 @@
      });
    });
    ```
+
 6. If testing on real-device:
    1. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
    2. Make sure latest version of Chrome browser is installed on your Android device. If not, install from Google Play Store.
    3. Make sure latest version of `chromedriver` NPM package is installed in your project. If not, install by running:
+
       ```sh
       npm i chromedriver@latest --save-dev
       ```
+
 7. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command:
+
    ```sh
    npx @nightwatch/mobile-helper android --appium
    ```
+
 8. Run your Nightwatch tests on Android emulator/real device:
+
    ```sh
     # test on emulator (assuming test saved as `test/wikipedia-android.js`)
     npx nightwatch test/wikipedia-android.js --env app.android.emulator
@@ -165,14 +192,16 @@
     npx nightwatch test/wikipedia-android.js --env app.android.real
    ```
 
-### Mobile app testing - iOS
+## iOS
 
-#### Setup iOS SDK requirements
+### Setup iOS SDK requirements
 
 1. From your [Nightwatch](https://nightwatchjs.org) project's root dir, run:
+
    ```sh
    npx @nightwatch/mobile-helper ios --setup
    ```
+
 2. Answer a device related question:
 
    <img width="352" alt="image" src="https://user-images.githubusercontent.com/94462364/199410412-e40da151-e545-4039-90db-e68697358665.png">
@@ -184,18 +213,23 @@
 
 5. And done! :tada: Your setup is now complete. (Re-run the command in the first step to verify.)
 
-#### Setup mobile app testing and run first sample test
+### Setup mobile app testing and run first sample test
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install Appium v2 as a dev-dependency:
+
    ```sh
    npm i appium@next --save-dev
    ```
+
 2. Install Appium XCUITest driver for iOS:
+
    ```sh
    npx appium driver install xcuitest
    ```
+
 3. Download the [sample wikipedia app](https://raw.githubusercontent.com/priyansh3133/wikipedia/main/wikipedia.zip) and save it in your project's root directory (alongside `nightwatch.conf.js` file).
 4. Add the following env configuration to your `nightwatch.conf.js` file (skip 'app' env if already followed Android setup above):
+
    ```js
    "test_settings": {
     // other envs above this line
@@ -206,14 +240,15 @@
         use_appium: true,
         host: 'localhost',
         port: 4723,
-        server_path: '',
         // args to pass when starting the Appium server
         cli_args: [
           // automatically download the required chromedriver
           // '--allow-insecure=chromedriver_autodownload'
         ],
         // Remove below line if using Appium v1
-        default_path_prefix: ''
+        default_path_prefix: '',
+        // Uncomment below line if Appium is installed globally
+        // server_path: 'appium'
       },
       webdriver: {
         timeout_options: {
@@ -271,7 +306,9 @@
     },
    }
    ```
+
 5. Add the following sample test to your test-suite (`test/wikipedia-ios.js`):
+
    ```js
    describe('Wikipedia iOS app test', function() {
      before(function(app) {
@@ -301,7 +338,9 @@
      });
    });
    ```
+
 6. (**Real Device**) Run the following command to get the *UDID*:
+
    ```sh
     system_profiler SPUSBDataType | sed -n '/iPhone/,/Serial/p' | grep 'Serial Number:' | awk -F ': ' '{print $2}'
     ```
@@ -313,14 +352,17 @@
     In your Nightwatch configuration, set `udid` property of `appium:options` capability inside `app.ios.real` environment to *UDID* from the previous step.
 
     **Simulators**
-    
+
     Run the following command to get a list of simulators:
+
     ```sh
     xcrun simctl list devices
     ```
+
     And then update `deviceName` (eg: 'iPhone 13') and `platformVersion` (eg: '15.0') properties of `appium:options` capability, defined for `app.ios.simulator` environment in your Nightwatch configuration, according to your preference.
 
 8. Run your Nightwatch tests on iOS simulator/real device:
+
    ```sh
     # test on simulator (assuming test saved as `test/wikipedia-ios.js`)
     npx nightwatch test/wikipedia-ios.js --env app.ios.simulator
