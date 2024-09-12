@@ -21,7 +21,7 @@ Official Nightwatch tool to help easily setup all the requirements needed to get
     * [List connected devices and installed AVDs](#2-list)
     * [Install system images, AVDs and Android apps](#3-install)
     * [Uninstall system images, AVDs and Android apps](#4-uninstall)
-  * [Run commands with Android SDK tools](#run-android-sdk-binaries)
+  * [Run Android SDK tool commands directly from CLI](#run-android-sdk-tool-commands)
 
 ## Do more with Android
 
