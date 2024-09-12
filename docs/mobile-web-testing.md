@@ -122,7 +122,7 @@ For existing Nightwatch.js users, the setup for mobile-web testing can be done b
     npx nightwatch --env android.chrome
     ```
 
-### iOS
+## iOS
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
 
