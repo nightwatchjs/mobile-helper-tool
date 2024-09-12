@@ -2,10 +2,15 @@
 
 Nightwatch.js now supports testing of native mobile applications via Appium, on both Android and iOS devices. For more details, follow this [guide](https://nightwatchjs.org/guide/mobile-app-testing/introduction.html).
 
-If you're setting up Nightwatch.js for the first time in your project, the setup is pretty straightforward. To setup Nightwatch.js in your new/existing project with support for mobile app testing out-of-the-box:
+If you're setting up Nightwatch.js for the first time in your project, the process is pretty straightforward. To setup Nightwatch.js in your new/existing project with support for mobile app testing out-of-the-box, run:
 
-* Go to your project root directory: `cd path/to/project/root`
-* Run the Nightwatch init command: `npm init nightwatch@latest`
+```sh
+# go to your project root directory
+cd path/to/project/root
+
+# run the init command
+npm init nightwatch@latest .
+```
 
 and answer the questions that follow. That's it!
 
