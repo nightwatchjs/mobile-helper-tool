@@ -1,23 +1,37 @@
-## Mobile web testing
+# Mobile web testing
 
-   - [On Android](#mobile-web-testing---android)
-   - [On iOS](#mobile-web-testing---ios)
+With Nightwatch.js, users can now test websites on real mobile browsers, along with the desktop browsers.
 
-### Mobile web testing - Android
+For new users, the setup is pretty easy. To set up a new Nightwatch.js project with support for mobile-web testing out-of-the-box, run:
+
+```sh
+npm init nightwatch@latest <project-name>
+```
+
+and answer the questions that follow. And that's it!
+
+For existing Nightwatch.js users, the setup for mobile-web testing can be done by following the steps below:
+
+* [Setup on Android](#android)
+* [Setup on iOS](#ios)
+
+## Android
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+
    ```sh
    npm i @nightwatch/mobile-helper --save-dev
    ```
+
 2. From your project's root dir, run:
 
    ```sh
    npx @nightwatch/mobile-helper android
    ```
+
 3. Answer a few questions related to your requirements:
 
    <img width="689" alt="image" src="https://user-images.githubusercontent.com/39924567/199205454-e321f143-9757-4f6f-809b-b143519bddae.png">
-
 
 4. It will verify if all the requirements are being met.
 5. If some requirements are not being met, it will ask whether to download and setup those requirements:
@@ -26,6 +40,7 @@
 
 6. Voila :tada: Your setup is now complete. (If something fails, follow the instructions and re-run the command.)
 7. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
+
    ```js
    "test_settings": {
     // other envs above this line
@@ -86,16 +101,20 @@
     },
    }
    ```
+
 8. If testing on real-device:
    1. Make sure latest version of Chrome/Firefox browsers are installed. If not, install them from Google Play Store.
    2. [Turn on USB Debugging](https://developer.android.com/studio/debug/dev-options#enable) on your Android Device and connect it to your system via data cable.
    3. Set `real_mobile` capability to true in the configuration.
 
 9. If testing on emulator, make sure `chromedriver-mobile/chromedriver` is present in your Nightwatch project's root dir. If not present, re-run the command:
+
    ```sh
    npx @nightwatch/mobile-helper android
    ```
+
 10. Run your nightwatch tests on Android mobile browsers:
+
     ```sh
     # for firefox
     npx nightwatch --env android.firefox
@@ -103,31 +122,33 @@
     npx nightwatch --env android.chrome
     ```
 
-### Mobile web testing - iOS
+### iOS
 
 1. In your [Nightwatch](https://nightwatchjs.org) project, install `@nightwatch/mobile-helper` as a dev-dependency:
+
    ```sh
    npm i @nightwatch/mobile-helper --save-dev
    ```
+
 2. From your project's root dir, run:
 
    ```sh
    npx @nightwatch/mobile-helper ios
    ```
+
 3. Answer a device related question:
 
    <img width="352" alt="image" src="https://user-images.githubusercontent.com/94462364/199410412-e40da151-e545-4039-90db-e68697358665.png">
-
 
 4. It will verify if all the requirements are being met.
 5. If some requirements are not being met, follow the guide to setup those requirements.
 
    <img width="662" alt="image" src="https://user-images.githubusercontent.com/94462364/199419711-43e7793a-df82-4d67-a832-679eb5c1f7b9.png">
 
-
 6. Great :tada: Your setup is now complete. (Re-run the command in the first step to verify.)
 
 7. Add the following env configuration to your `nightwatch.conf.js` or `nightwatch.json` file:
+
    ```js
    "test_settings": {
      // other envs above this line
@@ -170,7 +191,9 @@
      },
    }
    ```
+
 8. (**Real Device**) Run the following command to get the *UDID*:
+
    ```sh
     system_profiler SPUSBDataType | sed -n '/iPhone/,/Serial/p' | grep 'Serial Number:' | awk -F ': ' '{print $2}'
     ```
@@ -182,14 +205,17 @@
     In your Nightwatch configuration, set `safari:deviceUDID` capability of `ios.real.safari` environment to *UDID* from the previous step.
 
     **Simulators**
-    
+
     Run the following command to get a list of simulators:
+
     ```sh
     xcrun simctl list devices
     ```
+
     And then update `safari:deviceName` (eg: 'iPhone 13') and `safari:platformVersion` (eg: '15.0') capabilities of `ios.simulator.safari` environment in your Nightwatch configuration according to your preference.
 
 10. Run your nightwatch tests on Android mobile browsers:
+
     ```sh
     # for simulators
     npx nightwatch --env ios.simulator.safari
