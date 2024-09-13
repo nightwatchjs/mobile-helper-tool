@@ -120,6 +120,25 @@ npx @nightwatch/mobile-helper android.<binary_name> [args]
 
 Currently supported binaries: `adb`, `avdmanager`, `sdkmanager` and `emulator`.
 
+#### Examples
+
+1. List all the devices connected through `adb`:
+   ```sh
+   npx @nightwatch/mobile-helper android.adb devices
+   ```
+2. Start the Android Emulator with an AVD:
+   ```sh
+   npx @nightwatch/mobile-helper android.emulator @nightwatch-android-11
+   ```
+3. List all installed system images (along with other packages):
+   ```sh
+   npx @nightwatch/mobile-helper android.sdkmanager --list_installed
+   ```
+4. List all installed Android Virtual Devices (AVDs):
+   ```sh
+   npx @nightwatch/mobile-helper android.avdmanager list avd
+   ```
+
 Check the following docs to know more about the usage of the above mentioned binaries:
 
 * [Installing Android application](./docs/install-android-application-from-apk.md)
