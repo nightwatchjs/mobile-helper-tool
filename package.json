@@ -11,11 +11,13 @@
     "node": ">=14.0.0"
   },
   "scripts": {
+    "test": "echo \"No test specified\" && exit 0",
     "build": "tsc",
     "dev": "tsc && node dev.js",
     "prepublishOnly": "tsc --outDir dist",
     "test:unit": "npx nightwatch tests/unit_tests",
-    "eslint": "eslint src"
+    "eslint": "eslint src",
+    "prepare": "husky"
   },
   "author": "",
   "license": "MIT",
@@ -24,6 +26,8 @@
     "url": "git+https://github.com/nightwatchjs/mobile-helper-tool"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
     "@types/cli-progress": "^3.11.0",
     "@types/download": "^8.0.1",
     "@types/inquirer": "^8.2.3",
@@ -34,11 +38,16 @@
     "@typescript-eslint/eslint-plugin": "^5.38.1",
     "@typescript-eslint/parser": "^5.38.1",
     "eslint": "^8.24.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "mockery": "^2.1.0",
     "nightwatch": "^3.6.2",
     "nock": "^13.2.9",
     "ts-node": "^10.9.1",
     "typescript": "^4.8.3"
+  },
+  "lint-staged": {
+  "src/**/*.{js,jsx,ts}": "eslint --fix"
   },
   "dependencies": {
     "ansi-colors": "^4.1.3",
