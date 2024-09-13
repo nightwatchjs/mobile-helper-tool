@@ -118,6 +118,10 @@ export const AVAILABLE_SUBCOMMANDS: AvailableSubcommands = {
         description: 'Uninstall a system image'
       }
     ]
+  },
+  update: {
+    description: 'Update Android SDK packages',
+    flags: []
   }
 };
 
