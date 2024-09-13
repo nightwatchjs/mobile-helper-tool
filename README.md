@@ -67,6 +67,8 @@ npx @nightwatch/mobile-helper android connect [flags]
 | --wireless | Connect a real device wirelessly      |
 | --emulator | Launch an AVD inside Android Emulator.|
 
+For more details on the usage of the `connect` subcommand, please refer to [this doc](docs/subcommands/connect.md).
+
 #### 2. list
 
 This subcommand allows you to list all connected devices and installed AVDs.
@@ -79,6 +81,8 @@ npx @nightwatch/mobile-helper android list [flags]
 | ---------- | ------------------------------------------------------ |
 | --device   | Show a list of all the connected real devices and AVDs |
 | --avd      | Show a list of all the currently installed AVDs        |
+
+For more details on the usage of the `list` subcommand, please refer to [this doc](docs/subcommands/list.md).
 
 #### 3. install
 
@@ -94,6 +98,8 @@ npx @nightwatch/mobile-helper android install [flags]
 | --avd          | Create a new AVD                           |
 | --system-image | Install a new system-image                 |
 
+For more details on the usage of the `install` subcommand, please refer to [this doc](docs/subcommands/install.md).
+
 #### 4. uninstall
 
 This subcommand allows you to uninstall a system-image, delete an AVD, or uninstall an app from a target device.
@@ -107,6 +113,8 @@ npx @nightwatch/mobile-helper android uninstall [flags]
 | --app          | Uninstall an app from a real device or an AVD  |
 | --avd          | Delete an AVD                                  |
 | --system-image | Uninstall a system-image                       |
+
+For more details on the usage of the `uninstall` subcommand, please refer to [this doc](docs/subcommands/uninstall.md).
 
 ### Run Android SDK tool commands
 
