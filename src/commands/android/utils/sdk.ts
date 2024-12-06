@@ -233,7 +233,10 @@ export const spawnCommandSync = (binaryLocation: string, binaryName: string, pla
     cmd = binaryLocation;
   }
 
-  const result = spawnSync(cmd, args, {stdio: 'inherit'});
+  const result = spawnSync(cmd, args, {
+    stdio: 'inherit',
+    ...(platform === 'windows' && cmd.endsWith('.bat') && {shell: true})
+  });
 
   if (result.error) {
     console.error(result.error);
