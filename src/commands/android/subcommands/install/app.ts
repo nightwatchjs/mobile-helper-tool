@@ -9,6 +9,7 @@ import ADB from '../../utils/appium-adb';
 import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync} from '../../utils/sdk';
 import {showMissingBinaryHelp} from '../common';
+import untildify from 'untildify';
 
 export async function installApp(options: Options, sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -63,7 +64,7 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
 
     Logger.log();
 
-    options.path = path.resolve(process.cwd(), options.path as string);
+    options.path = path.resolve(process.cwd(), untildify(options.path as string));
     if (!existsSync(options.path)) {
       Logger.log(`${colors.red('No APK file found at: ' + options.path)}\nPlease provide a valid path to the APK file.\n`);
 
@@ -72,7 +73,7 @@ export async function installApp(options: Options, sdkRoot: string, platform: Pl
 
     Logger.log('Installing APK...');
 
-    const installationStatus = await execBinaryAsync(adbLocation, 'adb', platform, `-s ${options.deviceId} install ${options.path}`);
+    const installationStatus = await execBinaryAsync(adbLocation, 'adb', platform, `-s ${options.deviceId} install "${options.path}"`);
     if (installationStatus?.includes('Success')) {
       Logger.log(colors.green('APK installed successfully!\n'));
 
@@ -93,7 +94,7 @@ const handleError = (consoleOutput: any) => {
   Logger.log(colors.red('\nError while installing APK:'));
 
   let errorMessage = consoleOutput;
-  if (consoleOutput.includes('INSTALL_FAILED_ALREADY_EXISTS')) {
+  if (consoleOutput.includes('INSTALL_FAILED_ALREADY_EXISTS') || consoleOutput.includes('INSTALL_FAILED_VERSION_DOWNGRADE')) {
     errorMessage = 'APK with the same package name already exists on the device.\n';
     errorMessage += colors.reset('\nPlease uninstall the app first from the device and then install again.\n');
     errorMessage += colors.reset(`To uninstall, use: ${colors.cyan('npx @nightwatch/mobile-helper android uninstall --app')}\n`);
