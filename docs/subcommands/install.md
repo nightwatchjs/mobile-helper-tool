@@ -30,3 +30,10 @@ Run the below command to create a new AVD:
 ```sh
 npx @nightwatch/mobile-helper android install --avd
 ```
+
+### 3. Install a system image
+
+Run the below command to install a new system image:
+```sh
+npx @nightwatch/mobile-helper android install --system-image
+```
