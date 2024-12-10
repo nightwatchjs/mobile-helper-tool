@@ -7,16 +7,14 @@ import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync, execBinarySync} from '../../utils/sdk';
 import {getInstalledSystemImages, showMissingBinaryHelp} from '../common';
 
-type DeviceType = 'Nexus' | 'Pixel' | 'Wear OS' | 'Android TV' | 'Desktop' | 'Others';
-
-const deviceTypesToGrepCommand: Record<DeviceType, string> = {
-  'Nexus': 'Nexus',
-  'Pixel': 'pixel',
-  'Wear OS': 'wear',
-  'Android TV': 'tv',
-  'Desktop': 'desktop',
-  'Others': '-Ev "wear|Nexus|pixel|tv|desktop"'
-};
+const DeviceTypes = [
+  {name: 'Nexus', value: 'Nexus'},
+  {name: 'Pixel', value: 'pixel'},
+  {name: 'Wear OS', value: 'wear'},
+  {name: 'Andriod TV', value: 'tv'},
+  {name: 'Desktop', value: 'desktop'},
+  {name: 'Others', value: 'Others'},
+];
 
 export async function createAvd(sdkRoot: string, platform: Platform): Promise<boolean> {
   try {
@@ -64,24 +62,43 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       type: 'list',
       name: 'deviceType',
       message: 'Select the device type for AVD:',
-      choices: Object.keys(deviceTypesToGrepCommand)
+      choices: DeviceTypes
     });
     const deviceType = deviceTypeAnswer.deviceType;
 
-    let cmd = `list devices -c | grep ${deviceTypesToGrepCommand[deviceType as DeviceType]}`;
-    const availableDeviceProfiles = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
+    let cmd = 'list devices -c';
+    const stdout = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
+
+    if (!stdout) {
+      Logger.log(`${colors.red('No device profiles found.')} Please try again.`);
+
+      return false;
+    }
+
+    const deviceTypeValues = DeviceTypes.map(deviceType => deviceType.value);
+    const availableDeviceProfiles = stdout
+      .split('\n')
+      .filter(line => line !== '')
+      .filter(deviceProfile => {
+        if (deviceType === 'Others') {
+          return !deviceTypeValues.some(deviceTypeValue => deviceProfile.includes(deviceTypeValue));
+        } else {
+          return deviceProfile.includes(deviceType);
+        }
+      });
+
 
     if (!availableDeviceProfiles) {
       Logger.log(`${colors.red(`No potential device profile found for device type ${deviceType}.`)} Please try again.`);
 
       return false;
     }
-    const availableDeviceProfilesList = availableDeviceProfiles.split('\n').filter(deviceProfile => deviceProfile !== '');
+
     const deviceAnswer = await inquirer.prompt({
       type: 'list',
       name: 'deviceProfile',
       message: 'Select the device profile for AVD:',
-      choices: availableDeviceProfilesList
+      choices: availableDeviceProfiles
     });
     const deviceProfile = deviceAnswer.deviceProfile;
 
