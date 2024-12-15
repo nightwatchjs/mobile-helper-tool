@@ -7,13 +7,13 @@ import {getBinaryLocation} from '../../utils/common';
 import {execBinaryAsync, execBinarySync} from '../../utils/sdk';
 import {getInstalledSystemImages, showMissingBinaryHelp} from '../common';
 
-const DeviceTypes = [
+const DEVICE_TYPES = [
   {name: 'Nexus', value: 'Nexus'},
   {name: 'Pixel', value: 'pixel'},
   {name: 'Wear OS', value: 'wear'},
-  {name: 'Andriod TV', value: 'tv'},
+  {name: 'Android TV', value: 'tv'},
   {name: 'Desktop', value: 'desktop'},
-  {name: 'Others', value: 'Others'},
+  {name: 'Others', value: 'Others'}
 ];
 
 export async function createAvd(sdkRoot: string, platform: Platform): Promise<boolean> {
@@ -62,21 +62,20 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       type: 'list',
       name: 'deviceType',
       message: 'Select the device type for AVD:',
-      choices: DeviceTypes
+      choices: DEVICE_TYPES
     });
     const deviceType = deviceTypeAnswer.deviceType;
 
     let cmd = 'list devices -c';
-    const stdout = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
-
-    if (!stdout) {
-      Logger.log(`${colors.red('No device profiles found.')} Please try again.`);
+    const availableDeviceProfiles = execBinarySync(avdmanagerLocation, 'avdmanager', platform, cmd);
+    if (!availableDeviceProfiles) {
+      Logger.log(colors.red('\nSomething went wrong while retrieving available device profiles.'),  'Please try again.');
 
       return false;
     }
 
-    const deviceTypeValues = DeviceTypes.map(deviceType => deviceType.value);
-    const availableDeviceProfiles = stdout
+    const deviceTypeValues = DEVICE_TYPES.map(deviceType => deviceType.value);
+    const matchingDeviceProfiles = availableDeviceProfiles
       .split('\n')
       .filter(line => line !== '')
       .filter(deviceProfile => {
@@ -88,8 +87,8 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       });
 
 
-    if (!availableDeviceProfiles) {
-      Logger.log(`${colors.red(`No potential device profile found for device type ${deviceType}.`)} Please try again.`);
+    if (!matchingDeviceProfiles.length) {
+      Logger.log(colors.red(`\nNo potential device profile found for device type "${deviceType}".`),  'Please try again.');
 
       return false;
     }
@@ -98,7 +97,7 @@ export async function createAvd(sdkRoot: string, platform: Platform): Promise<bo
       type: 'list',
       name: 'deviceProfile',
       message: 'Select the device profile for AVD:',
-      choices: availableDeviceProfiles
+      choices: matchingDeviceProfiles
     });
     const deviceProfile = deviceAnswer.deviceProfile;
 
