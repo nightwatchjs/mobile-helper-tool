@@ -2,7 +2,6 @@ import colors from 'ansi-colors';
 import axios, {AxiosResponse} from 'axios';
 import {execSync} from 'child_process';
 import cliProgress from 'cli-progress';
-import download from 'download';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -100,6 +99,8 @@ export const getBinaryLocation = (
 };
 
 export const downloadWithProgressBar = async (url: string, dest: string, extract = false) => {
+  const {default: download} = await import('download');
+
   const progressBar = new cliProgress.Bar({
     format: ' [{bar}] {percentage}% | ETA: {eta}s'
   }, cliProgress.Presets.shades_classic);
@@ -110,7 +111,7 @@ export const downloadWithProgressBar = async (url: string, dest: string, extract
     });
     progressBar.start(100, 0);
 
-    await stream.on('downloadProgress', function(progress) {
+    await stream.on('downloadProgress', function(progress: {percent: number}) {
       progressBar.update(progress.percent*100);
     });
     progressBar.stop();
