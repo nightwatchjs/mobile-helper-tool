@@ -53,7 +53,18 @@ export const downloadAndSetupAndroidSdk = async (sdkRoot: string, platform: Plat
   }
 
   // download android sdk (cmdline-tools)
-  await downloadWithProgressBar(DOWNLOADS.sdk[platform], sdkRoot, true);
+  const result = await downloadWithProgressBar(DOWNLOADS.sdk[platform], sdkRoot, true);
+  if (!result) {
+    // bring cmdline-tools back to original state
+    if (fs.existsSync(temp_cmdline_tools1)) {
+      fs.renameSync(temp_cmdline_tools1, cmdline_tools);
+      if (fs.existsSync(cmdline_tools_old)) {
+        fs.renameSync(cmdline_tools_old, cmdline_tools_latest);
+      }
+    }
+
+    throw new Error('Failed to download cmdline-tools.');
+  }
 
   // re-arrange files
   fs.renameSync(cmdline_tools, temp_cmdline_tools2);
