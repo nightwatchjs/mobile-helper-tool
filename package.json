@@ -47,7 +47,7 @@
     "boxen": "5.1.2",
     "cli-progress": "^3.11.2",
     "dotenv": "^16.0.3",
-    "download": "^8.0.0",
+    "download": "github:garg3133/download#14.0.0",
     "inquirer": "^8.2.4",
     "minimist": "^1.2.6",
     "untildify": "^4.0.0",
