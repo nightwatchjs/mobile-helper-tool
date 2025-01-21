@@ -13,6 +13,7 @@ import {showHelp} from './help';
 import {install} from './install';
 import {list} from './list';
 import {uninstall} from './uninstall';
+import {update} from './update';
 
 export class AndroidSubcommand {
   sdkRoot: string;
@@ -81,6 +82,8 @@ export class AndroidSubcommand {
       return await list(this.options, this.sdkRoot, this.platform);
     } else if (this.subcommand === 'uninstall') {
       return await uninstall(this.options, this.sdkRoot, this.platform);
+    } else if (this.subcommand === 'update') {
+      return await update(this.sdkRoot, this.platform);
     }
 
     return false;
